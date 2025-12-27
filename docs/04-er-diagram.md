@@ -2,27 +2,17 @@
 
 ## 1. Purpose
 
-This document describes the **Entity Relationship (ER) model** for the resource-based booking system.
-
-The ER design focuses on:
-
-- Data normalization
-- Clear ownership boundaries
-- Preventing double bookings
-- Supporting multiple vendor and resource types
-- Scalability and future extensibility
+This document describes the **Entity Relationship (ER) model** for the resource-based booking system, including **OTP handling for email verification and password reset**.
 
 ---
 
 ## 2. Core Design Principle
 
-> **Bookings are resource-centric, not vendor-centric**
+> Bookings are **resource-centric**, not vendor-centric.
 
-- Vendors own **resources**
-- Users book **resources**
-- Booking logic remains generic regardless of vendor type
-
-This allows the system to support hotels, clinics, salons, and future services using the same schema.
+- Vendors own resources
+- Users book resources
+- OTPs are used for **email verification** and **forgot password flows**
 
 ---
 
@@ -36,30 +26,50 @@ Represents an end user who books resources.
 
 - id (PK)
 - email (unique)
-- passwordHash
+- password_hash
+- is_email_verified (boolean)
 - role (USER / VENDOR / ADMIN)
-- status (ACTIVE / SUSPENDED)
-- createdAt
-- updatedAt
+- status
+- created_at
+- updated_at
 
 **Relationships**
 
 - One User → Many Bookings
+- One User → Many OTP Tokens
 
 ---
 
-### 3.2 Vendor
+### 3.2 OTP Token
 
-Represents a business entity that owns resources.
+Represents OTPs sent to users.
+
+**Attributes**
+
+- id (PK)
+- user_id (FK → users.id)
+- otp_hash
+- purpose (EMAIL_VERIFICATION / PASSWORD_RESET)
+- expires_at
+- consumed_at
+- created_at
+
+**Relationships**
+
+- Many OTPs → One User
+
+---
+
+### 3.3 Vendor
 
 **Attributes**
 
 - id (PK)
 - name
-- vendorType (HOTEL, CLINIC, SALON, etc.)
-- status (PENDING / APPROVED / SUSPENDED)
-- createdAt
-- updatedAt
+- vendor_type
+- status
+- created_at
+- updated_at
 
 **Relationships**
 
@@ -67,28 +77,18 @@ Represents a business entity that owns resources.
 
 ---
 
-### 3.3 Resource
-
-Represents any bookable entity.
-
-Examples:
-
-- Hotel room
-- Doctor appointment slot
-- Salon chair
-- Co-working desk
+### 3.4 Resource
 
 **Attributes**
 
 - id (PK)
-- vendorId (FK → Vendor.id)
-- type (HOTEL_ROOM, DOCTOR_SLOT, DESK, etc.)
+- vendor_id (FK → vendors.id)
+- type
 - name
-- description
 - price
-- isActive
-- createdAt
-- updatedAt
+- is_active
+- created_at
+- updated_at
 
 **Relationships**
 
@@ -97,62 +97,46 @@ Examples:
 
 ---
 
-### 3.4 Booking
-
-Represents a reservation made by a user for a resource.
+### 3.5 Booking
 
 **Attributes**
 
 - id (PK)
-- userId (FK → User.id)
-- resourceId (FK → Resource.id)
-- startTime
-- endTime
-- status (PENDING / CONFIRMED / CANCELLED / FAILED)
-- createdAt
-- updatedAt
+- user_id (FK → users.id)
+- resource_id (FK → resources.id)
+- start_time
+- end_time
+- status
+- created_at
+- updated_at
 
 **Relationships**
 
 - Many Bookings → One User
 - Many Bookings → One Resource
-
----
-
-### 3.5 Payment
-
-Represents payment information linked to a booking.
-
-**Attributes**
-
-- id (PK)
-- bookingId (FK → Booking.id)
-- amount
-- currency
-- provider
-- status (INITIATED / SUCCESS / FAILED / REFUNDED)
-- createdAt
-
-**Relationships**
-
 - One Booking → One Payment
 
 ---
 
-### 3.6 Role (Optional – for RBAC)
-
-Defines system roles and permissions.
+### 3.6 Payment
 
 **Attributes**
 
 - id (PK)
-- name (USER, VENDOR, ADMIN)
+- booking_id (FK → bookings.id)
+- amount
+- currency
+- provider
+- status
+- created_at
 
 ---
 
 ## 4. Relationships Summary
 
 User 1 ────< Booking >──── 1 Resource >──── 1 Vendor
+│
+└───< OTP Token
 |
 └──── 1 Payment
 
@@ -160,62 +144,13 @@ User 1 ────< Booking >──── 1 Resource >──── 1 Vendor
 
 ## 5. Key Constraints
 
-### 5.1 Booking Constraints
-
-- A resource **cannot have overlapping bookings**
-- `(resourceId, startTime, endTime)` must not overlap
-- Enforced via:
-  - Database constraints
-  - Transactions
-  - Application-level locking
+- OTPs are hashed, expire in 5–10 minutes, and single-use
+- Booking overlaps prevented by resource locking
+- Referential integrity enforced via foreign keys
 
 ---
 
-### 5.2 Referential Integrity
+## 6. Summary
 
-- Booking must reference a valid User and Resource
-- Resource must reference a valid Vendor
-- Deleting vendors/resources is restricted (soft delete preferred)
-
----
-
-## 6. Why This ER Design Works
-
-### 6.1 Generic & Extensible
-
-- No vendor-specific tables
-- New vendor/resource types require **no schema changes**
-
-### 6.2 Data Consistency
-
-- Clear ownership
-- Strong foreign key relationships
-- Supports transactional booking creation
-
-### 6.3 Scalable
-
-- Indexable relationships
-- Optimized for availability queries
-- Easy to shard by resource or vendor in the future
-
----
-
-## 7. Notes on Soft Deletes
-
-- Records are marked inactive instead of hard deletion
-- Preserves booking history
-- Supports audit and compliance requirements
-
----
-
-## 8. Visual Diagram
-
-A visual ER diagram is provided below for reference:
-
-![ER Diagram](./diagrams/er-diagram.png)
-
----
-
-## 9. Summary
-
-This ER model supports a **single, unified backend** capable of handling bookings across multiple business domains while maintaining data integrity, scalability, and clean separation of responsibilities.
+The updated ER model now fully supports **OTP-based verification**, in addition to resource-centric bookings and payments.  
+This ensures **secure authentication**, **password recovery**, and **audit-ready design**.
