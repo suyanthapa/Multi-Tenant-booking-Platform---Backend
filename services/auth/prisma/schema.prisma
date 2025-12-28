@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String     @id @default(uuid())
+  email           String     @unique
+  username        String     @unique
+  passwordHash    String     @map("password_hash")
+  firstName       String?    @map("first_name")
+  lastName        String?    @map("last_name")
+  phone           String?
+  role            UserRole   @default(CUSTOMER)
+  status          UserStatus @default(PENDING_VERIFICATION)
+  isEmailVerified Boolean    @default(false) @map("is_email_verified")
+  lastLoginAt     DateTime?  @map("last_login_at")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  otpTokens     OTPToken[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  CUSTOMER
+  VENDOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+  DELETED
+}
+
+model OTPToken {
+  id         String     @id @default(uuid())
+  userId     String     @map("user_id")
+  otpHash    String     @map("otp_hash")
+  purpose    OTPPurpose
+  expiresAt  DateTime   @map("expires_at")
+  consumedAt DateTime?  @map("consumed_at")
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("otp_tokens")
+}
+
+enum OTPPurpose {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  TWO_FACTOR_AUTH
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  token     String    @unique
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
