@@ -37,6 +37,19 @@ export class OTPRepository {
   }
 
   /**
+   * Find all valid OTPs by purpose (non-consumed, non-expired)
+   */
+  async findValidOTPsByPurpose(purpose: OTPPurpose): Promise<OTPToken[]> {
+    return this.prisma.oTPToken.findMany({
+      where: {
+        purpose,
+        consumedAt: null,
+        expiresAt: { gte: new Date() },
+      },
+    });
+  }
+
+  /**
    * Find all OTPs for a user
    */
   async findByUserId(userId: string): Promise<OTPToken[]> {

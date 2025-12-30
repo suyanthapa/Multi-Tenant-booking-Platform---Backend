@@ -1,11 +1,11 @@
 meta {
-  name: Login
+  name: Resend Verification OTP
   type: http
-  seq: 2
+  seq: 4
 }
 
 post {
-  url: http://localhost:3001/api/auth/login
+  url: http://localhost:3001/api/auth/resend-verification
   body: json
   auth: inherit
 }
@@ -14,7 +14,7 @@ body:json {
   {
   
     "email": "2021photosuyan@gmail.com",
-    "password": "Suyan@#123"
+    "token": "955368"
   }
 }
 

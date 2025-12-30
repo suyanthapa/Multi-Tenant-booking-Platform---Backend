@@ -4,9 +4,12 @@ import { generateOTP, hashOTP, verifyOTP } from "../utils/crypto";
 import { ValidationError } from "../utils/errors";
 import config from "../config";
 import logger from "../utils/logger";
+import { RepositoryFactory } from "../repositories";
 
 class OTPService {
   private prisma = Database.getInstance();
+  private repositories = RepositoryFactory.getInstance(this.prisma);
+  private otpRepository = this.repositories.otpRepository;
 
   /**
    * Generate email verification OTP
@@ -19,25 +22,17 @@ class OTPService {
     );
 
     // Invalidate previous OTPs
-    await this.prisma.oTPToken.updateMany({
-      where: {
-        userId,
-        purpose: OTPPurpose.EMAIL_VERIFICATION,
-        consumedAt: null,
-      },
-      data: {
-        consumedAt: new Date(),
-      },
-    });
+    await this.otpRepository.invalidateUserOTPs(
+      userId,
+      OTPPurpose.EMAIL_VERIFICATION
+    );
 
     // Create new OTP
-    await this.prisma.oTPToken.create({
-      data: {
-        userId,
-        otpHash,
-        purpose: OTPPurpose.EMAIL_VERIFICATION,
-        expiresAt,
-      },
+    await this.otpRepository.create({
+      user: { connect: { id: userId } },
+      otpHash,
+      purpose: OTPPurpose.EMAIL_VERIFICATION,
+      expiresAt,
     });
 
     logger.info(`Email verification OTP generated for user: ${userId}`);
@@ -49,13 +44,9 @@ class OTPService {
    */
   async verifyEmailVerificationOTP(otp: string): Promise<string> {
     // Get all non-consumed, non-expired OTPs
-    const otpTokens = await this.prisma.oTPToken.findMany({
-      where: {
-        purpose: OTPPurpose.EMAIL_VERIFICATION,
-        consumedAt: null,
-        expiresAt: { gte: new Date() },
-      },
-    });
+    const otpTokens = await this.otpRepository.findValidOTPsByPurpose(
+      OTPPurpose.EMAIL_VERIFICATION
+    );
 
     if (otpTokens.length === 0) {
       throw new ValidationError("Invalid or expired OTP");
@@ -66,10 +57,7 @@ class OTPService {
       const isValid = await verifyOTP(otp, token.otpHash);
       if (isValid) {
         // Mark as consumed
-        await this.prisma.oTPToken.update({
-          where: { id: token.id },
-          data: { consumedAt: new Date() },
-        });
+        await this.otpRepository.markAsUsed(token.id);
 
         logger.info(
           `Email verification OTP verified for user: ${token.userId}`
@@ -92,25 +80,17 @@ class OTPService {
     );
 
     // Invalidate previous OTPs
-    await this.prisma.oTPToken.updateMany({
-      where: {
-        userId,
-        purpose: OTPPurpose.PASSWORD_RESET,
-        consumedAt: null,
-      },
-      data: {
-        consumedAt: new Date(),
-      },
-    });
+    await this.otpRepository.invalidateUserOTPs(
+      userId,
+      OTPPurpose.PASSWORD_RESET
+    );
 
     // Create new OTP
-    await this.prisma.oTPToken.create({
-      data: {
-        userId,
-        otpHash,
-        purpose: OTPPurpose.PASSWORD_RESET,
-        expiresAt,
-      },
+    await this.otpRepository.create({
+      user: { connect: { id: userId } },
+      otpHash,
+      purpose: OTPPurpose.PASSWORD_RESET,
+      expiresAt,
     });
 
     logger.info(`Password reset OTP generated for user: ${userId}`);
@@ -122,13 +102,9 @@ class OTPService {
    */
   async verifyPasswordResetOTP(otp: string): Promise<string> {
     // Get all non-consumed, non-expired OTPs
-    const otpTokens = await this.prisma.oTPToken.findMany({
-      where: {
-        purpose: OTPPurpose.PASSWORD_RESET,
-        consumedAt: null,
-        expiresAt: { gte: new Date() },
-      },
-    });
+    const otpTokens = await this.otpRepository.findValidOTPsByPurpose(
+      OTPPurpose.PASSWORD_RESET
+    );
 
     if (otpTokens.length === 0) {
       throw new ValidationError("Invalid or expired OTP");
@@ -139,10 +115,7 @@ class OTPService {
       const isValid = await verifyOTP(otp, token.otpHash);
       if (isValid) {
         // Mark as consumed
-        await this.prisma.oTPToken.update({
-          where: { id: token.id },
-          data: { consumedAt: new Date() },
-        });
+        await this.otpRepository.markAsUsed(token.id);
 
         logger.info(`Password reset OTP verified for user: ${token.userId}`);
         return token.userId;
@@ -156,14 +129,12 @@ class OTPService {
    * Clean up expired OTPs (should be run periodically)
    */
   async cleanupExpiredOTPs(): Promise<number> {
-    const result = await this.prisma.oTPToken.deleteMany({
-      where: {
-        OR: [{ expiresAt: { lt: new Date() } }, { consumedAt: { not: null } }],
-      },
-    });
+    const expiredResult = await this.otpRepository.deleteExpired();
+    const usedResult = await this.otpRepository.deleteOldUsedOTPs(7);
+    const totalCount = expiredResult.count + usedResult.count;
 
-    logger.info(`Cleaned up ${result.count} expired/consumed OTPs`);
-    return result.count;
+    logger.info(`Cleaned up ${totalCount} expired/consumed OTPs`);
+    return totalCount;
   }
 }
 

@@ -40,6 +40,21 @@ class AuthController {
   });
 
   /**
+   * Resend email verification OTP
+   * POST /auth/resend-verification
+   */
+
+  resendVerificationOTP = asyncHandler(async (req: Request, res: Response) => {
+    const { email } = req.body;
+    const result = await authService.resendEmailVerificationOTP(email);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  });
+
+  /**
    * Login user
    * POST /auth/login
    */

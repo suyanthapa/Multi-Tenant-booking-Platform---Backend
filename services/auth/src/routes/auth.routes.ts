@@ -32,6 +32,14 @@ router.post(
 );
 
 /**
+ * @route   POST /auth/resend-verification
+ * @desc    Resend email verification OTP
+ * @access  Public
+ */
+
+router.post("/resend-verification", authController.resendVerificationOTP);
+
+/**
  * @route   POST /auth/login
  * @desc    Login user
  * @access  Public

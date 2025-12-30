@@ -181,8 +181,10 @@ class AuthService {
 
     // Check if email is verified
     if (!user.isEmailVerified) {
+      const otp = await otpService.generateEmailVerificationOTP(user.id);
+      await emailService.sendVerificationEmail(email, otp);
       throw new AuthenticationError(
-        "Please verify your email before logging in"
+        "Email not verified. A new verification code has been sent to your email."
       );
     }
 
