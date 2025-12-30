@@ -31,7 +31,15 @@ export class RepositoryFactory {
   }
 
   /**
-   * Get User Repository
+   * Getters with Lazy Initialization for repositories.
+   *  This ensures that repository instances are only created when they are actually needed,
+   *  which optimizes memory usage and app startup time.
+   *  It also guarantees that each repository is a singleton within the factory,
+   * so the entire application shares the same instance and the same database connection pool.
+   */
+
+  /**
+   * Get User Repository m -Lazy Initialization.
    */
   public get userRepository(): UserRepository {
     if (!this._userRepository) {
@@ -41,7 +49,7 @@ export class RepositoryFactory {
   }
 
   /**
-   * Get OTP Repository
+   * Get OTP Repository --Lazy Initialization.
    */
   public get otpRepository(): OTPRepository {
     if (!this._otpRepository) {
@@ -51,7 +59,7 @@ export class RepositoryFactory {
   }
 
   /**
-   * Get Refresh Token Repository
+   * Get Refresh Token Repository --Lazy Initialization.
    */
   public get refreshTokenRepository(): RefreshTokenRepository {
     if (!this._refreshTokenRepository) {

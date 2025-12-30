@@ -18,13 +18,17 @@ import {
   VerifyEmailInput,
   ForgotPasswordInput,
   ResetPasswordInput,
+  ResendOTPInput,
 } from "../utils/validators";
 import otpService from "./otp.service";
 import emailService from "./email.service";
 import logger from "../utils/logger";
+import { RepositoryFactory } from "../repositories";
 
 class AuthService {
-  private prisma = Database.getInstance();
+  private prisma = Database.getInstance(); // The Singleton Retrieval
+  private repositories = RepositoryFactory.getInstance(this.prisma);
+  private userRepository = this.repositories.userRepository;
 
   /**
    * Register a new user
@@ -35,16 +39,14 @@ class AuthService {
     const { email, username, password, role } = input;
 
     // Check if user already exists
-    const existingUser = await this.prisma.user.findFirst({
-      where: {
-        OR: [{ email }, { username }],
-      },
-    });
+    const existingUser = await this.userRepository.findByEmailOrUsername(email);
+    const existingUsername = await this.userRepository.findByUsername(username);
 
     if (existingUser) {
-      if (existingUser.email === email) {
-        throw new ConflictError("Email already registered");
-      }
+      throw new ConflictError("Email already registered");
+    }
+
+    if (existingUsername) {
       throw new ConflictError("Username already taken");
     }
 
@@ -52,15 +54,13 @@ class AuthService {
     const passwordHash = await hashPassword(password);
 
     // Create user
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        username,
-        passwordHash,
-        role: (role as UserRole) || UserRole.CUSTOMER,
-        status: UserStatus.PENDING_VERIFICATION,
-        isEmailVerified: false,
-      },
+    const user = await this.userRepository.create({
+      email,
+      username,
+      passwordHash,
+      role: (role as UserRole) || UserRole.CUSTOMER,
+      status: UserStatus.PENDING_VERIFICATION,
+      isEmailVerified: false,
     });
 
     // Generate and send OTP
@@ -86,19 +86,27 @@ class AuthService {
    * Verify email with OTP
    */
   async verifyEmail(input: VerifyEmailInput): Promise<{ message: string }> {
-    const { token } = input;
+    const { email, token } = input;
 
-    // Verify OTP
+    // Verify OTP and get userId
     const userId = await otpService.verifyEmailVerificationOTP(token);
 
+    // Get user and validate email matches
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    // Verify email matches the OTP owner
+    if (user.email !== email) {
+      throw new AuthenticationError(
+        "Email does not match the verification token"
+      );
+    }
+
     // Update user
-    const user = await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        isEmailVerified: true,
-        status: UserStatus.ACTIVE,
-      },
-    });
+    await this.userRepository.markEmailAsVerified(userId);
 
     // Send welcome email
     await emailService.sendWelcomeEmail(user.email, user.username);
@@ -111,6 +119,44 @@ class AuthService {
   }
 
   /**
+   * Resend OTP for email verification
+   */
+  async resendEmailVerificationOTP(
+    input: ResendOTPInput
+  ): Promise<{ message: string }> {
+    const { email } = input;
+
+    // Find user
+    const user = await this.userRepository.findByEmail(email);
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    // Check if already verified
+    if (user.isEmailVerified) {
+      throw new ConflictError("Email is already verified");
+    }
+
+    // Check if user is not deleted or suspended
+    if (
+      user.status === UserStatus.DELETED ||
+      user.status === UserStatus.SUSPENDED
+    ) {
+      throw new AuthenticationError("Account is not active");
+    }
+
+    // Generate and send new OTP
+    const otp = await otpService.generateEmailVerificationOTP(user.id);
+    await emailService.sendVerificationEmail(email, otp);
+
+    logger.info(`Verification OTP resent to: ${email}`);
+
+    return {
+      message: "Verification code has been resent to your email.",
+    };
+  }
+  /**
    * Login user
    */
   async login(input: LoginInput): Promise<{
@@ -121,9 +167,7 @@ class AuthService {
     const { email, password } = input;
 
     // Find user
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
       throw new AuthenticationError("Invalid email or password");
@@ -166,10 +210,7 @@ class AuthService {
     });
 
     // Update last login
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
-    });
+    await this.userRepository.updateLastLogin(user.id);
 
     logger.info(`User logged in: ${user.id} (${email})`);
 
@@ -213,9 +254,7 @@ class AuthService {
     }
 
     // Get user
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.userId },
-    });
+    const user = await this.userRepository.findById(payload.userId);
 
     if (!user || user.status !== UserStatus.ACTIVE) {
       throw new AuthenticationError("User not found or inactive");
@@ -271,9 +310,7 @@ class AuthService {
   ): Promise<{ message: string }> {
     const { email } = input;
 
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await this.userRepository.findByEmail(email);
 
     // Don't reveal if email exists or not
     if (!user) {
@@ -306,10 +343,7 @@ class AuthService {
     const passwordHash = await hashPassword(newPassword);
 
     // Update password
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { passwordHash },
-    });
+    await this.userRepository.updatePassword(userId, passwordHash);
 
     // Revoke all refresh tokens for security
     await this.prisma.refreshToken.updateMany({
@@ -329,9 +363,7 @@ class AuthService {
    * Get user profile
    */
   async getProfile(userId: string): Promise<Partial<User>> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundError("User not found");

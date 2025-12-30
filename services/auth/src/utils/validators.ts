@@ -33,10 +33,15 @@ export const loginSchema = z.object({
 });
 
 export const verifyEmailSchema = z.object({
+  email: z.string().email("Invalid email address"),
   token: z.string().min(1, "Token is required"),
 });
 
 export const forgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
+export const resendOTPSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
 
@@ -62,5 +67,6 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResendOTPInput = z.infer<typeof resendOTPSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
