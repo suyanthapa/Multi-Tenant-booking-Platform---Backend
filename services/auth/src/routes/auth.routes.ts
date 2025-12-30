@@ -9,6 +9,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   refreshTokenSchema,
+  resendVerificationOTPSchema,
 } from "../utils/validators";
 
 const router = Router();
@@ -37,7 +38,11 @@ router.post(
  * @access  Public
  */
 
-router.post("/resend-verification", authController.resendVerificationOTP);
+router.post(
+  "/resend-verification",
+  validate(resendVerificationOTPSchema),
+  authController.resendVerificationOTP
+);
 
 /**
  * @route   POST /auth/login

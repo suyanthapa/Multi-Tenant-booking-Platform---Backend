@@ -31,6 +31,12 @@ interface Config {
     expiryMinutes: number;
     length: number;
   };
+  cookie: {
+    httpOnly: boolean;
+    secure: boolean;
+    sameSite: "strict" | "lax" | "none";
+    maxAge: number;
+  };
 }
 
 const config: Config = {
@@ -65,6 +71,13 @@ const config: Config = {
   otp: {
     expiryMinutes: parseInt(process.env.OTP_EXPIRY_MINUTES || "15", 10),
     length: parseInt(process.env.OTP_LENGTH || "6", 10),
+  },
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite:
+      (process.env.COOKIE_SAME_SITE as "strict" | "lax" | "none") || "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   },
 };
 

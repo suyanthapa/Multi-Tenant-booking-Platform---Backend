@@ -130,6 +130,43 @@ export class RefreshTokenRepository {
   }
 
   /**
+   * Find valid token by token string and userId
+   */
+  async findValidToken(
+    token: string,
+    userId: string
+  ): Promise<RefreshToken | null> {
+    return this.prisma.refreshToken.findFirst({
+      where: {
+        token,
+        userId,
+        revokedAt: null,
+        expiresAt: { gte: new Date() },
+      },
+    });
+  }
+
+  /**
+   * Revoke a refresh token by ID
+   */
+  async revoke(id: string): Promise<RefreshToken> {
+    return this.prisma.refreshToken.update({
+      where: { id },
+      data: { revokedAt: new Date() },
+    });
+  }
+
+  /**
+   * Revoke refresh token by token string
+   */
+  async revokeByToken(token: string): Promise<Prisma.BatchPayload> {
+    return this.prisma.refreshToken.updateMany({
+      where: { token },
+      data: { revokedAt: new Date() },
+    });
+  }
+
+  /**
    * Clean up old expired tokens (older than specified days)
    */
   async cleanupOldTokens(days: number = 30): Promise<Prisma.BatchPayload> {

@@ -21,14 +21,16 @@ export const authenticate = (
   next: NextFunction
 ) => {
   try {
-    // Get token from Authorization header
-    const authHeader = req.headers.authorization;
+    // Get token from cookie first, then fall back to Authorization header
+    let token = req.cookies?.accessToken;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      throw new AuthenticationError("No token provided");
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        throw new AuthenticationError("No token provided");
+      }
+      token = authHeader.substring(7); // Remove 'Bearer ' prefix
     }
-
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
     // Verify token
     const payload = verifyAccessToken(token);
@@ -74,10 +76,17 @@ export const optionalAuth = (
   next: NextFunction
 ) => {
   try {
-    const authHeader = req.headers.authorization;
+    // Get token from cookie first, then fall back to Authorization header
+    let token = req.cookies?.accessToken;
 
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.substring(7);
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.substring(7);
+      }
+    }
+
+    if (token) {
       const payload = verifyAccessToken(token);
       req.user = payload;
     }

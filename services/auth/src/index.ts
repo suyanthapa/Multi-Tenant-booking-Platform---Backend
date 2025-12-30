@@ -3,6 +3,7 @@ import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
+import cookieParser from "cookie-parser";
 import config from "./config";
 import Database from "./config/database";
 import logger from "./utils/logger";
@@ -34,6 +35,9 @@ class App {
     // Body parsing
     this.app.use(express.json({ limit: "10mb" }));
     this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+    // Cookie parsing
+    this.app.use(cookieParser());
 
     // Request logging
     if (config.nodeEnv === "development") {

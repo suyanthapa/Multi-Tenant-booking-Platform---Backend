@@ -1,0 +1,26 @@
+meta {
+  name: Me
+  type: http
+  seq: 7
+}
+
+get {
+  url: http://localhost:3001/api/auth/me
+  body: none
+  auth: inherit
+}
+
+body:json {
+  {
+  
+    "token": "283839",
+    "newPassword":"Sudan@#123",
+      "confirmNewPassword":"Sudan@#123"
+    
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

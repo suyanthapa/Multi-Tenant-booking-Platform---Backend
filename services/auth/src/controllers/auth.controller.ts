@@ -1,13 +1,14 @@
 import { Request, Response } from "express";
 import authService from "../services/auth.service";
 import { asyncHandler } from "../utils/asyncHandler";
+import config from "../config";
 import {
   RegisterInput,
   LoginInput,
   VerifyEmailInput,
   ForgotPasswordInput,
   ResetPasswordInput,
-  RefreshTokenInput,
+  ResendVerificationOTPInput,
 } from "../utils/validators";
 
 class AuthController {
@@ -45,8 +46,8 @@ class AuthController {
    */
 
   resendVerificationOTP = asyncHandler(async (req: Request, res: Response) => {
-    const { email } = req.body;
-    const result = await authService.resendEmailVerificationOTP(email);
+    const { email }: ResendVerificationOTPInput = req.body;
+    const result = await authService.resendEmailVerificationOTP({ email });
 
     res.status(200).json({
       success: true,
@@ -62,9 +63,27 @@ class AuthController {
     const input: LoginInput = req.body;
     const result = await authService.login(input);
 
+    // Set tokens in HTTP-only cookies
+    res.cookie("accessToken", result.accessToken, {
+      httpOnly: config.cookie.httpOnly,
+      secure: config.cookie.secure,
+      sameSite: config.cookie.sameSite,
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: config.cookie.httpOnly,
+      secure: config.cookie.secure,
+      sameSite: config.cookie.sameSite,
+      maxAge: config.cookie.maxAge,
+    });
+
     res.status(200).json({
       success: true,
-      data: result,
+      data: {
+        user: result.user,
+        message: "Login successful",
+      },
     });
   });
 
@@ -73,12 +92,37 @@ class AuthController {
    * POST /auth/refresh
    */
   refreshToken = asyncHandler(async (req: Request, res: Response) => {
-    const input: RefreshTokenInput = req.body;
-    const result = await authService.refreshToken(input.refreshToken);
+    // Get refresh token from cookie or body
+    const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+
+    if (!refreshToken) {
+      res.status(400).json({
+        success: false,
+        message: "Refresh token is required",
+      });
+      return;
+    }
+
+    const result = await authService.refreshToken(refreshToken);
+
+    // Set new tokens in cookies
+    res.cookie("accessToken", result.accessToken, {
+      httpOnly: config.cookie.httpOnly,
+      secure: config.cookie.secure,
+      sameSite: config.cookie.sameSite,
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: config.cookie.httpOnly,
+      secure: config.cookie.secure,
+      sameSite: config.cookie.sameSite,
+      maxAge: config.cookie.maxAge,
+    });
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: { message: "Token refreshed successfully" },
     });
   });
 
@@ -87,12 +131,29 @@ class AuthController {
    * POST /auth/logout
    */
   logout = asyncHandler(async (req: Request, res: Response) => {
-    const { refreshToken } = req.body;
-    const result = await authService.logout(refreshToken);
+    // Get refresh token from cookie or body
+    const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+
+    if (refreshToken) {
+      await authService.logout(refreshToken);
+    }
+
+    // Clear cookies
+    res.clearCookie("accessToken", {
+      httpOnly: config.cookie.httpOnly,
+      secure: config.cookie.secure,
+      sameSite: config.cookie.sameSite,
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: config.cookie.httpOnly,
+      secure: config.cookie.secure,
+      sameSite: config.cookie.sameSite,
+    });
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: { message: "Logout successful" },
     });
   });
 

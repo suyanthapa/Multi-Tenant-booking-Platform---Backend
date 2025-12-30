@@ -11,6 +11,7 @@ import {
   ConflictError,
   NotFoundError,
   TokenExpiredError,
+  ValidationError,
 } from "../utils/errors";
 import {
   RegisterInput,
@@ -29,6 +30,7 @@ class AuthService {
   private prisma = Database.getInstance(); // The Singleton Retrieval
   private repositories = RepositoryFactory.getInstance(this.prisma);
   private userRepository = this.repositories.userRepository;
+  private refreshTokenRepository = this.repositories.refreshTokenRepository;
 
   /**
    * Register a new user
@@ -203,12 +205,10 @@ class AuthService {
     const { accessToken, refreshToken } = generateTokenPair(payload);
 
     // Store refresh token
-    await this.prisma.refreshToken.create({
-      data: {
-        userId: user.id,
-        token: refreshToken,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      },
+    await this.refreshTokenRepository.create({
+      user: { connect: { id: user.id } },
+      token: refreshToken,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
     // Update last login
@@ -240,14 +240,10 @@ class AuthService {
     const payload = verifyRefreshToken(oldRefreshToken);
 
     // Check if token exists and is not revoked
-    const tokenRecord = await this.prisma.refreshToken.findFirst({
-      where: {
-        token: oldRefreshToken,
-        userId: payload.userId,
-        revokedAt: null,
-        expiresAt: { gte: new Date() },
-      },
-    });
+    const tokenRecord = await this.refreshTokenRepository.findValidToken(
+      oldRefreshToken,
+      payload.userId
+    );
 
     if (!tokenRecord) {
       throw new TokenExpiredError(
@@ -272,19 +268,19 @@ class AuthService {
     const { accessToken, refreshToken } = generateTokenPair(newPayload);
 
     // Revoke old token and store new one
-    await this.prisma.$transaction([
-      this.prisma.refreshToken.update({
+    await this.prisma.$transaction(async (tx) => {
+      await tx.refreshToken.update({
         where: { id: tokenRecord.id },
         data: { revokedAt: new Date() },
-      }),
-      this.prisma.refreshToken.create({
+      });
+      await tx.refreshToken.create({
         data: {
           userId: user.id,
           token: refreshToken,
           expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         },
-      }),
-    ]);
+      });
+    });
 
     logger.info(`Token refreshed for user: ${user.id}`);
 
@@ -296,10 +292,7 @@ class AuthService {
    */
   async logout(refreshToken: string): Promise<{ message: string }> {
     // Revoke refresh token
-    await this.prisma.refreshToken.updateMany({
-      where: { token: refreshToken },
-      data: { revokedAt: new Date() },
-    });
+    await this.refreshTokenRepository.revokeByToken(refreshToken);
 
     return { message: "Logged out successfully" };
   }
@@ -336,10 +329,33 @@ class AuthService {
    * Reset password with OTP
    */
   async resetPassword(input: ResetPasswordInput): Promise<{ message: string }> {
-    const { token, newPassword } = input;
+    const { token, newPassword, confirmNewPassword }: ResetPasswordInput =
+      input;
 
+    // Check password match
+    if (newPassword !== confirmNewPassword) {
+      throw new ValidationError("New password and confirmation do not match");
+    }
     // Verify OTP
     const userId = await otpService.verifyPasswordResetOTP(token);
+
+    // Get user to compare with old password
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    const isSamePassword = await comparePassword(
+      newPassword,
+      user.passwordHash
+    );
+
+    if (isSamePassword) {
+      throw new ConflictError(
+        "New password cannot be the same as the old password"
+      );
+    }
 
     // Hash new password
     const passwordHash = await hashPassword(newPassword);

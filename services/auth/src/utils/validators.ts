@@ -57,10 +57,30 @@ export const resetPasswordSchema = z.object({
       /[^A-Za-z0-9]/,
       "Password must contain at least one special character"
     ),
+  confirmNewPassword: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      /[A-Z]/,
+      "Confirm password must contain at least one uppercase letter"
+    )
+    .regex(
+      /[a-z]/,
+      "Confirm password must contain at least one lowercase letter"
+    )
+    .regex(/[0-9]/, "Confirm password must contain at least one number")
+    .regex(
+      /[^A-Za-z0-9]/,
+      "Confirm password must contain at least one special character"
+    ),
 });
 
 export const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1, "Refresh token is required"),
+});
+
+export const resendVerificationOTPSchema = z.object({
+  email: z.string().email("Invalid email address"),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -70,3 +90,6 @@ export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResendOTPInput = z.infer<typeof resendOTPSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
+export type ResendVerificationOTPInput = z.infer<
+  typeof resendVerificationOTPSchema
+>;
