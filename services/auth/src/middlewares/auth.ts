@@ -14,6 +14,7 @@ declare global {
 
 /**
  * Middleware to authenticate requests using JWT
+ * Handles both Web (Cookies) and Mobile/API (Bearer Token).
  */
 export const authenticate = (
   req: Request,
@@ -21,9 +22,10 @@ export const authenticate = (
   next: NextFunction
 ) => {
   try {
-    // Get token from cookie first, then fall back to Authorization header
+    //  Check Cookies (Web/Browser)
     let token = req.cookies?.accessToken;
 
+    //  Check Authorization Header (Mobile/Postman)
     if (!token) {
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -32,7 +34,11 @@ export const authenticate = (
       token = authHeader.substring(7); // Remove 'Bearer ' prefix
     }
 
-    // Verify token
+    if (!token) {
+      throw new AuthenticationError("No authentication token provided");
+    }
+
+    // Verify and decode
     const payload = verifyAccessToken(token);
 
     // Attach user to request
@@ -46,15 +52,19 @@ export const authenticate = (
 
 /**
  * Middleware to authorize based on user roles
+ * Usage: authorize(UserRole.ADMIN, UserRole.VENDOR)
  */
 export const authorize = (...allowedRoles: UserRole[]) => {
-  return (req: Request, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
-        throw new AuthenticationError("User not authenticated");
+        throw new AuthorizationError("Authentication required");
       }
 
-      if (!allowedRoles.includes(req.user.role as UserRole)) {
+      // Check if user's role is in the allowed list
+      const hasAccess = allowedRoles.includes(req.user.role as UserRole);
+
+      if (!hasAccess) {
         throw new AuthorizationError(
           `Access denied. Required roles: ${allowedRoles.join(", ")}`
         );
@@ -67,6 +77,27 @@ export const authorize = (...allowedRoles: UserRole[]) => {
   };
 };
 
+/**
+ *
+ * Check if user has specified role
+ */
+export const hasRole = (role: UserRole) => {
+  return (req: Request, _resw: Response, next: NextFunction) => {
+    try {
+      if (!req.user) {
+        throw new AuthenticationError("Authentication required");
+      }
+      const userRole = req.user.role as UserRole;
+      if (userRole !== role) {
+        throw new AuthorizationError(`Access denied. Required role: ${role}`);
+      }
+
+      next();
+    } catch (error) {
+      next(error);
+    }
+  };
+};
 /**
  * Optional authentication - doesn't fail if no token
  */
