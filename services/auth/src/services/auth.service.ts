@@ -20,11 +20,13 @@ import {
   ForgotPasswordInput,
   ResetPasswordInput,
   ResendOTPInput,
+  GetAllUsersInput,
 } from "../utils/validators";
 import otpService from "./otp.service";
 import emailService from "./email.service";
 import logger from "../utils/logger";
 import { RepositoryFactory } from "../repositories";
+import { PaginatedUsers } from "../interfaces/user.interface";
 
 class AuthService {
   private prisma = Database.getInstance(); // The Singleton Retrieval
@@ -399,6 +401,28 @@ class AuthService {
       isEmailVerified: user.isEmailVerified,
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
+    };
+  }
+
+  //get all users
+  async getAllUsers(input: GetAllUsersInput): Promise<PaginatedUsers> {
+    const { page = 1, limit = 10, status, role } = input;
+
+    const result = await this.userRepository.findWithPagination({
+      page,
+      limit,
+      status,
+      role,
+    });
+
+    return {
+      data: result.users,
+      meta: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: Math.ceil(result.total / result.limit),
+      },
     };
   }
 }

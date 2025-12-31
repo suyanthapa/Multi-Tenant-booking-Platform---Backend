@@ -83,6 +83,14 @@ export const resendVerificationOTPSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
 
+export const getAllUsersSchema = z.object({
+  page: z.number().min(1).max(100).optional().default(1),
+  limit: z.number().min(0).optional().default(10),
+  role: z.enum(["CUSTOMER", "VENDOR", "ADMIN"]).optional(),
+  status: z
+    .enum(["ACTIVE", "PENDING_VERIFICATION", "DELETED", "SUSPENDED"])
+    .optional(),
+});
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
@@ -93,3 +101,4 @@ export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
 export type ResendVerificationOTPInput = z.infer<
   typeof resendVerificationOTPSchema
 >;
+export type GetAllUsersInput = z.infer<typeof getAllUsersSchema>;

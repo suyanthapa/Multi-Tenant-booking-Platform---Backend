@@ -1,7 +1,8 @@
 import { Router } from "express";
 import authController from "../controllers/auth.controller";
 import { validate } from "../middlewares/validator";
-import { authenticate } from "../middlewares/auth";
+import { authenticate, authorize } from "../middlewares/auth";
+import { UserRole } from "@prisma/client";
 import {
   registerSchema,
   loginSchema,
@@ -97,5 +98,17 @@ router.post(
  * @access  Private
  */
 router.get("/me", authenticate, authController.getProfile);
+
+/**
+ * @route  GET /auth/users
+ * @desc   Get all users (Admin only)
+ * @access Private
+ */
+router.get(
+  "/users",
+  authenticate,
+  authorize(UserRole.ADMIN),
+  authController.getAllUsers
+);
 
 export default router;

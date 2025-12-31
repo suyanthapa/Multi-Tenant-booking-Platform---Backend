@@ -5,6 +5,7 @@ import {
   UserStatus,
   Prisma,
 } from "@prisma/client";
+import { GetUsersQuery } from "../interfaces/user.interface";
 
 /**
  * Base Repository interface defining common CRUD operations
@@ -203,19 +204,34 @@ export class UserRepository implements IRepository<User> {
   /**
    * Find users with pagination
    */
-  async findWithPagination(
-    page: number = 1,
-    limit: number = 10,
-    where?: Prisma.UserWhereInput
-  ): Promise<{ users: User[]; total: number; pages: number }> {
+  async findWithPagination(query: GetUsersQuery) {
+    const { page = 1, limit = 10, role, status } = query;
+    const where: Prisma.UserWhereInput = {
+      role: role || UserRole.CUSTOMER,
+      ...(status && { status }),
+    };
+
     const skip = (page - 1) * limit;
 
-    const [users, total] = await Promise.all([
+    const [users, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
         where,
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          status: true,
+          isEmailVerified: true,
+          lastLoginAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       }),
       this.prisma.user.count({ where }),
     ]);
@@ -223,7 +239,8 @@ export class UserRepository implements IRepository<User> {
     return {
       users,
       total,
-      pages: Math.ceil(total / limit),
+      page,
+      limit,
     };
   }
 }

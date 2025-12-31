@@ -11,6 +11,8 @@ import {
   ResendVerificationOTPInput,
 } from "../utils/validators";
 
+import { UserRole, UserStatus } from "../generated/prisma/enums";
+
 class AuthController {
   /**
    * Register a new user
@@ -192,6 +194,25 @@ class AuthController {
   getProfile = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.userId;
     const result = await authService.getProfile(userId);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  });
+
+  /**
+   * Get all users (Admin only)
+   */
+  getAllUsers = asyncHandler(async (req: Request, res: Response) => {
+    const { page = 1, limit = 10, role, status } = req.query;
+
+    const result = await authService.getAllUsers({
+      page: Number(page),
+      limit: Number(limit),
+      role: role as UserRole,
+      status: status as UserStatus,
+    });
 
     res.status(200).json({
       success: true,
