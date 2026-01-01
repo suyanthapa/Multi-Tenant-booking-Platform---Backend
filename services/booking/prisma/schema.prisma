@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+model Booking {
+    id            String        @id @default(uuid())
+    userId        String        @map("user_id")
+    vendorId      String        @map("vendor_id")
+    serviceId     String        @map("service_id")
+    bookingDate   DateTime      @map("booking_date")
+    startTime     DateTime      @map("start_time")
+    endTime       DateTime      @map("end_time")
+    status        BookingStatus @default(PENDING)
+    totalAmount   Decimal       @map("total_amount") @db.Decimal(10, 2)
+    paymentStatus PaymentStatus @default(PENDING) @map("payment_status")
+    notes         String?
+    createdAt     DateTime      @default(now()) @map("created_at")
+    updatedAt     DateTime      @updatedAt @map("updated_at")
+    cancelledAt   DateTime?     @map("cancelled_at")
+    cancelReason  String?       @map("cancel_reason")
+
+    @@index([userId])
+    @@index([vendorId])
+    @@index([serviceId])
+    @@index([bookingDate])
+    @@index([status])
+    @@map("bookings")
+}
+
+enum BookingStatus {
+    PENDING
+    CONFIRMED
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+    NO_SHOW
+}
+
+enum PaymentStatus {
+    PENDING
+    PAID
+    REFUNDED
+    FAILED
+}
