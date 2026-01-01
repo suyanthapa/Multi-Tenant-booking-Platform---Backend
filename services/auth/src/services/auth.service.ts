@@ -26,7 +26,8 @@ import otpService from "./otp.service";
 import emailService from "./email.service";
 import logger from "../utils/logger";
 import { RepositoryFactory } from "../repositories";
-import { PaginatedUsers } from "../interfaces/user.interface";
+import { PaginatedUsers, UserResponse } from "../interfaces/user.interface";
+import { sanitizeUser } from "../utils/sanitizer";
 
 class AuthService {
   private prisma = Database.getInstance(); // The Singleton Retrieval
@@ -425,6 +426,34 @@ class AuthService {
       },
     };
   }
-}
 
+  //edit user
+  async editUser(
+    userId: string,
+    updateData: Partial<User>
+  ): Promise<UserResponse> {
+    // Check if user exists
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    // Update user
+    const updatedUser = await this.userRepository.update(userId, updateData);
+
+    return sanitizeUser(updatedUser);
+  }
+
+  //delete user
+  async deleteUser(userId: string): Promise<void> {
+    // Check if user exists
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    // Delete user
+    await this.userRepository.delete(userId);
+  }
+}
 export default new AuthService();

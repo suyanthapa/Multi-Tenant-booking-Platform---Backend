@@ -219,6 +219,39 @@ class AuthController {
       data: result,
     });
   });
+
+  /**
+   * Edit User (Admin only)
+   * PATCH /users/:userId
+   */
+
+  editUser = asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const updateData = req.body;
+
+    const result = await authService.editUser(userId, updateData);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  });
+
+  /**
+   * Delete User (Admin only)
+   * DELETE /users/:userId
+   */
+
+  deleteUser = asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.params;
+
+    await authService.deleteUser(userId);
+
+    res.status(200).json({
+      success: true,
+      data: { message: "User deleted successfully" },
+    });
+  });
 }
 
 export default new AuthController();

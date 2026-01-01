@@ -11,6 +11,7 @@ import {
   resetPasswordSchema,
   refreshTokenSchema,
   resendVerificationOTPSchema,
+  editUserSchema,
 } from "../utils/validators";
 
 const router = Router();
@@ -109,6 +110,31 @@ router.get(
   authenticate,
   authorize(UserRole.ADMIN),
   authController.getAllUsers
+);
+
+/**
+ * @route  PATCH /auth/users/:userId
+ * @desc   Edit user (Admin only)
+ * @access Private
+ */
+router.patch(
+  "/users/:userId",
+  authenticate,
+  authorize(UserRole.ADMIN),
+  validate(editUserSchema),
+  authController.editUser
+);
+
+/**
+ * @route DELETE /auth/users/:userId
+ * @desc  Delete user (Admin only)
+ * @access Private
+ */
+router.delete(
+  "/users/:userId",
+  authenticate,
+  authorize(UserRole.ADMIN),
+  authController.deleteUser
 );
 
 export default router;

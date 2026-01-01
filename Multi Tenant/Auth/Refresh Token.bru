@@ -6,16 +6,14 @@ meta {
 
 post {
   url: http://localhost:3001/api/auth/refresh
-  body: none
+  body: json
   auth: inherit
 }
 
 body:json {
   {
   
-    "token": "283839",
-    "newPassword":"Sudan@#123",
-      "confirmNewPassword":"Sudan@#123"
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZjdlZmZkNi04Zjk2LTQ4YjYtYmYxNy1kOWVjZDNjMDE4YjEiLCJlbWFpbCI6IjIwMjFwaG90b3N1eWFuQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc2NzIzOTI3OSwiZXhwIjoxNzY3ODQ0MDc5fQ.Cr_SjeS4dyR1GkD7QkH_d4EE3mtTkTI5sbI8yERto-w"
     
   }
 }
