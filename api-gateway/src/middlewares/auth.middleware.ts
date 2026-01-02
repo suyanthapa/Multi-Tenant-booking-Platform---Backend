@@ -15,15 +15,19 @@ export const authenticate = (
   res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Unauthorized" });
+  //  Check Cookies (Web/Browser)
+  let token = req.cookies?.accessToken;
+
+  //  Check Authorization Header (Mobile/Postman)
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      res.status(401).json({ message: "No token provided" });
+      return;
+    }
+    token = authHeader.substring(7); // Remove 'Bearer ' prefix
   }
-
-  const token = authHeader.split(" ")[1];
-
-  if (!token) return res.status(401).json({ message: "Unauthorized Token" });
-
+  token = req.cookies?.accessToken || token;
   try {
     const decoded = jwt.verify(
       token,

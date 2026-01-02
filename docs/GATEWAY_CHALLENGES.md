@@ -25,6 +25,12 @@ This document outlines the technical hurdles encountered while building the cent
 - **Cause:** Upgraded to `http-proxy-middleware` v3.0, which moved event listeners from top-level properties to a consolidated `on: {}` object, breaking legacy v2.0 code.
 - **Solution:** Refactored the proxy utility to use the modern event-driven syntax, ensuring the Gateway is future-proof and fully type-safe.
 
+### D. Identity Propagation (Header Loss)
+
+- **Challenge:** Microservices (like Booking Service) were returning `401 Unauthorized` even after successful Gateway authentication.
+- **Cause:** Headers added to the request object in the Gateway middleware were not automatically forwarded by the proxy to the downstream services.
+- **Solution:** Configured the `onProxyReq` hook to explicitly map authenticated user data (`userId`, `role`) into custom HTTP headers (`x-user-id`), ensuring downstream services receive the verified user identity.
+
 ---
 
 ## 2. Strategic Benefits
