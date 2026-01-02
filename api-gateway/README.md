@@ -90,12 +90,15 @@ The API Gateway will start on **http://localhost:3000**
 ## 📡 API Endpoints
 
 ### Health Check
+
 ```
 GET /health
 ```
+
 Returns the gateway status and service information.
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -104,10 +107,13 @@ Returns the gateway status and service information.
 ```
 
 ### Auth Service Routes
+
 ```
 POST   /api/auth/*
 ```
+
 All authentication-related endpoints are proxied to the Auth service:
+
 - `/api/auth/register` - User registration
 - `/api/auth/login` - User login
 - `/api/auth/refresh-token` - Token refresh
@@ -116,9 +122,11 @@ All authentication-related endpoints are proxied to the Auth service:
 - And more...
 
 ### Booking Service Routes (Protected)
+
 ```
 *      /api/bookings/*
 ```
+
 All booking-related endpoints are proxied to the Booking service. **Requires authentication token.**
 
 ## 🔐 Authentication
