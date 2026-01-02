@@ -5,14 +5,14 @@ meta {
 }
 
 post {
-  url: http://localhost:3001/api/auth/register
+  url: http://localhost:3000/api/auth/register
   body: json
   auth: inherit
 }
 
 body:json {
   {
-    "username": "john",
+    "username": "userdefault",
     "email": "suyan@gmail.com",
     "password": "Suyan@#123"
   }
