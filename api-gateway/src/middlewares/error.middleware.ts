@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 
 export const errorHandler = (
   err: any,
-  req: Request,
+  _req: Request,
   res: Response,
   _next: NextFunction
 ) => {
@@ -14,7 +14,15 @@ export const errorHandler = (
     });
   }
 
+  if (err.target) {
+    res.status(502).json({
+      error: "Service temporarily unavailable",
+      service: err.target,
+    });
+  }
+
   res.status(err.status || 500).json({
     error: "Internal gateway error",
+    timestamp: new Date().toISOString(),
   });
 };

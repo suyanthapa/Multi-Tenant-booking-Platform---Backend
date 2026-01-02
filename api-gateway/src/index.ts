@@ -13,7 +13,11 @@ const app = express();
 app.use(cors());
 app.use(helmet());
 app.use(morgan("dev"));
-app.use(express.json());
+
+app.use((_req, res, next) => {
+  res.setHeader("X-Served-By", "API-Gateway");
+  next();
+});
 
 app.use("/api/auth", authProxy);
 app.use("/api/bookings", bookingProxy);

@@ -27,3 +27,8 @@ This repository follows a documentation-first approach. The initial phase focuse
 ## Documentation
 
 Detailed design and decisions can be found in the `docs/` folder.
+
+## 📝 Architecture & Challenges
+
+This project implements a microservices architecture using an API Gateway.
+For a detailed breakdown of the technical challenges faced (such as request stream handling and dynamic path rewriting), see [GATEWAY_CHALLENGES.md](.docs/GATEWAY_CHALLENGES.md).
