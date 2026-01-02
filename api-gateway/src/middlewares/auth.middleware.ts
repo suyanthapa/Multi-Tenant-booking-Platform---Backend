@@ -30,8 +30,16 @@ export const authenticate = (
       process.env.JWT_ACCESS_SECRET as string
     ) as JWTPayload;
     req.user = decoded;
+
+    // forward it to downstream services
+    req.headers["x-user-id"] = decoded.userId;
+    req.headers["x-user-role"] = decoded.role;
+    req.headers["x-user-email"] = decoded.email;
     next();
-  } catch {
+  } catch (err: any) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token expired" });
+    }
     return res.status(401).json({ message: "Invalid token" });
   }
 };
