@@ -20,7 +20,7 @@ const router = Router();
  * @access  Private (Authenticated users)
  */
 router.post(
-  "/",
+  "/create",
   authenticate,
   validate(createBookingSchema),
   asyncHandler(bookingController.createBooking)
