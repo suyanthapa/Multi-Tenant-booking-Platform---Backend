@@ -1,0 +1,34 @@
+node_modules
+dist
+*.log
+logs
+
+# Keep environment variables out of version control
+.env
+.env.local
+.env.*.local
+
+# Prisma generated files
+/src/generated/prisma
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage
+.nyc_output
+
+# Build
+*.tsbuildinfo
