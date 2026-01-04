@@ -1,7 +1,6 @@
 // src/utils/proxy.ts
 import { createProxyMiddleware, Options } from "http-proxy-middleware";
 import { Request } from "express";
-import { ClientRequest, IncomingMessage } from "http";
 
 interface AuthenticatedRequest extends Request {
   user?: {

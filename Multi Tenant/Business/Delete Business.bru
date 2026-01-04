@@ -1,0 +1,22 @@
+meta {
+  name: Delete Business
+  type: http
+  seq: 7
+}
+
+delete {
+  url: http://localhost:3000/api/businesses/be28466d-276c-47d4-87a7-5977d2ecb2a3
+  body: none
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Horizon Resort and Spa"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -80,7 +80,14 @@ class BusinessService {
   }
 
   async getBusinessesByType(type: BusinessType): Promise<Business[]> {
-    return businessRepository.findByType(type);
+    // 1. Normalize the input
+    const normalizedType = type.toUpperCase() as BusinessType;
+
+    // 2. Validate it exists in your Enum to prevent Prisma errors
+    if (!Object.values(BusinessType).includes(normalizedType)) {
+      throw new NotFoundError(`Business type '${type}' not found`);
+    }
+    return businessRepository.findByType(normalizedType);
   }
 
   async updateBusiness(

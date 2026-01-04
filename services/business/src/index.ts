@@ -29,6 +29,7 @@ app.get("/health", async (_req, res) => {
   });
 });
 
+app.use(express.json());
 // Routes
 app.use("/api", routes);
 
