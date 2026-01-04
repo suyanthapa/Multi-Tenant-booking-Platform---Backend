@@ -48,8 +48,10 @@ class BusinessRepository {
   }
 
   async delete(id: string): Promise<Business> {
-    return this.prisma.business.delete({
+    return this.prisma.business.update({
+      //soft dltete
       where: { id },
+      data: { status: "DELETED" },
     });
   }
 
@@ -75,7 +77,7 @@ class BusinessRepository {
 
     return this.prisma.business.update({
       where: { id },
-      data: { isActive: !business.isActive },
+      data: { status: "INACTIVE" },
     });
   }
 }

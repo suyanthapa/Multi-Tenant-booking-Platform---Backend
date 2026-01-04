@@ -22,14 +22,14 @@ model Business {
     phone   String?
     email   String?
 
-    isActive Boolean @default(true)
+    status BusinessStatus @default(PENDING)
 
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
 
     @@index([ownerId])
     @@index([type])
-    @@index([isActive])
+    @@index([status])
     @@map("businesses")
 }
 
@@ -39,4 +39,12 @@ enum BusinessType {
     SALON
     CO_WORKING
     OTHER
+}
+
+enum BusinessStatus {
+    PENDING // Newly created, waiting for admin review
+    ACTIVE // Live and bookable
+    INACTIVE // Temporarily hidden by the owner
+    SUSPENDED // Blocked by Admin
+    DELETED // Soft-deleted
 }

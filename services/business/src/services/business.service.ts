@@ -26,7 +26,7 @@ class BusinessService {
     page?: number;
     limit?: number;
     type?: BusinessType;
-    isActive?: boolean;
+    status?: string;
     search?: string;
   }): Promise<{
     businesses: Business[];
@@ -45,8 +45,8 @@ class BusinessService {
       where.type = params.type;
     }
 
-    if (params.isActive !== undefined) {
-      where.isActive = params.isActive;
+    if (params.status !== undefined) {
+      where.status = params.status;
     }
 
     if (params.search) {

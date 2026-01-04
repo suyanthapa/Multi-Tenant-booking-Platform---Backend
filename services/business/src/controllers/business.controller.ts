@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import businessService from "../services/business.service";
 import { asyncHandler } from "../utils/asyncHandler";
 import { CreateBusinessInput, UpdateBusinessInput } from "../utils/validators";
-import { BusinessType } from "@prisma/client";
+import { BusinessStatus, BusinessType } from "@prisma/client";
 
 class BusinessController {
   // Create business
@@ -24,15 +24,25 @@ class BusinessController {
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 10;
     const type = query.type as BusinessType | undefined;
-    const isActive =
-      query.isActive !== undefined ? query.isActive === "true" : undefined;
+
+    // Admin can see all businesses, others only see active ones
+    const userRole = req.user?.role;
+    let status: BusinessStatus | undefined = query.status;
+    // 2. Apply Security Logic
+    if (userRole !== "ADMIN") {
+      // Regular users and guests can ONLY see Active businesses
+      status = BusinessStatus.ACTIVE;
+    } else {
+      // Admins can see a specific status if requested, otherwise show all except DELETED by default
+      status = status || undefined;
+    }
     const search = query.search;
 
     const result = await businessService.getAllBusinesses({
       page,
       limit,
       type,
-      isActive,
+      status,
       search,
     });
 
