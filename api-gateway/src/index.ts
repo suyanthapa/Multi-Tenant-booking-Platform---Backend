@@ -25,10 +25,19 @@ app.use((_req, res, next) => {
 
 app.use(cookieParser());
 
+// Auth routes (public)
 app.use("/api/auth", createServiceProxy(SERVICES.AUTH));
 
+// Business routes (public read, auth for write)
+app.use("/api/businesses", createServiceProxy(SERVICES.BUSINESS));
+
+// Resource routes (public read, auth for write)
+app.use("/api/resources", createServiceProxy(SERVICES.RESOURCE));
+
+// Booking routes (authenticated)
 app.use("/api/bookings", authenticate, createServiceProxy(SERVICES.BOOKING));
 
+// Health check
 app.get("/health", (_, res) =>
   res.json({ status: "ok", service: "api-gateway" })
 );
