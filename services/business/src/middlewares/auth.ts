@@ -49,6 +49,9 @@ export const authenticate = (
     const email = req.headers["x-user-email"] as string;
     const role = req.headers["x-user-role"] as string;
 
+    console.log("Auth Middleware - User ID:", id);
+    console.log("Auth Middleware - User Email:", email);
+    console.log("Auth Middleware - User Role:", role);
     // 2. If Gateway didn't send these, someone bypassed the Gateway!
     if (!id || !role) {
       throw new AuthenticationError(

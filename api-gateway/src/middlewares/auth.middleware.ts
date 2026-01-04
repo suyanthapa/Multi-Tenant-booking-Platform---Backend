@@ -41,9 +41,9 @@ export const authenticate = (
     req.user = decoded;
 
     // forward it to downstream services
-    req.headers["x-user-id"] = decoded.userId;
-    req.headers["x-user-role"] = decoded.role;
-    req.headers["x-user-email"] = decoded.email;
+    req.headers["x-user-id"] = req.user.id;
+    req.headers["x-user-role"] = req.user.role;
+    req.headers["x-user-email"] = req.user.email;
     next();
   } catch (err: any) {
     if (err.name === "TokenExpiredError") {

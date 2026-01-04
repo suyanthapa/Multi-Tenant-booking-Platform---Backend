@@ -1,13 +1,22 @@
 // src/utils/proxy.ts
 import { createProxyMiddleware, Options } from "http-proxy-middleware";
 import { Request } from "express";
+import { ClientRequest, IncomingMessage } from "http";
 
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    role: string;
+    email: string;
+  };
+}
 export const createServiceProxy = (target: string) => {
   const options: Options = {
     target,
     changeOrigin: true,
     // Professional touch: Pass the full original URL to the microservice
-    pathRewrite: async (_path, req) => (req as Request).originalUrl,
+    pathRewrite: async (_path, req) =>
+      (req as AuthenticatedRequest).originalUrl,
 
     on: {
       proxyReq: (proxyReq, req: any) => {
@@ -16,9 +25,10 @@ export const createServiceProxy = (target: string) => {
           `[Gateway] ${req.method} ${req.originalUrl} -> ${target}${proxyReq.path}`
         );
 
+        console.log(" [Gateway] Propagating User:", req.user);
         // 2. Identity Propagation (X-Headers)
         if (req.user) {
-          proxyReq.setHeader("x-user-id", String(req.user.userId));
+          proxyReq.setHeader("x-user-id", String(req.user.id));
           proxyReq.setHeader("x-user-role", String(req.user.role));
           proxyReq.setHeader("x-user-email", String(req.user.email));
         }

@@ -200,7 +200,7 @@ class AuthService {
 
     // Generate tokens
     const payload: JWTPayload = {
-      userId: user.id,
+      id: user.id,
       email: user.email,
       role: user.role,
     };
@@ -245,7 +245,7 @@ class AuthService {
     // Check if token exists and is not revoked
     const tokenRecord = await this.refreshTokenRepository.findValidToken(
       oldRefreshToken,
-      payload.userId
+      payload.id
     );
 
     if (!tokenRecord) {
@@ -255,7 +255,7 @@ class AuthService {
     }
 
     // Get user
-    const user = await this.userRepository.findById(payload.userId);
+    const user = await this.userRepository.findById(payload.id);
 
     if (!user || user.status !== UserStatus.ACTIVE) {
       throw new AuthenticationError("User not found or inactive");
@@ -263,7 +263,7 @@ class AuthService {
 
     // Generate new tokens
     const newPayload: JWTPayload = {
-      userId: user.id,
+      id: user.id,
       email: user.email,
       role: user.role,
     };

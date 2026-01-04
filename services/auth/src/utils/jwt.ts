@@ -3,7 +3,7 @@ import config from "../config";
 import { InvalidTokenError, TokenExpiredError } from "./errors";
 
 export interface JWTPayload {
-  userId: string;
+  id: string;
   email: string;
   role: string;
 }

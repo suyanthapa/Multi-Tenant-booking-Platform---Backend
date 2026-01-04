@@ -29,7 +29,7 @@ app.use(cookieParser());
 app.use("/api/auth", createServiceProxy(SERVICES.AUTH));
 
 // Business routes (public read, auth for write)
-app.use("/api/businesses", createServiceProxy(SERVICES.BUSINESS));
+app.use("/api/businesses", authenticate, createServiceProxy(SERVICES.BUSINESS));
 
 // Resource routes (public read, auth for write)
 app.use("/api/resources", createServiceProxy(SERVICES.RESOURCE));

@@ -1,0 +1,28 @@
+meta {
+  name: Create Business
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:3000/api/businesses
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Granswd Horizon Resort & Spa",
+    "description": "A luxury 5-star hotel featuring oceanfront views, a full-service spa, and three world-class restaurants.",
+    "type": "HOTEL",
+    "address": "Lakeside, Pokhara",
+    "phone": "+1-305-555-0199",
+    "email": "bookings@grandhorizon.com"
+  
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

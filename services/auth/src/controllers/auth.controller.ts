@@ -192,7 +192,7 @@ class AuthController {
    * GET /auth/me
    */
   getProfile = asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user!.userId;
+    const userId = req.user!.id;
     const result = await authService.getProfile(userId);
 
     res.status(200).json({

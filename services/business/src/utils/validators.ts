@@ -10,7 +10,6 @@ export const createBusinessSchema = z.object({
     address: z.string().min(1, "Address is required"),
     phone: z.string().min(1, "Phone is required"),
     email: z.string().email("Invalid email address"),
-    website: z.string().url("Invalid website URL").optional().nullable(),
   }),
 });
 
