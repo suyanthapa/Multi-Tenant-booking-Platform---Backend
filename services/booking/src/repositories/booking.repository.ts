@@ -1,4 +1,4 @@
-import { Booking, BookingStatus, PaymentStatus, Prisma } from "@prisma/client";
+import { Booking, BookingStatus, Prisma } from "@prisma/client";
 import Database from "../config/database";
 
 export class BookingRepository {
@@ -93,15 +93,15 @@ export class BookingRepository {
   }
 
   /**
-   * Find bookings by service ID
+   * Find bookings by resource ID
    */
-  async findByServiceId(
-    serviceId: string,
+  async findByResourceId(
+    resourceId: string,
     skip?: number,
     take?: number
   ): Promise<Booking[]> {
     return this.prisma.booking.findMany({
-      where: { serviceId },
+      where: { resourceId },
       skip,
       take,
       orderBy: { createdAt: "desc" },
@@ -125,16 +125,16 @@ export class BookingRepository {
   }
 
   /**
-   * Check if time slot is available
+   * Check if time slot is available for a specific resource
    */
   async isTimeSlotAvailable(
-    vendorId: string,
+    resourceId: string,
     startTime: Date,
     endTime: Date,
     excludeBookingId?: string
   ): Promise<boolean> {
     const where: Prisma.BookingWhereInput = {
-      vendorId,
+      resourceId,
       status: {
         in: [
           BookingStatus.PENDING,
@@ -176,19 +176,6 @@ export class BookingRepository {
     return this.prisma.booking.update({
       where: { id },
       data: { status },
-    });
-  }
-
-  /**
-   * Update payment status
-   */
-  async updatePaymentStatus(
-    id: string,
-    paymentStatus: PaymentStatus
-  ): Promise<Booking> {
-    return this.prisma.booking.update({
-      where: { id },
-      data: { paymentStatus },
     });
   }
 

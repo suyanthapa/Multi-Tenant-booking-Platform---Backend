@@ -1,5 +1,5 @@
-import { Booking, BookingStatus, PaymentStatus } from "@prisma/client";
-import { bookingRepository } from "../repositories";
+import { Booking, BookingStatus } from "@prisma/client";
+import { bookingRepository, resourceRepository } from "../repositories";
 import {
   NotFoundError,
   BookingConflictError,
@@ -9,11 +9,11 @@ import {
 export interface CreateBookingDTO {
   userId: string;
   vendorId: string;
-  serviceId: string;
+  resourceId: string;
   bookingDate: string;
   startTime: string;
   endTime: string;
-  totalAmount?: number;
+  vendorName: string;
   notes?: string;
 }
 
@@ -31,7 +31,7 @@ export interface BookingQueryParams {
   status?: BookingStatus;
   userId?: string;
   vendorId?: string;
-  serviceId?: string;
+  resourceId?: string;
   startDate?: string;
   endDate?: string;
 }
@@ -54,9 +54,25 @@ class BookingService {
       throw new InvalidBookingError("Booking date cannot be in the past");
     }
 
+    // Fetch resource details
+    const resource = await resourceRepository.findById(data.resourceId);
+    if (!resource) {
+      throw new NotFoundError("Resource not found");
+    }
+
+    // Check if resource is active
+    if (!resource.isActive) {
+      throw new InvalidBookingError("Resource is not available for booking");
+    }
+
+    // Check if resource belongs to the vendor
+    if (resource.vendorId !== data.vendorId) {
+      throw new InvalidBookingError("Resource does not belong to this vendor");
+    }
+
     // Check if time slot is available
     const isAvailable = await bookingRepository.isTimeSlotAvailable(
-      data.vendorId,
+      data.resourceId,
       startTime,
       endTime
     );
@@ -67,18 +83,21 @@ class BookingService {
       );
     }
 
-    // Create booking
+    // Create booking with snapshot data
     const booking = await bookingRepository.create({
       userId: data.userId,
       vendorId: data.vendorId,
-      serviceId: data.serviceId,
+      resourceId: data.resourceId,
       bookingDate,
       startTime,
       endTime,
-      totalAmount: data.totalAmount || 0,
-      notes: data.notes,
+      resourceName: resource.name,
+      resourceType: resource.type,
+      vendorName: data.vendorName,
+      priceAtBooking: resource.price,
+      currency: resource.currency,
       status: BookingStatus.PENDING,
-      paymentStatus: PaymentStatus.PENDING,
+      notes: data.notes,
     });
 
     return booking;
@@ -125,8 +144,8 @@ class BookingService {
       where.vendorId = params.vendorId;
     }
 
-    if (params.serviceId) {
-      where.serviceId = params.serviceId;
+    if (params.resourceId) {
+      where.resourceId = params.resourceId;
     }
 
     if (params.startDate || params.endDate) {
@@ -190,7 +209,7 @@ class BookingService {
 
       // Check if new time slot is available
       const isAvailable = await bookingRepository.isTimeSlotAvailable(
-        existingBooking.vendorId,
+        existingBooking.resourceId,
         startTime,
         endTime,
         id
@@ -243,17 +262,6 @@ class BookingService {
   ): Promise<Booking> {
     await this.getBookingById(id);
     return bookingRepository.updateStatus(id, status);
-  }
-
-  /**
-   * Update payment status
-   */
-  async updatePaymentStatus(
-    id: string,
-    paymentStatus: PaymentStatus
-  ): Promise<Booking> {
-    await this.getBookingById(id);
-    return bookingRepository.updatePaymentStatus(id, paymentStatus);
   }
 
   /**

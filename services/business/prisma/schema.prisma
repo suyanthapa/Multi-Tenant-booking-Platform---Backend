@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+model Business {
+    id String @id @default(uuid())
+
+    ownerId String @map("owner_id") // vendor userId
+
+    name        String
+    description String?
+    type        BusinessType
+
+    address String?
+    phone   String?
+    email   String?
+
+    isActive Boolean @default(true)
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@index([ownerId])
+    @@index([type])
+    @@index([isActive])
+    @@map("businesses")
+}
+
+enum BusinessType {
+    HOTEL
+    CLINIC
+    SALON
+    CO_WORKING
+    OTHER
+}

@@ -1,8 +1,13 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 
-export const notFound = (req: Request, res: Response, _next: NextFunction) => {
+// gateway/src/middlewares/notFound.middleware.ts
+export const notFound = (req: Request, res: Response) => {
   res.status(404).json({
-    error: "Route not found",
-    path: req.originalUrl,
+    success: false,
+    origin: "API-GATEWAY", // <--- Add this
+    error: {
+      code: "NOT_FOUND",
+      message: `Route ${req.method} ${req.originalUrl} not found`,
+    },
   });
 };

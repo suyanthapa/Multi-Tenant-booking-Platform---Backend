@@ -5,7 +5,7 @@ import config from "../config";
 
 // JWT Payload interface
 export interface JWTPayload {
-  userId: string;
+  id: string;
   email: string;
   role: string;
 }
@@ -35,8 +35,8 @@ export const verifyAccessToken = (token: string): JWTPayload => {
 };
 
 /**
- * Middleware to authenticate requests using JWT
- * Handles both Web (Cookies) and Mobile/API (Bearer Token).
+ * Professional Microservice Authenticate (Header-Based)
+ * Used in: Booking Service, Resource Service
  */
 export const authenticate = (
   req: Request,
@@ -44,27 +44,24 @@ export const authenticate = (
   next: NextFunction
 ) => {
   try {
-    //  Check Cookies (Web/Browser)
-    let token = req.cookies?.accessToken;
+    // 1. Read headers injected by the Gateway
+    const id = req.headers["x-user-id"] as string;
+    const email = req.headers["x-user-email"] as string;
+    const role = req.headers["x-user-role"] as string;
 
-    //  Check Authorization Header (Mobile/Postman)
-    if (!token) {
-      const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        throw new AuthenticationError("No token provided");
-      }
-      token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    // 2. If Gateway didn't send these, someone bypassed the Gateway!
+    if (!id || !role) {
+      throw new AuthenticationError(
+        "Internal Security Breach: No Identity Headers"
+      );
     }
 
-    if (!token) {
-      throw new AuthenticationError("No authentication token provided");
-    }
-
-    // Verify and decode
-    const payload = verifyAccessToken(token);
-
-    // Attach user to request
-    req.user = payload;
+    // 3. Attach to request so req.user.id works in your controllers
+    req.user = {
+      id,
+      email,
+      role,
+    };
 
     next();
   } catch (error) {

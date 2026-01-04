@@ -15,6 +15,11 @@ export const authenticate = (
   res: Response,
   next: NextFunction
 ) => {
+  //  Safety Check: Header Cleaning
+  delete req.headers["x-user-id"];
+  delete req.headers["x-user-role"];
+  delete req.headers["x-user-email"];
+
   //  Check Cookies (Web/Browser)
   let token = req.cookies?.accessToken;
 

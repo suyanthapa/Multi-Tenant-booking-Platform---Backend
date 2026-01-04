@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+model Resource {
+    id         String @id @default(uuid())
+    businessId String @map("business_id")
+
+    name        String
+    type        ResourceType
+    description String?
+
+    price    Decimal @db.Decimal(10, 2)
+    currency String  @default("USD")
+
+    isActive Boolean @default(true)
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@index([businessId])
+    @@index([type])
+    @@index([isActive])
+    @@map("resources")
+}
+
+enum ResourceType {
+    HOTEL_ROOM
+    DOCTOR_SLOT
+    SALON_CHAIR
+    DESK
+    OTHER
+}

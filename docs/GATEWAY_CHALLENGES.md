@@ -25,11 +25,17 @@ This document outlines the technical hurdles encountered while building the cent
 - **Cause:** Upgraded to `http-proxy-middleware` v3.0, which moved event listeners from top-level properties to a consolidated `on: {}` object, breaking legacy v2.0 code.
 - **Solution:** Refactored the proxy utility to use the modern event-driven syntax, ensuring the Gateway is future-proof and fully type-safe.
 
-### D. Identity Propagation (Header Loss)
+### D. Middleware Mount Point Side-Effects
 
-- **Challenge:** Microservices (like Booking Service) were returning `401 Unauthorized` even after successful Gateway authentication.
-- **Cause:** Headers added to the request object in the Gateway middleware were not automatically forwarded by the proxy to the downstream services.
-- **Solution:** Configured the `onProxyReq` hook to explicitly map authenticated user data (`userId`, `role`) into custom HTTP headers (`x-user-id`), ensuring downstream services receive the verified user identity.
+- **Challenge:** Encountered 404 errors due to "Path Stripping" where the Express Gateway consumed the `/api/auth` prefix before proxying.
+- **Technical Detail:** By mounting the proxy on a specific path (`app.use('/api/auth', ...)`), the downstream request URI was truncated to `/login`, failing to match the Auth Service's internal `/api/auth/login` route.
+- **Solution:** Refactored the mounting strategy to use transparent routing. The proxy now receives the full original URI, ensuring path-parity between the Gateway and the domain-specific microservices.
+
+### E. Identity Propagation (Header Loss)
+
+- **Challenge:** Microservices (like Booking Service) were returning `401 Unauthorized` even after successful Gateway authentication.If a microservice trusts headers blindly, a user could manually send x-user-id: admin in their request to escalate privileges.
+- **Cause:** Microservices behind a Gateway are often "internal" and trust headers like x-user-id blindly. Without protection, a malicious user could manually inject these headers into their request to impersonate other users (Identity Spoofing).
+- **Solution:** Implemented Explicit Header Sanitization within the Authentication middleware. The Gateway now deletes all incoming x-user-\* headers from the client and only re-injects them after the JWT has been successfully verified. This "Zero Trust" approach ensures that downstream services only receive identity data verified by the Gateway.
 
 ---
 

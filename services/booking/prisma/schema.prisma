@@ -15,9 +15,11 @@ model Booking {
     // Ownership
     userId     String @map("user_id")
     vendorId   String @map("vendor_id")
+    businessId String @map("business_id")
     resourceId String @map("resource_id")
 
     // Snapshot data
+    businessName   String  @map("business_name")
     resourceName   String  @map("resource_name")
     resourceType   String  @map("resource_type")
     vendorName     String  @map("vendor_name")
@@ -31,9 +33,19 @@ model Booking {
 
     // State
     status BookingStatus @default(PENDING)
+    notes  String?
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // Cancellation
+    cancelledAt  DateTime? @map("cancelled_at")
+    cancelReason String?   @map("cancel_reason")
 
     @@index([userId])
     @@index([vendorId])
+    @@index([businessId])
     @@index([resourceId])
     @@index([bookingDate])
     @@index([status])
@@ -48,33 +60,4 @@ enum BookingStatus {
     COMPLETED
     CANCELLED
     NO_SHOW
-}
-
-model Resource {
-    id       String @id @default(uuid())
-    vendorId String @map("vendor_id")
-
-    name        String
-    type        ResourceType
-    description String?
-
-    price    Decimal @db.Decimal(10, 2)
-    currency String  @default("USD")
-
-    isActive Boolean @default(true)
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    @@index([vendorId])
-    @@index([type])
-    @@map("resources")
-}
-
-enum ResourceType {
-    HOTEL_ROOM
-    DOCTOR_SLOT
-    SALON_CHAIR
-    DESK
-    OTHER
 }

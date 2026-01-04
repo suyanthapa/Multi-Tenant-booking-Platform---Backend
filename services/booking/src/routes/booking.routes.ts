@@ -2,14 +2,12 @@ import { Router } from "express";
 import bookingController from "../controllers/booking.controller";
 import { authenticate, authorize } from "../middlewares/auth";
 import { validate } from "../middlewares/validator";
-import { asyncHandler } from "../utils/asyncHandler";
 import {
   createBookingSchema,
   updateBookingSchema,
   cancelBookingSchema,
   getBookingByIdSchema,
   getBookingsSchema,
-  updatePaymentStatusSchema,
 } from "../utils/validators";
 
 const router = Router();
@@ -20,10 +18,10 @@ const router = Router();
  * @access  Private (Authenticated users)
  */
 router.post(
-  "/create",
+  "/",
   authenticate,
   validate(createBookingSchema),
-  asyncHandler(bookingController.createBooking)
+  bookingController.createBooking
 );
 
 /**
@@ -35,7 +33,7 @@ router.get(
   "/",
   authenticate,
   validate(getBookingsSchema),
-  asyncHandler(bookingController.getBookings)
+  bookingController.getBookings
 );
 
 /**
@@ -47,7 +45,7 @@ router.get(
   "/:id",
   authenticate,
   validate(getBookingByIdSchema),
-  asyncHandler(bookingController.getBookingById)
+  bookingController.getBookingById
 );
 
 /**
@@ -59,7 +57,7 @@ router.patch(
   "/:id",
   authenticate,
   validate(updateBookingSchema),
-  asyncHandler(bookingController.updateBooking)
+  bookingController.updateBooking
 );
 
 /**
@@ -71,20 +69,7 @@ router.post(
   "/:id/cancel",
   authenticate,
   validate(cancelBookingSchema),
-  asyncHandler(bookingController.cancelBooking)
-);
-
-/**
- * @route   PATCH /api/bookings/:id/payment-status
- * @desc    Update payment status
- * @access  Private (Admin, Vendor)
- */
-router.patch(
-  "/:id/payment-status",
-  authenticate,
-  authorize("ADMIN", "VENDOR"),
-  validate(updatePaymentStatusSchema),
-  asyncHandler(bookingController.updatePaymentStatus)
+  bookingController.cancelBooking
 );
 
 /**
@@ -92,11 +77,7 @@ router.patch(
  * @desc    Get user bookings
  * @access  Private (Authenticated users)
  */
-router.get(
-  "/user/:userId",
-  authenticate,
-  asyncHandler(bookingController.getUserBookings)
-);
+router.get("/user/:userId", authenticate, bookingController.getUserBookings);
 
 /**
  * @route   GET /api/bookings/vendor/:vendorId
@@ -107,7 +88,7 @@ router.get(
   "/vendor/:vendorId",
   authenticate,
   authorize("ADMIN", "VENDOR"),
-  asyncHandler(bookingController.getVendorBookings)
+  bookingController.getVendorBookings
 );
 
 /**
@@ -120,7 +101,7 @@ router.delete(
   authenticate,
   authorize("ADMIN"),
   validate(getBookingByIdSchema),
-  asyncHandler(bookingController.deleteBooking)
+  bookingController.deleteBooking
 );
 
 export default router;
