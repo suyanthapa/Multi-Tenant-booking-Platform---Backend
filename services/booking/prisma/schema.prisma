@@ -49,3 +49,32 @@ enum BookingStatus {
     CANCELLED
     NO_SHOW
 }
+
+model Resource {
+    id       String @id @default(uuid())
+    vendorId String @map("vendor_id")
+
+    name        String
+    type        ResourceType
+    description String?
+
+    price    Decimal @db.Decimal(10, 2)
+    currency String  @default("USD")
+
+    isActive Boolean @default(true)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([vendorId])
+    @@index([type])
+    @@map("resources")
+}
+
+enum ResourceType {
+    HOTEL_ROOM
+    DOCTOR_SLOT
+    SALON_CHAIR
+    DESK
+    OTHER
+}
