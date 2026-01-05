@@ -24,19 +24,11 @@ class BusinessController {
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 10;
     const type = query.type as BusinessType | undefined;
+    const userRole = req.user?.role || "user";
+    console.log("User Role from controller:", userRole);
 
-    // Admin can see all businesses, others only see active ones
-    const userRole = req.user?.role;
-    let status: BusinessStatus | undefined = query.status;
-    // 2. Apply Security Logic
-    if (userRole !== "ADMIN") {
-      // Regular users and guests can ONLY see Active businesses
-      status = BusinessStatus.ACTIVE;
-    } else {
-      // Admins can see a specific status if requested, otherwise show all except DELETED by default
-      status = status || undefined;
-    }
-    const search = query.search;
+    const search = req.query.search as string;
+    const status = req.query.status as string;
 
     const result = await businessService.getAllBusinesses({
       page,
@@ -44,6 +36,7 @@ class BusinessController {
       type,
       status,
       search,
+      userRole,
     });
 
     res.status(200).json({

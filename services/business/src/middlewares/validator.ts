@@ -6,10 +6,10 @@ import { ValidationError } from "../utils/errors";
  * Middleware to validate request body using Zod schemas
  */
 export const validate = (schema: ZodSchema) => {
-  return (req: Request, _res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     try {
       // 1. Pass an object containing all request segments to Zod
-      const validated = schema.parse({
+      const validated = await schema.parseAsync({
         body: req.body,
         params: req.params,
         query: req.query,
@@ -17,6 +17,7 @@ export const validate = (schema: ZodSchema) => {
 
       // 2. Assign the validated data back to the request
       // Note: We only overwrite 'body' as 'params' and 'query' are often read-only in Express
+
       req.body = validated.body;
 
       // If you need to access validated params/query in the controller,

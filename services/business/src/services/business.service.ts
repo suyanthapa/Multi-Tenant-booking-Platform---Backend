@@ -28,6 +28,7 @@ class BusinessService {
     type?: BusinessType;
     status?: string;
     search?: string;
+    userRole: string;
   }): Promise<{
     businesses: Business[];
     total: number;
@@ -38,22 +39,27 @@ class BusinessService {
     const page = params.page || 1;
     const limit = params.limit || 10;
     const skip = (page - 1) * limit;
+    const userRole = params.userRole;
+    const status = params.status?.toUpperCase();
 
-    const where: any = {};
+    console.log("User Role fromxxxxxxxxxxxxxxxxxxxx:", userRole);
 
-    if (params.type) {
-      where.type = params.type;
-    }
-
-    if (params.status !== undefined) {
-      where.status = params.status;
-    }
-
-    if (params.search) {
-      where.OR = [
-        { name: { contains: params.search, mode: "insensitive" } },
-        { description: { contains: params.search, mode: "insensitive" } },
-      ];
+    const where: any = {
+      type: params.type,
+      search: params.search,
+    };
+    // ROLE-BASED LOGIC
+    if (userRole === "ADMIN") {
+      // Admins can see specific status if requested, otherwise show all but DELETED
+      if (status) {
+        where.status = status;
+      } else {
+        where.status = "ACTIVE"; // Default to ACTIVE if no status provided
+      }
+    } else {
+      // VENDORS and USERS can ONLY see ACTIVE businesses
+      // Even if they try to pass ?status=DELETED in the URL, this overrides it
+      where.status = "ACTIVE";
     }
 
     const [businesses, total] = await Promise.all([

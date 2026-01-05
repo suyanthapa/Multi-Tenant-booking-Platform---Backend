@@ -33,7 +33,7 @@ export const queryBusinessSchema = z.object({
     page: z.string().optional().default("1"),
     limit: z.string().optional().default("10"),
     type: z.nativeEnum(BusinessType).optional(),
-    isActive: z.string().optional(),
+    status: z.string().optional(),
     search: z.string().optional(),
   }),
 });

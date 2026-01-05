@@ -22,6 +22,7 @@ router.post(
 // Get all businesses (Public)
 router.get(
   "/",
+  authenticate,
   validate(queryBusinessSchema),
   businessController.getAllBusinesses
 );
