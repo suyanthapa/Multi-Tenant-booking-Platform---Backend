@@ -66,4 +66,11 @@ router.patch(
   businessController.toggleBusinessStatus
 );
 
+// Verify business (Admin only)
+router.patch(
+  "/:id/verify",
+  authenticate,
+  authorize("ADMIN"),
+  businessController.verifyBusiness
+);
 export default router;

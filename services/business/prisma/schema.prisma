@@ -22,10 +22,10 @@ model Business {
     phone   String?
     email   String?
 
-    status BusinessStatus @default(PENDING)
-
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
+    status     BusinessStatus @default(PENDING)
+    isVerified Boolean        @default(false) @map("is_verified")
+    createdAt  DateTime       @default(now()) @map("created_at")
+    updatedAt  DateTime       @updatedAt @map("updated_at")
 
     @@index([type])
     @@index([status])

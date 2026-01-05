@@ -1,0 +1,22 @@
+meta {
+  name: Verify a Business
+  type: http
+  seq: 9
+}
+
+patch {
+  url: http://localhost:3000/api/businesses/98833100-d494-4e62-80d8-9de0935b1c24/verify
+  body: none
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Horizon Resort and Spa"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

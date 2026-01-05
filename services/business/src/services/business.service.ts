@@ -161,6 +161,22 @@ class BusinessService {
 
     return businessRepository.toggleStatus(id);
   }
+
+  async verifyBusiness(id: string, userRole: string): Promise<Business> {
+    const business = await this.getBusinessById(id);
+
+    if (!business) {
+      throw new NotFoundError("Business not found");
+    }
+    // Only owner or admin can toggle status
+    if (userRole !== "ADMIN") {
+      throw new AuthorizationError(
+        "You don't have permission to modify this business"
+      );
+    }
+
+    return businessRepository.verifyBusiness(id);
+  }
 }
 
 export default new BusinessService();

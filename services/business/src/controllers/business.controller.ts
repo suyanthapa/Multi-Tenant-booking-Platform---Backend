@@ -134,6 +134,19 @@ class BusinessController {
       data: business,
     });
   });
+
+  // Verify a business
+  verifyBusiness = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userRole = req.user!.role;
+
+    await businessService.verifyBusiness(id, userRole);
+
+    res.status(200).json({
+      success: true,
+      message: "Business verified successfully",
+    });
+  });
 }
 
 export default new BusinessController();

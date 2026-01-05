@@ -82,6 +82,13 @@ class BusinessRepository {
       data: { status: "INACTIVE" },
     });
   }
+
+  async verifyBusiness(id: string): Promise<Business> {
+    return this.prisma.business.update({
+      where: { id },
+      data: { isVerified: true, status: "ACTIVE" },
+    });
+  }
 }
 
 export default new BusinessRepository();
