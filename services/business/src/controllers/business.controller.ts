@@ -25,6 +25,7 @@ class BusinessController {
     const limit = parseInt(query.limit) || 10;
     const type = query.type as BusinessType | undefined;
     const userRole = req.user?.role || "user";
+
     console.log("User Role from controller:", userRole);
 
     const search = req.query.search as string;

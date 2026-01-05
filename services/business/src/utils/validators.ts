@@ -31,7 +31,7 @@ export const updateBusinessSchema = z.object({
 export const queryBusinessSchema = z.object({
   query: z.object({
     page: z.string().optional().default("1"),
-    limit: z.string().optional().default("10"),
+    limit: z.string().max(50).optional().default("10"),
     type: z.nativeEnum(BusinessType).optional(),
     status: z.string().optional(),
     search: z.string().optional(),

@@ -50,11 +50,15 @@ class BusinessService {
   }> {
     const page = params.page || 1;
     const limit = params.limit || 10;
-    const skip = (page - 1) * limit;
+
     const userRole = params.userRole;
     const status = params.status?.toUpperCase();
 
-    console.log("User Role fromxxxxxxxxxxxxxxxxxxxx:", userRole);
+    const MAX_LIMIT = 50;
+    const safeLimit = Math.min(limit, MAX_LIMIT);
+    const skip = (page - 1) * safeLimit;
+
+    console.log("User Role from service:", userRole);
 
     const where: any = {
       type: params.type,
