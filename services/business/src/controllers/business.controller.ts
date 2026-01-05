@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import businessService from "../services/business.service";
 import { asyncHandler } from "../utils/asyncHandler";
 import { CreateBusinessInput, UpdateBusinessInput } from "../utils/validators";
-import { BusinessStatus, BusinessType } from "@prisma/client";
+import { BusinessType } from "@prisma/client";
 
 class BusinessController {
   // Create business
@@ -59,13 +59,13 @@ class BusinessController {
 
   // Get businesses by owner
   getBusinessesByOwner = asyncHandler(async (req: Request, res: Response) => {
-    const ownerId = req.user!.id;
+    const ownerId = req.user?.id as string;
 
-    const businesses = await businessService.getBusinessesByOwner(ownerId);
+    const business = await businessService.getBusinessesByOwner(ownerId);
 
     res.status(200).json({
       success: true,
-      data: businesses,
+      data: business,
     });
   });
 

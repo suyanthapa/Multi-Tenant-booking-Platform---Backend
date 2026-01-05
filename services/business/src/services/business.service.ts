@@ -1,6 +1,10 @@
 import { Business, BusinessType } from "@prisma/client";
 import businessRepository from "../repositories/business.repository";
-import { NotFoundError, AuthorizationError } from "../utils/errors";
+import {
+  NotFoundError,
+  AuthorizationError,
+  ConflictError,
+} from "../utils/errors";
 import { CreateBusinessInput, UpdateBusinessInput } from "../utils/validators";
 
 class BusinessService {
@@ -8,6 +12,14 @@ class BusinessService {
     ownerId: string,
     data: CreateBusinessInput
   ): Promise<Business> {
+    // Check if vendor already has a business
+    const existingBusiness = await businessRepository.findByOwner(ownerId);
+    if (existingBusiness) {
+      throw new ConflictError(
+        "You already have a business. A vendor can only own one business."
+      );
+    }
+
     return businessRepository.create({
       ...data,
       ownerId,
@@ -81,15 +93,17 @@ class BusinessService {
     };
   }
 
-  async getBusinessesByOwner(ownerId: string): Promise<Business[]> {
-    return businessRepository.findByOwner(ownerId);
+  async getBusinessesByOwner(ownerId: string): Promise<Business | null> {
+    const business = await businessRepository.findByOwner(ownerId);
+
+    return business;
   }
 
   async getBusinessesByType(type: BusinessType): Promise<Business[]> {
-    // 1. Normalize the input
+    //  Normalize the input
     const normalizedType = type.toUpperCase() as BusinessType;
 
-    // 2. Validate it exists in your Enum to prevent Prisma errors
+    //  Validate it exists in  Enum to prevent Prisma errors
     if (!Object.values(BusinessType).includes(normalizedType)) {
       throw new NotFoundError(`Business type '${type}' not found`);
     }

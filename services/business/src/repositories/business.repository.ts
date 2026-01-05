@@ -55,10 +55,12 @@ class BusinessRepository {
     });
   }
 
-  async findByOwner(ownerId: string): Promise<Business[]> {
-    return this.prisma.business.findMany({
-      where: { ownerId },
-      orderBy: { createdAt: "desc" },
+  async findByOwner(ownerId: string): Promise<Business | null> {
+    return this.prisma.business.findUnique({
+      where: {
+        ownerId,
+        status: { notIn: ["DELETED", "SUSPENDED", "INACTIVE"] },
+      },
     });
   }
 

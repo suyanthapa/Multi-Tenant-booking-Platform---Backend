@@ -12,7 +12,7 @@ datasource db {
 model Business {
     id String @id @default(uuid())
 
-    ownerId String @map("owner_id") // vendor userId
+    ownerId String @unique @map("owner_id") // vendor userId - one business per vendor
 
     name        String
     description String?
@@ -27,7 +27,6 @@ model Business {
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
 
-    @@index([ownerId])
     @@index([type])
     @@index([status])
     @@map("businesses")
