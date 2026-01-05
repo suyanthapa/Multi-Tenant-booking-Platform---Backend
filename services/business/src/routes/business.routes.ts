@@ -45,17 +45,24 @@ router.get("/:id", businessController.getBusinessById);
 router.patch(
   "/:id",
   authenticate,
+  authorize("VENDOR", "ADMIN"),
   validate(updateBusinessSchema),
   businessController.updateBusiness
 );
 
 // Delete business (Owner or Admin)
-router.delete("/:id", authenticate, businessController.deleteBusiness);
+router.delete(
+  "/:id",
+  authenticate,
+  authorize("VENDOR", "ADMIN"),
+  businessController.deleteBusiness
+);
 
 // Toggle business status (Owner or Admin)
 router.patch(
   "/:id/toggle-status",
   authenticate,
+  authorize("VENDOR", "ADMIN"),
   businessController.toggleBusinessStatus
 );
 
