@@ -15,7 +15,7 @@ This document explains **database design decisions**, including **OTP handling f
 ## 3. Core Tables Overview
 
 users
-vendors
+businesses (one per vendor)
 resources
 bookings
 payments
@@ -75,39 +75,82 @@ roles
 
 ---
 
-## 6. Vendor Table
+## 6. Business Table
+
+**Purpose**: Represents a business owned by a vendor. Each vendor can own only ONE business.
 
 **Columns**
 
 - id (UUID, PK)
+- owner_id (FK → users.id, UNIQUE)
 - name
-- vendor_type
-- status
+- description (nullable)
+- type (HOTEL, CLINIC, SALON, CO_WORKING, OTHER)
+- address (nullable)
+- phone (nullable)
+- email (nullable)
+- status (PENDING, ACTIVE, INACTIVE, SUSPENDED, DELETED)
+- is_verified (boolean, default false)
 - created_at
 - updated_at
 
+**Unique Constraint**
+
+- `owner_id` is UNIQUE → enforces **one business per vendor**
+
+**Indexes**
+
+- Unique constraint on `owner_id` (automatically creates index)
+- Index on `type`
+- Index on `status`
+
 **Relationships**
 
-- One Vendor → Many Resources
+- One User (Vendor role) → One Business
+- One Business → Many Resources
+
+**Status Workflow**
+
+- PENDING: Newly created, awaiting admin approval
+- ACTIVE: Verified and bookable
+- INACTIVE: Temporarily disabled by owner
+- SUSPENDED: Blocked by admin
+- DELETED: Soft-deleted
 
 ---
 
 ## 7. Resource Table
 
+**Purpose**: Represents bookable resources owned by a business.
+
 **Columns**
 
 - id (UUID, PK)
-- vendor_id (FK → vendors.id)
-- type
+- business_id (FK → businesses.id)
 - name
-- price
-- is_active
+- type (HOTEL_ROOM, DOCTOR_SLOT, SALON_CHAIR, DESK, OTHER)
+- description (nullable)
+- price (Decimal 10,2)
+- currency (default "USD")
+- is_active (boolean)
 - created_at
 - updated_at
 
 **Indexes**
 
-- vendor_id, type
+- Index on `business_id`
+- Index on `type`
+- Index on `is_active`
+
+**Relationships**
+
+- Many Resources → One Business
+- One Resource → Many Bookings
+
+**Pricing**
+
+- Uses Decimal(10,2) for precise currency handling
+- Supports multi-currency (USD default)
 
 ---
 

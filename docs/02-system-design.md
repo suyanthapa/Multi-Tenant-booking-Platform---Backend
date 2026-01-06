@@ -39,7 +39,7 @@ v
 API Gateway
 |
 v
-| Auth | Booking | Vendor | Payment | Notify |
+| Auth | Booking | Business | Resource | Payment | Notify |
 |
 v
 
@@ -66,42 +66,56 @@ Database ownership:
 
 ---
 
-### 4.2 Vendor Service
+### 4.2 Business Service
 
 Responsibilities:
 
-- Vendor onboarding and verification
-- Vendor profile management
-- Ownership of bookable resources
+- Business registration and profile management
+- Business verification by admin
+- Business status management (PENDING, ACTIVE, INACTIVE, SUSPENDED, DELETED)
+- Business type categorization (HOTEL, CLINIC, SALON, CO_WORKING, OTHER)
+- **One-to-one relationship**: Each vendor (user with VENDOR role) can only own ONE business
 
 Database ownership:
 
-- Vendors
-- Vendor metadata
+- Businesses
+- Business metadata
+
+Key Constraint:
+
+- `ownerId` has a UNIQUE constraint ensuring one business per vendor
+- Enforced at both application and database level
 
 ---
 
 ### 4.3 Resource Service
 
-A **resource** represents any bookable entity.
+A **resource** represents any bookable entity within a business.
 
 Examples:
 
-- Hotel room
-- Clinic appointment slot
-- Salon chair
+- Hotel room (HOTEL_ROOM)
+- Doctor appointment slot (DOCTOR_SLOT)
+- Salon chair (SALON_CHAIR)
+- Co-working desk (DESK)
 
 Responsibilities:
 
-- Resource configuration
-- Availability rules
-- Pricing logic
-- Vendor ownership
+- Resource creation and configuration
+- Resource type management
+- Pricing logic (decimal precision for currency)
+- Active/inactive status management
+- Business-resource relationship management
 
 Database ownership:
 
 - Resources
-- Availability schedules
+- Resource types and metadata
+
+Key Relationships:
+
+- Many Resources → One Business (via `businessId` foreign key)
+- Resources cannot exist without a parent Business
 
 ---
 
@@ -155,37 +169,49 @@ Database ownership:
 
 ## 5. Communication Patterns
 
-The system uses **both synchronous and asynchronous communication**, each chosen based on consistency and reliability requirements.
+### Current Implementation Status
+
+**⚠️ Note**: The system currently uses an **API Gateway routing pattern** without inter-service communication.
+
+- **API Gateway**: Proxies requests to individual services based on route prefixes
+- **No Service-to-Service Communication**: Services operate independently
+- **Each service**: Has its own database and handles requests in isolation
+
+### Planned Communication Patterns
+
+The system is designed to support **both synchronous and asynchronous communication** as the platform scales.
 
 ---
 
-### 5.1 Synchronous Communication (REST)
+### 5.1 Synchronous Communication (REST) - Planned
 
-Used when **immediate response and strong consistency** are required.
+To be implemented when **immediate cross-service validation** is required.
 
-Examples:
+Planned examples:
 
-- Booking Service → Auth Service (JWT validation)
-- Booking Service → Resource Service (availability check)
+- Booking Service → Auth Service (user validation)
+- Booking Service → Resource Service (availability check + business validation)
+- Resource Service → Business Service (verify business ownership)
 - Booking Service → Payment Service (payment initiation)
 
 Reasons:
 
 - User-facing workflows require immediate feedback
 - Ensures strong consistency for critical actions
-- Simpler request-response model
+- Prevents invalid bookings (non-existent users/resources)
 
 ---
 
-### 5.2 Asynchronous Communication (Events / Queues)
+### 5.2 Asynchronous Communication (Events / Queues) - Planned
 
-Used for **side effects and non-blocking operations**.
+To be implemented for **side effects and non-blocking operations**.
 
-Examples:
+Planned examples:
 
 - User registered → send verification email
 - Booking confirmed → send confirmation email
 - Payment completed → update booking status
+- Business verified → notify vendor
 - Expired bookings → cleanup jobs
 
 Reasons:
@@ -195,20 +221,40 @@ Reasons:
 - Better scalability under high load
 - No cascading failures
 
+**Technologies to consider**: RabbitMQ, Kafka, Redis Streams, or AWS SQS/SNS
+
 ---
 
 ## 6. Data Consistency Strategy
 
-- Each service owns its database
-- No cross-service joins
-- No shared database access
-- Strong consistency within a service
-- Eventual consistency across services
+### Current Implementation
+
+- **Database per service**: Each microservice has its own PostgreSQL database
+- **Strong consistency within service**: ACID transactions via Prisma
+- **No cross-service dependencies**: Services currently operate independently
+- **Connection pooling**: Each service uses singleton pattern with pg connection pool
+
+### Service-Database Mapping
+
+- **Auth Service**: `auth_db` (users, OTP tokens, sessions)
+- **Business Service**: `business_db` (businesses with unique owner constraint)
+- **Resource Service**: `resource_db` (resources linked to businesses via businessId)
+- **Booking Service**: `booking_db` (bookings, booking states)
+
+### Planned Consistency Model
+
+As inter-service communication is implemented:
+
+- **Strong consistency within service**: Maintained via database transactions
+- **Eventual consistency across services**: Via event-driven updates
+- **Idempotency**: To handle duplicate events/retries
+- **Saga pattern**: For distributed transactions (e.g., booking + payment)
 
 Critical flows (booking + payment):
 
 - Transactional consistency within the service
 - Event-driven updates across services
+- Compensating transactions for rollbacks
 
 ---
 

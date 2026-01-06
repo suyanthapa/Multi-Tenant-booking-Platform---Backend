@@ -6,13 +6,21 @@ This document describes the **Entity Relationship (ER) model** for the resource-
 
 ---
 
-## 2. Core Design Principle
+## 2. Core Design Principles
 
 > Bookings are **resource-centric**, not vendor-centric.
 
-- Vendors own resources
-- Users book resources
-- OTPs are used for **email verification** and **forgot password flows**
+- **Vendors** (users with VENDOR role) own **one business** (1:1 relationship)
+- **Businesses** own **many resources** (1:N relationship)
+- **Users** book **resources** (not businesses directly)
+- **OTPs** are used for **email verification** and **forgot password flows**
+
+This design enables:
+
+- Clear ownership hierarchy
+- Flexible resource management
+- Scalable booking system
+- Prevents vendor account sprawl
 
 ---
 
@@ -60,40 +68,58 @@ Represents OTPs sent to users.
 
 ---
 
-### 3.3 Vendor
+### 3.3 Business
+
+**Purpose**: Represents a business owned by a vendor user.
 
 **Attributes**
 
 - id (PK)
+- owner_id (FK → users.id, UNIQUE)
 - name
-- vendor_type
-- status
+- description
+- type (HOTEL, CLINIC, SALON, CO_WORKING, OTHER)
+- address
+- phone
+- email
+- status (PENDING, ACTIVE, INACTIVE, SUSPENDED, DELETED)
+- is_verified
 - created_at
 - updated_at
 
 **Relationships**
 
-- One Vendor → Many Resources
+- One Business → One User (vendor)
+- One Business → Many Resources
+
+**Constraint**
+
+- **UNIQUE constraint on `owner_id`**: A vendor can own only ONE business
+- Enforced at both database and application level
 
 ---
 
 ### 3.4 Resource
 
+**Purpose**: Represents bookable items within a business.
+
 **Attributes**
 
 - id (PK)
-- vendor_id (FK → vendors.id)
-- type
+- business_id (FK → businesses.id)
 - name
-- price
+- type (HOTEL_ROOM, DOCTOR_SLOT, SALON_CHAIR, DESK, OTHER)
+- description
+- price (Decimal 10,2)
+- currency
 - is_active
 - created_at
 - updated_at
 
 **Relationships**
 
+- Many Resources → One Business
 - One Resource → Many Bookings
-- One Resource → One Vendor
 
 ---
 
@@ -134,23 +160,51 @@ Represents OTPs sent to users.
 
 ## 4. Relationships Summary
 
-User 1 ────< Booking >──── 1 Resource >──── 1 Vendor
-│
-└───< OTP Token
-|
-└──── 1 Payment
+```
+User (VENDOR) 1 ──── 1 Business
+     |
+     1
+     |
+     < Booking >──── 1 Resource
+     |                      |
+     < OTP Token            |
+     |                      Many
+     1                      |
+     |                      1
+  Payment              Business
+```
+
+**Key Points:**
+
+- **One-to-One**: User (with VENDOR role) → Business (unique constraint)
+- **One-to-Many**: Business → Resources
+- **One-to-Many**: User → Bookings
+- **One-to-Many**: User → OTP Tokens
+- **Many-to-One**: Bookings → Resource
+- **One-to-One**: Booking → Payment
 
 ---
 
 ## 5. Key Constraints
 
-- OTPs are hashed, expire in 5–10 minutes, and single-use
-- Booking overlaps prevented by resource locking
-- Referential integrity enforced via foreign keys
+- **One business per vendor**: UNIQUE constraint on `businesses.owner_id`
+- **OTPs**: Hashed, expire in 5–10 minutes, single-use
+- **Booking overlaps**: Prevented by resource locking and time validation
+- **Referential integrity**: Enforced via foreign keys
+- **Soft deletes**: Business status includes DELETED state
+- **Decimal precision**: Price stored as Decimal(10,2) for currency accuracy
 
 ---
 
 ## 6. Summary
 
-The updated ER model now fully supports **OTP-based verification**, in addition to resource-centric bookings and payments.  
-This ensures **secure authentication**, **password recovery**, and **audit-ready design**.
+The ER model supports:
+
+- **OTP-based verification** for email and password reset
+- **Resource-centric bookings** with business ownership
+- **One-to-one vendor-business relationship** enforced at database level
+- **Multi-type resources** (hotels, clinics, salons, co-working)
+- **Secure authentication** with role-based access control
+- **Audit-ready design** with timestamps and status tracking
+
+This design ensures **data integrity, scalability, and business rule enforcement** at the database layer.
