@@ -89,6 +89,14 @@ class BusinessRepository {
       data: { isVerified: true, status: "ACTIVE" },
     });
   }
+
+  // for internal use to check existence
+  async checkExists(id: string): Promise<boolean> {
+    const count = await this.prisma.business.count({
+      where: { id },
+    });
+    return count > 0; // Returns true/false instantly without loading data into RAM
+  }
 }
 
 export default new BusinessRepository();

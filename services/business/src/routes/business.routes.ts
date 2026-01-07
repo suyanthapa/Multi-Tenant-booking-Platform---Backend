@@ -8,10 +8,10 @@ import {
   queryBusinessSchema,
 } from "../utils/validators";
 
-const router = Router();
+const businessRoutes = Router();
 
 // Create business (Vendor only)
-router.post(
+businessRoutes.post(
   "/",
   authenticate,
   authorize("VENDOR"),
@@ -20,7 +20,7 @@ router.post(
 );
 
 // Get all businesses (Public)
-router.get(
+businessRoutes.get(
   "/",
   authenticate,
   validate(queryBusinessSchema),
@@ -28,7 +28,7 @@ router.get(
 );
 
 // Get my businesses (Vendor only)
-router.get(
+businessRoutes.get(
   "/my-businesses",
   authenticate,
   authorize("VENDOR"),
@@ -36,13 +36,13 @@ router.get(
 );
 
 // Get businesses by type (Public)
-router.get("/type/:type", businessController.getBusinessesByType);
+businessRoutes.get("/type/:type", businessController.getBusinessesByType);
 
 // Get business by ID (Public)
-router.get("/:id", businessController.getBusinessById);
+businessRoutes.get("/:id", businessController.getBusinessById);
 
 // Update business (Owner or Admin)
-router.patch(
+businessRoutes.patch(
   "/:id",
   authenticate,
   authorize("VENDOR", "ADMIN"),
@@ -51,7 +51,7 @@ router.patch(
 );
 
 // Delete business (Owner or Admin)
-router.delete(
+businessRoutes.delete(
   "/:id",
   authenticate,
   authorize("VENDOR", "ADMIN"),
@@ -59,7 +59,7 @@ router.delete(
 );
 
 // Toggle business status (Owner or Admin)
-router.patch(
+businessRoutes.patch(
   "/:id/toggle-status",
   authenticate,
   authorize("VENDOR", "ADMIN"),
@@ -67,10 +67,10 @@ router.patch(
 );
 
 // Verify business (Admin only)
-router.patch(
+businessRoutes.patch(
   "/:id/verify",
   authenticate,
   authorize("ADMIN"),
   businessController.verifyBusiness
 );
-export default router;
+export default businessRoutes;
