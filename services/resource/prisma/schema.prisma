@@ -14,17 +14,16 @@ model Resource {
     type        ResourceType
     description String?
 
-    price    Decimal @db.Decimal(10, 2)
-    currency String  @default("USD")
-
-    isActive Boolean @default(true)
+    price    Decimal        @db.Decimal(10, 2)
+    currency String         @default("USD")
+    status   ResourceStatus @default(ACTIVE)
 
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
 
     @@index([businessId])
     @@index([type])
-    @@index([isActive])
+    @@index([status])
     @@map("resources")
 }
 
@@ -34,4 +33,11 @@ enum ResourceType {
     SALON_CHAIR
     DESK
     OTHER
+}
+
+enum ResourceStatus {
+    ACTIVE
+    INACTIVE
+    MAINTENANCE
+    DELETED
 }
