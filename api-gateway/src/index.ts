@@ -32,7 +32,7 @@ app.use("/api/auth", createServiceProxy(SERVICES.AUTH));
 app.use("/api/businesses", authenticate, createServiceProxy(SERVICES.BUSINESS));
 
 // Resource routes (public read, auth for write)
-app.use("/api/resources", createServiceProxy(SERVICES.RESOURCE));
+app.use("/api/resources", authenticate, createServiceProxy(SERVICES.RESOURCE));
 
 // Booking routes (authenticated)
 app.use("/api/bookings", authenticate, createServiceProxy(SERVICES.BOOKING));
