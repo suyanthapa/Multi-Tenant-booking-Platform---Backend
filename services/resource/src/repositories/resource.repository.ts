@@ -1,5 +1,7 @@
 import { PrismaClient, Resource, ResourceType, Prisma } from "@prisma/client";
 import Database from "../config/database";
+import bookingClient from "../clients/booking.client";
+import { NotFoundError } from "../utils/errors";
 
 class ResourceRepository {
   private prisma: PrismaClient;
@@ -9,6 +11,13 @@ class ResourceRepository {
   }
 
   async create(data: Prisma.ResourceCreateInput): Promise<Resource> {
+    const businessExists = await bookingClient.validateBusiness(
+      data.businessId
+    );
+    console.log("Business exists:", businessExists);
+    if (!businessExists) {
+      throw new NotFoundError("Business does not exist");
+    }
     return this.prisma.resource.create({ data });
   }
 

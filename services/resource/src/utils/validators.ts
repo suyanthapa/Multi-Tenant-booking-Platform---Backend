@@ -9,7 +9,6 @@ export const createResourceSchema = z.object({
     type: z.nativeEnum(ResourceType),
     description: z.string().optional().nullable(),
     price: z.number().positive("Price must be positive"),
-    currency: z.string().default("USD"),
   }),
 });
 

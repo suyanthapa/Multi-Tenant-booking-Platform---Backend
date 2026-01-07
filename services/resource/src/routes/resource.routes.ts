@@ -32,6 +32,7 @@ router.post(
 // Get all resources (Public)
 router.get(
   "/",
+  authenticate,
   validate(queryResourceSchema),
   resourceController.getAllResources
 );
