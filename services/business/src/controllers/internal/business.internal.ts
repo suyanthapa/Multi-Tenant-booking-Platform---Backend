@@ -1,0 +1,19 @@
+import { Request, Response } from "express";
+import { asyncHandler } from "../../utils/asyncHandler";
+import businessRepository from "../../repositories/business.repository";
+
+class BusinessInternalController {
+  checkExists = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const exists = await businessRepository.checkExists(id);
+
+    // We return a simple flat object
+    res.status(200).json({
+      success: true,
+      exists: exists,
+    });
+  });
+}
+
+export default new BusinessInternalController();
