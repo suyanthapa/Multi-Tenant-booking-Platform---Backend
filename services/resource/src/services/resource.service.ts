@@ -40,7 +40,7 @@ class ResourceService {
     limit?: number;
     businessId?: string;
     type?: ResourceType;
-    isActive?: boolean;
+    status?: string;
     search?: string;
     minPrice?: number;
     maxPrice?: number;
@@ -65,8 +65,8 @@ class ResourceService {
       where.type = params.type;
     }
 
-    if (params.isActive !== undefined) {
-      where.isActive = params.isActive;
+    if (params.status) {
+      where.status = params.status.toUpperCase();
     }
 
     if (params.search) {

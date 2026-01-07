@@ -78,23 +78,28 @@ class ResourceRepository {
       throw new Error("Resource not found");
     }
 
+    // Toggle between ACTIVE and INACTIVE
+    const newStatus = resource.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+
     return this.prisma.resource.update({
       where: { id },
-      data: { isActive: !resource.isActive },
+      data: { status: newStatus },
     });
   }
 
   async getStatsByBusiness(businessId: string) {
-    const [total, active, inactive] = await Promise.all([
+    const [total, active, inactive, maintenance] = await Promise.all([
       this.count({ businessId }),
-      this.count({ businessId, isActive: true }),
-      this.count({ businessId, isActive: false }),
+      this.count({ businessId, status: "ACTIVE" }),
+      this.count({ businessId, status: "INACTIVE" }),
+      this.count({ businessId, status: "MAINTENANCE" }),
     ]);
 
     return {
       total,
       active,
       inactive,
+      maintenance,
     };
   }
 }
