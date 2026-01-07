@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ResourceType } from "@prisma/client";
+import { ResourceType, ResourceStatus } from "@prisma/client";
 
 // Create Resource Schema
 export const createResourceSchema = z.object({
@@ -21,7 +21,7 @@ export const updateResourceSchema = z.object({
     description: z.string().optional().nullable(),
     price: z.number().positive().optional(),
     currency: z.string().optional(),
-    isActive: z.boolean().optional(),
+    status: z.nativeEnum(ResourceStatus).optional(),
   }),
 });
 
@@ -50,7 +50,7 @@ export const queryResourceSchema = z.object({
     limit: z.string().optional().default("10"),
     businessId: z.string().optional(),
     type: z.nativeEnum(ResourceType).optional(),
-    isActive: z.string().optional(),
+    status: z.string().optional(),
     search: z.string().optional(),
     minPrice: z.string().optional(),
     maxPrice: z.string().optional(),

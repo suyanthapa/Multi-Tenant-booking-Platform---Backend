@@ -41,8 +41,7 @@ class ResourceController {
     const limit = parseInt(query.limit) || 10;
     const businessId = query.businessId;
     const type = query.type as ResourceType | undefined;
-    const isActive =
-      query.isActive !== undefined ? query.isActive === "true" : undefined;
+    const status = query.status as string | undefined;
     const search = query.search;
     const minPrice = query.minPrice ? parseFloat(query.minPrice) : undefined;
     const maxPrice = query.maxPrice ? parseFloat(query.maxPrice) : undefined;
@@ -52,7 +51,7 @@ class ResourceController {
       limit,
       businessId,
       type,
-      isActive,
+      status,
       search,
       minPrice,
       maxPrice,
