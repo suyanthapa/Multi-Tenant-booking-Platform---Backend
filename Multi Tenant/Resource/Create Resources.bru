@@ -5,17 +5,18 @@ meta {
 }
 
 post {
-  url: http://localhost:3000/api/resources/create
+  url: http://localhost:3000/api/resources/
   body: json
   auth: inherit
 }
 
 body:json {
   {
-    "name": "Luxury Ocean Suite",
+    "businessId": "98833100-d494-4e62-80d8-9de0935b1c24",
+    "name": "Luxury Conference Room",
     "type": "HOTEL_ROOM",
-    "description": "A beautiful suite with a king-sized bed and balcony.",
-    "price": 250.00
+    "description": "A high-end meeting space with 4K projectors and fiber internet.",
+    "price": 75.50
   }
 }
 
