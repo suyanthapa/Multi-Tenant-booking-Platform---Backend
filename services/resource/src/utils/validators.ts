@@ -14,6 +14,9 @@ export const createResourceSchema = z.object({
 
 // Update Resource Schema
 export const updateResourceSchema = z.object({
+  params: z.object({
+    id: z.string().uuid("Invalid Resource ID format"),
+  }),
   body: z.object({
     name: z.string().min(1).optional(),
     type: z.nativeEnum(ResourceType).optional(),
@@ -56,6 +59,20 @@ export const queryResourceSchema = z.object({
   }),
 });
 
+//type schema
+export const typeResourceSchema = z.object({
+  params: z.object({
+    type: z.preprocess(
+      (val) => (typeof val === "string" ? val.trim().toUpperCase() : val),
+      z.nativeEnum(ResourceType, {
+        errorMap: () => ({
+          message: "Please select a valid Resource Type ",
+        }),
+      })
+    ),
+  }),
+});
+
 // Type exports
 export type CreateResourceInput = z.infer<typeof createResourceSchema>["body"];
 export type UpdateResourceInput = z.infer<typeof updateResourceSchema>["body"];
@@ -63,3 +80,4 @@ export type BulkCreateResourceInput = z.infer<
   typeof bulkCreateResourceSchema
 >["body"];
 export type QueryResourceInput = z.infer<typeof queryResourceSchema>["query"];
+export type TypeResourceInput = z.infer<typeof typeResourceSchema>["params"];

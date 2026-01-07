@@ -90,6 +90,7 @@ class ResourceController {
   // Get resources by type
   getResourcesByType = asyncHandler(async (req: Request, res: Response) => {
     const { type } = req.params;
+    console.log("Requested resource type:", type);
 
     const resources = await resourceService.getResourcesByType(
       type as ResourceType

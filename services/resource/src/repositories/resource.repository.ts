@@ -75,10 +75,15 @@ class ResourceRepository {
   }
 
   async findByType(type: ResourceType): Promise<Resource[]> {
-    return this.prisma.resource.findMany({
+    const result = await this.prisma.resource.findMany({
       where: { type },
       orderBy: { createdAt: "desc" },
     });
+
+    if (result.length === 0) {
+      throw new NotFoundError(`No resources found for type '${type}'`);
+    }
+    return result;
   }
 
   async toggleStatus(id: string): Promise<Resource> {
@@ -97,6 +102,10 @@ class ResourceRepository {
   }
 
   async getStatsByBusiness(businessId: string) {
+    const businessExists = await bookingClient.validateBusiness(businessId);
+    if (!businessExists) {
+      throw new NotFoundError("Business does not exist");
+    }
     const [total, active, inactive, maintenance] = await Promise.all([
       this.count({ businessId }),
       this.count({ businessId, status: "ACTIVE" }),

@@ -18,6 +18,7 @@ export const validate = (schema: ZodSchema) => {
       // 2. Assign the validated data back to the request
       // Note: We only overwrite 'body' as 'params' and 'query' are often read-only in Express
       req.body = validated.body;
+      req.params = validated.params;
 
       // If you need to access validated params/query in the controller,
       // they are now guaranteed to match your schema types.
