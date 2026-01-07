@@ -17,6 +17,7 @@ This project follows a microservices architecture with an API Gateway pattern. E
 ## Documentation
 
 Comprehensive documentation is available in the `/docs` folder:
+
 - [System Design](docs/02-system-design.md)
 - [Database Design](docs/05-datatbase-design.md)
 - [ER Diagram](docs/04-er-diagram.md)
@@ -25,6 +26,7 @@ Comprehensive documentation is available in the `/docs` folder:
 ## Resources
 
 ### Architecture Patterns
+
 - [Decoupling Data: Building Scalable Node.js Backends with the Repository Pattern](https://medium.com/@suyanthapa07/decoupling-data-building-scalable-node-js-backends-with-the-repository-pattern-7df8218dbde9) - Learn about the repository pattern implementation used in this project
 
 ## Tech Stack
