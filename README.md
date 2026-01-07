@@ -29,6 +29,8 @@ Comprehensive documentation is available in the `/docs` folder:
 
 - [Decoupling Data: Building Scalable Node.js Backends with the Repository Pattern](https://medium.com/@suyanthapa07/decoupling-data-building-scalable-node-js-backends-with-the-repository-pattern-7df8218dbde9) - Learn about the repository pattern implementation used in this project
 
+-[The Hidden Performance Cost of Uncoordinated Prisma Clients](https://medium.com/@suyanthapa07/the-hidden-performance-cost-of-uncoordinated-prisma-clients-84f67d2f496b) - Understand how connection management impacts Prisma performance and learn a robust Singleton-based solution.
+
 ## Tech Stack
 
 - **Runtime**: Node.js with TypeScript
