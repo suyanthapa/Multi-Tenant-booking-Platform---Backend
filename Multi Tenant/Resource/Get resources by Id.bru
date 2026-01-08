@@ -1,0 +1,26 @@
+meta {
+  name: Get resources by Id
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:3000/api/resources/stats/ef
+  body: none
+  auth: inherit
+}
+
+body:json {
+  {
+    "businessId": "98833100-d494-4e62-80d8-9de0935b1c24",
+    "name": "Luxury Conference Room",
+    "type": "HOTEL_ROOM",
+    "description": "A high-end meeting space with 4K projectors and fiber internet.",
+    "price": 75.50
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -7,6 +7,7 @@ import {
   updateResourceSchema,
   bulkCreateResourceSchema,
   queryResourceSchema,
+  typeResourceSchema,
 } from "../utils/validators";
 
 const router = Router();
@@ -38,10 +39,19 @@ router.get(
 );
 
 // Get resources by business (Public)
-router.get("/business/:businessId", resourceController.getResourcesByBusiness);
+router.get(
+  "/business/:businessId",
+  authenticate,
+  resourceController.getResourcesByBusiness
+);
 
 // Get resources by type (Public)
-router.get("/type/:type", resourceController.getResourcesByType);
+router.get(
+  "/type/:type",
+  authenticate,
+  validate(typeResourceSchema),
+  resourceController.getResourcesByType
+);
 
 // Get resource stats
 router.get(

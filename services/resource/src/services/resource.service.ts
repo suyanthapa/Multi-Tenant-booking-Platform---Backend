@@ -130,11 +130,11 @@ class ResourceService {
     await resourceRepository.delete(id);
   }
 
-  async toggleResourceStatus(id: string): Promise<Resource> {
+  async toggleResourceStatus(id: string, userRole: string): Promise<Resource> {
     // First verify resource exists
     await this.getResourceById(id);
 
-    return resourceRepository.toggleStatus(id);
+    return resourceRepository.toggleStatus(id, userRole);
   }
 
   async getResourceStats(businessId: string) {

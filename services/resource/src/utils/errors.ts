@@ -63,6 +63,13 @@ export class ConflictError extends AppError {
   }
 }
 
+export class ForbiddenError extends AppError {
+  constructor(message: string = "Action is forbidden") {
+    super(message, 403, true, "FORBIDDEN");
+    Object.setPrototypeOf(this, ForbiddenError.prototype);
+  }
+}
+
 export class RateLimitError extends AppError {
   constructor(message: string = "Too many requests, please try again later") {
     super(message, 429, true, "RATE_LIMIT_EXCEEDED");

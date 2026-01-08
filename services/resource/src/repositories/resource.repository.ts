@@ -1,7 +1,7 @@
 import { PrismaClient, Resource, ResourceType, Prisma } from "@prisma/client";
 import Database from "../config/database";
 import bookingClient from "../clients/booking.client";
-import { NotFoundError } from "../utils/errors";
+import { ForbiddenError, NotFoundError } from "../utils/errors";
 
 class ResourceRepository {
   private prisma: PrismaClient;
@@ -86,10 +86,16 @@ class ResourceRepository {
     return result;
   }
 
-  async toggleStatus(id: string): Promise<Resource> {
+  async toggleStatus(id: string, userRole: string): Promise<Resource> {
     const resource = await this.findById(id);
     if (!resource) {
-      throw new Error("Resource not found");
+      throw new NotFoundError("Resource not found");
+    }
+
+    const restrictedStatuses = ["MAINTENANCE", "DELETED"];
+
+    if (restrictedStatuses.includes(resource.status) && userRole !== "ADMIN") {
+      throw new ForbiddenError(`You cannot modify a resource `);
     }
 
     // Toggle between ACTIVE and INACTIVE

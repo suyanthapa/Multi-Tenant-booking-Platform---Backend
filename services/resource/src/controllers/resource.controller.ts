@@ -130,8 +130,8 @@ class ResourceController {
   // Toggle resource status
   toggleResourceStatus = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-
-    const resource = await resourceService.toggleResourceStatus(id);
+    const userRole = req.user!.role;
+    const resource = await resourceService.toggleResourceStatus(id, userRole);
 
     res.status(200).json({
       success: true,

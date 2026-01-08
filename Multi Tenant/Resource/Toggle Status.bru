@@ -1,0 +1,23 @@
+meta {
+  name: Toggle Status
+  type: http
+  seq: 9
+}
+
+patch {
+  url: http://localhost:3000/api/resources/42f5c982-0d94-4da5-be8d-5db6449be5af/toggle-status
+  body: none
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Deluxe Room"
+   
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
