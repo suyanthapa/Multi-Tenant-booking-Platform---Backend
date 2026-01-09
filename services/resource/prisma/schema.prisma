@@ -14,6 +14,11 @@ model Resource {
     type        ResourceType
     description String?
 
+    categoryId String?           @map("category_id")
+    category   ResourceCategory? @relation(fields: [categoryId], references: [id])
+
+    metadata Json? @default("{}") // "Special" fields 
+
     price    Decimal        @db.Decimal(10, 2)
     currency String         @default("USD")
     status   ResourceStatus @default(ACTIVE)
@@ -25,6 +30,16 @@ model Resource {
     @@index([type])
     @@index([status])
     @@map("resources")
+}
+
+model ResourceCategory {
+    id         String @id @default(uuid())
+    businessId String @map("business_id")
+    name       String // "Hot Yoga Room", "Presidential Suite", "General Ward"
+
+    resources Resource[]
+
+    @@unique([businessId, name]) // ex: A vendor can't have two "Deluxe" categories
 }
 
 enum ResourceType {
