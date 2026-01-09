@@ -97,6 +97,13 @@ class BusinessRepository {
     });
     return count > 0; // Returns true/false instantly without loading data into RAM
   }
+
+  async validateBusiness(id: string): Promise<Business | null> {
+    const business = await this.prisma.business.findUnique({
+      where: { id },
+    });
+    return business;
+  }
 }
 
 export default new BusinessRepository();

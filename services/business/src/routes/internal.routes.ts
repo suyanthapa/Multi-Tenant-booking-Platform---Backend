@@ -11,4 +11,10 @@ internalRoutes.get(
   BusinessInternalController.checkExists
 );
 
+internalRoutes.get(
+  "/:id/validate",
+  internalAuthMiddleware, // Only other microservices CAN call this
+  BusinessInternalController.validateBusiness
+);
+
 export default internalRoutes;

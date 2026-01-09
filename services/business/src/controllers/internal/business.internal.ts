@@ -14,6 +14,27 @@ class BusinessInternalController {
       exists: exists,
     });
   });
+
+  validateBusiness = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const business = await businessRepository.validateBusiness(id);
+
+    if (!business) {
+      return res.status(404).json({
+        success: false,
+        message: "Business not found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      businessInfo: {
+        businessId: business.id,
+        vendorId: business.ownerId,
+        businessName: business.name,
+        status: business.status,
+      },
+    });
+  });
 }
 
 export default new BusinessInternalController();
