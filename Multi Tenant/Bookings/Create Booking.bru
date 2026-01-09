@@ -5,20 +5,21 @@ meta {
 }
 
 post {
-  url: http://localhost:3000/api/booking/create
+  url: http://localhost:3000/api/bookings/
   body: json
   auth: inherit
 }
 
 body:json {
   {
-    "userId": "uuid",
-    "vendorId": "uuid",
-    "serviceId": "uuid",
+    "businessId":"98833100-d494-4e62-80d8-9de0935b1c24",
+    "businessName":"Granswd Horizon Resort & Spa",
+    "resourceName":"Deluxe Room",
+    "resourceId": "42f5c982-0d94-4da5-be8d-5db6449be5af",
     "bookingDate": "2026-01-15T00:00:00Z",
     "startTime": "2026-01-15T10:00:00Z",
-    "endTime": "2026-01-15T11:00:00Z",
-    "notes": "Optional notes"
+    "endTime": "2026-01-15T11:00:00Z"
+   
   }
 }
 
