@@ -1,20 +1,22 @@
 import { Booking, BookingStatus } from "@prisma/client";
-import { bookingRepository, resourceRepository } from "../repositories";
+import { bookingRepository } from "../repositories";
 import {
   NotFoundError,
   BookingConflictError,
   InvalidBookingError,
 } from "../utils/errors";
+import resourceClient from "../clients/resource.client";
+import busiinessClient from "../clients/business.client";
+import businessClient from "../clients/business.client";
 
 export interface CreateBookingDTO {
-  userId: string;
-  vendorId: string;
+  businessId: string;
+  businessName: string;
+  resourceName: string;
   resourceId: string;
   bookingDate: string;
   startTime: string;
   endTime: string;
-  vendorName: string;
-  notes?: string;
 }
 
 export interface UpdateBookingDTO {
@@ -40,7 +42,10 @@ class BookingService {
   /**
    * Create a new booking
    */
-  async createBooking(data: CreateBookingDTO): Promise<Booking> {
+  async createBooking(
+    userId: string,
+    data: CreateBookingDTO
+  ): Promise<Booking> {
     const startTime = new Date(data.startTime);
     const endTime = new Date(data.endTime);
     const bookingDate = new Date(data.bookingDate);
@@ -54,20 +59,24 @@ class BookingService {
       throw new InvalidBookingError("Booking date cannot be in the past");
     }
 
+    //chekc business existence
+    const business = await businessClient.validateBusiness(data.businessId);
+    if (!business) {
+      throw new NotFoundError("Business does not exist");
+    }
+    console.log("Business exists from service:", business);
     // Fetch resource details
-    const resource = await resourceRepository.findById(data.resourceId);
+    const resource = await resourceClient.validateResource(
+      data.resourceId,
+      data.resourceName
+    );
     if (!resource) {
       throw new NotFoundError("Resource not found");
     }
 
     // Check if resource is active
-    if (!resource.isActive) {
+    if (resource.status !== "ACTIVE") {
       throw new InvalidBookingError("Resource is not available for booking");
-    }
-
-    // Check if resource belongs to the vendor
-    if (resource.vendorId !== data.vendorId) {
-      throw new InvalidBookingError("Resource does not belong to this vendor");
     }
 
     // Check if time slot is available
@@ -82,22 +91,24 @@ class BookingService {
         "This time slot is not available. Please choose another time."
       );
     }
-
+    console.log("Creating booking for user:", userId);
+    console.log("Booking data:", data);
     // Create booking with snapshot data
     const booking = await bookingRepository.create({
-      userId: data.userId,
-      vendorId: data.vendorId,
+      userId: userId,
+      vendorId: business.vendorId,
+      businessId: business.businessId,
       resourceId: data.resourceId,
-      bookingDate,
+      bookingDate: bookingDate,
       startTime,
       endTime,
-      resourceName: resource.name,
-      resourceType: resource.type,
-      vendorName: data.vendorName,
-      priceAtBooking: resource.price,
-      currency: resource.currency,
+      businessName: data.businessName,
+      resourceName: data.resourceName,
+      resourceType: resource.type as string,
+
+      priceAtBooking: resource.price || 0,
+      currency: resource.currency || "USD",
       status: BookingStatus.PENDING,
-      notes: data.notes,
     });
 
     return booking;

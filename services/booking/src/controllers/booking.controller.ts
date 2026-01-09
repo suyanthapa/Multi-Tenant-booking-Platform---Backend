@@ -14,8 +14,10 @@ class BookingController {
    * POST /api/bookings
    */
   createBooking = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?.id as string;
+
     const input: CreateBookingInput = req.body;
-    const booking = await bookingService.createBooking(input);
+    const booking = await bookingService.createBooking(userId, input);
 
     res.status(201).json({
       success: true,
