@@ -6,14 +6,13 @@ import { z } from "zod";
 
 export const createBookingSchema = z.object({
   body: z.object({
-    userId: z.string().uuid("Invalid user ID"),
-    vendorId: z.string().uuid("Invalid vendor ID"),
+    businessId: z.string().min(1, "Business ID is required"),
+    businessName: z.string().min(1, "Business name is required"),
     resourceId: z.string().uuid("Invalid resource ID"),
-    vendorName: z.string().min(1, "Vendor name is required"),
+    resourceName: z.string().min(1, "Resource name is required"),
     bookingDate: z.string().datetime("Invalid booking date"),
     startTime: z.string().datetime("Invalid start time"),
     endTime: z.string().datetime("Invalid end time"),
-    notes: z.string().optional(),
   }),
 });
 
