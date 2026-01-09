@@ -1,6 +1,6 @@
 import { PrismaClient, Resource, ResourceType, Prisma } from "@prisma/client";
 import Database from "../config/database";
-import bookingClient from "../clients/booking.client";
+import bookingClient from "../clients/business.client";
 import { ForbiddenError, NotFoundError } from "../utils/errors";
 
 class ResourceRepository {
@@ -125,6 +125,12 @@ class ResourceRepository {
       inactive,
       maintenance,
     };
+  }
+
+  async checkExists(id: string, name: string): Promise<Resource | null> {
+    return await this.prisma.resource.findFirst({
+      where: { id, name },
+    });
   }
 }
 
