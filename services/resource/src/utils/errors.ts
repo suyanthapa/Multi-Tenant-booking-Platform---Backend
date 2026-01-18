@@ -33,6 +33,13 @@ export class ValidationError extends AppError {
   }
 }
 
+export class BadRequestError extends AppError {
+  constructor(message: string = "Bad request") {
+    super(message, 400, true, "BAD_REQUEST");
+    Object.setPrototypeOf(this, BadRequestError.prototype);
+  }
+}
+
 export class AuthenticationError extends AppError {
   constructor(message: string = "Authentication failed") {
     super(message, 401, true, "AUTHENTICATION_ERROR");
