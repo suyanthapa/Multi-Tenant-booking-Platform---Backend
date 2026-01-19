@@ -28,6 +28,7 @@ import logger from "../utils/logger";
 import { RepositoryFactory } from "../repositories";
 import { PaginatedUsers, UserResponse } from "../interfaces/user.interface";
 import { sanitizeUser } from "../utils/sanitizer";
+import businessClient from "../clients/businessClient";
 
 class AuthService {
   private prisma = Database.getInstance(); // The Singleton Retrieval
@@ -39,7 +40,7 @@ class AuthService {
    * Register a new user
    */
   async register(
-    input: RegisterInput
+    input: RegisterInput,
   ): Promise<{ user: Partial<User>; message: string }> {
     const { email, username, password, role } = input;
 
@@ -106,7 +107,7 @@ class AuthService {
     // Verify email matches the OTP owner
     if (user.email !== email) {
       throw new AuthenticationError(
-        "Email does not match the verification token"
+        "Email does not match the verification token",
       );
     }
 
@@ -127,7 +128,7 @@ class AuthService {
    * Resend OTP for email verification
    */
   async resendEmailVerificationOTP(
-    input: ResendOTPInput
+    input: ResendOTPInput,
   ): Promise<{ message: string }> {
     const { email } = input;
 
@@ -189,7 +190,7 @@ class AuthService {
       const otp = await otpService.generateEmailVerificationOTP(user.id);
       await emailService.sendVerificationEmail(email, otp);
       throw new AuthenticationError(
-        "Email not verified. A new verification code has been sent to your email."
+        "Email not verified. A new verification code has been sent to your email.",
       );
     }
 
@@ -197,14 +198,18 @@ class AuthService {
     if (user.status !== UserStatus.ACTIVE) {
       throw new AuthenticationError(`Account is ${user.status.toLowerCase()}`);
     }
+    const business = await businessClient.validateBusinessByOwner(user.id);
 
     // Generate tokens
     const payload: JWTPayload = {
       id: user.id,
       email: user.email,
       role: user.role,
+      ...(business && { businessId: business.businessId }),
     };
 
+    console.log("Business Info:", business);
+    console.log("JWT Payload:", payload);
     const { accessToken, refreshToken } = generateTokenPair(payload);
 
     // Store refresh token
@@ -245,12 +250,12 @@ class AuthService {
     // Check if token exists and is not revoked
     const tokenRecord = await this.refreshTokenRepository.findValidToken(
       oldRefreshToken,
-      payload.id
+      payload.id,
     );
 
     if (!tokenRecord) {
       throw new TokenExpiredError(
-        "Refresh token is invalid or has been revoked"
+        "Refresh token is invalid or has been revoked",
       );
     }
 
@@ -304,7 +309,7 @@ class AuthService {
    * Forgot password - send OTP
    */
   async forgotPassword(
-    input: ForgotPasswordInput
+    input: ForgotPasswordInput,
   ): Promise<{ message: string }> {
     const { email } = input;
 
@@ -351,12 +356,12 @@ class AuthService {
 
     const isSamePassword = await comparePassword(
       newPassword,
-      user.passwordHash
+      user.passwordHash,
     );
 
     if (isSamePassword) {
       throw new ConflictError(
-        "New password cannot be the same as the old password"
+        "New password cannot be the same as the old password",
       );
     }
 
@@ -430,7 +435,7 @@ class AuthService {
   //edit user
   async editUser(
     userId: string,
-    updateData: Partial<User>
+    updateData: Partial<User>,
   ): Promise<UserResponse> {
     // Check if user exists
     const user = await this.userRepository.findById(userId);

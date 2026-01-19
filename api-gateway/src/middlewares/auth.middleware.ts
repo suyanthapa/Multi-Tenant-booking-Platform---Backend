@@ -13,12 +13,13 @@ declare global {
 export const authenticate = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   //  Safety Check: Header Cleaning
   delete req.headers["x-user-id"];
   delete req.headers["x-user-role"];
   delete req.headers["x-user-email"];
+  delete req.headers["x-user-business-id"];
 
   //  Check Cookies (Web/Browser)
   let token = req.cookies?.accessToken;
@@ -36,7 +37,7 @@ export const authenticate = (
   try {
     const decoded = jwt.verify(
       token,
-      process.env.JWT_ACCESS_SECRET as string
+      process.env.JWT_ACCESS_SECRET as string,
     ) as JWTPayload;
     req.user = decoded;
 
@@ -44,6 +45,7 @@ export const authenticate = (
     req.headers["x-user-id"] = req.user.id;
     req.headers["x-user-role"] = req.user.role;
     req.headers["x-user-email"] = req.user.email;
+    req.headers["x-user-business-id"] = req.user.businessId;
     next();
   } catch (err: any) {
     if (err.name === "TokenExpiredError") {
