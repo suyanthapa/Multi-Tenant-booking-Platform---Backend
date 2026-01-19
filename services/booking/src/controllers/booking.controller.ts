@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { bookingService } from "../services";
 import { BookingStatus } from "@prisma/client";
 import { asyncHandler } from "../utils/asyncHandler";
 import {
@@ -7,6 +6,7 @@ import {
   UpdateBookingInput,
   CancelBookingInput,
 } from "../utils/validators";
+import bookingService from "../services/booking.service";
 
 class BookingController {
   /**
@@ -91,7 +91,7 @@ class BookingController {
     const { status } = req.body;
     const booking = await bookingService.updateBookingStatus(
       id,
-      status as BookingStatus
+      status as BookingStatus,
     );
 
     res.status(200).json({
@@ -111,7 +111,7 @@ class BookingController {
     const result = await bookingService.getUserBookings(
       userId,
       Number(page),
-      Number(limit)
+      Number(limit),
     );
 
     res.status(200).json({
@@ -131,7 +131,7 @@ class BookingController {
     const result = await bookingService.getVendorBookings(
       vendorId,
       Number(page),
-      Number(limit)
+      Number(limit),
     );
 
     res.status(200).json({

@@ -1,13 +1,12 @@
 import { Booking, BookingStatus } from "@prisma/client";
-import { bookingRepository } from "../repositories";
 import {
   NotFoundError,
   BookingConflictError,
   InvalidBookingError,
 } from "../utils/errors";
 import resourceClient from "../clients/resource.client";
-import busiinessClient from "../clients/business.client";
 import businessClient from "../clients/business.client";
+import bookingRepository from "../repositories/booking.repository";
 
 export interface CreateBookingDTO {
   businessId: string;
@@ -44,7 +43,7 @@ class BookingService {
    */
   async createBooking(
     userId: string,
-    data: CreateBookingDTO
+    data: CreateBookingDTO,
   ): Promise<Booking> {
     const startTime = new Date(data.startTime);
     const endTime = new Date(data.endTime);
@@ -68,7 +67,7 @@ class BookingService {
     // Fetch resource details
     const resource = await resourceClient.validateResource(
       data.resourceId,
-      data.resourceName
+      data.resourceName,
     );
     if (!resource) {
       throw new NotFoundError("Resource not found");
@@ -83,12 +82,12 @@ class BookingService {
     const isAvailable = await bookingRepository.isTimeSlotAvailable(
       data.resourceId,
       startTime,
-      endTime
+      endTime,
     );
 
     if (!isAvailable) {
       throw new BookingConflictError(
-        "This time slot is not available. Please choose another time."
+        "This time slot is not available. Please choose another time.",
       );
     }
     console.log("Creating booking for user:", userId);
@@ -200,7 +199,7 @@ class BookingService {
       existingBooking.status === BookingStatus.COMPLETED
     ) {
       throw new InvalidBookingError(
-        "Cannot update a cancelled or completed booking"
+        "Cannot update a cancelled or completed booking",
       );
     }
 
@@ -223,12 +222,12 @@ class BookingService {
         existingBooking.resourceId,
         startTime,
         endTime,
-        id
+        id,
       );
 
       if (!isAvailable) {
         throw new BookingConflictError(
-          "This time slot is not available. Please choose another time."
+          "This time slot is not available. Please choose another time.",
         );
       }
 
@@ -269,7 +268,7 @@ class BookingService {
    */
   async updateBookingStatus(
     id: string,
-    status: BookingStatus
+    status: BookingStatus,
   ): Promise<Booking> {
     await this.getBookingById(id);
     return bookingRepository.updateStatus(id, status);
@@ -281,7 +280,7 @@ class BookingService {
   async getUserBookings(
     userId: string,
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<{
     bookings: Booking[];
     total: number;
@@ -311,7 +310,7 @@ class BookingService {
   async getVendorBookings(
     vendorId: string,
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<{
     bookings: Booking[];
     total: number;
@@ -346,7 +345,7 @@ class BookingService {
       booking.status !== BookingStatus.CANCELLED
     ) {
       throw new InvalidBookingError(
-        "Only pending or cancelled bookings can be deleted"
+        "Only pending or cancelled bookings can be deleted",
       );
     }
 
