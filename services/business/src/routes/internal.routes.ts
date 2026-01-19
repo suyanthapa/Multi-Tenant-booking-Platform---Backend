@@ -8,13 +8,19 @@ const internalRoutes = Router();
 internalRoutes.get(
   "/:id/exists",
   internalAuthMiddleware, // Only other microservices CAN call this
-  BusinessInternalController.checkExists
+  BusinessInternalController.checkExists,
 );
 
 internalRoutes.get(
   "/:id/validate",
   internalAuthMiddleware, // Only other microservices CAN call this
-  BusinessInternalController.validateBusiness
+  BusinessInternalController.validateBusiness,
+);
+
+internalRoutes.get(
+  "/user/:userId/business",
+  internalAuthMiddleware, // Only other microservices CAN call this
+  BusinessInternalController.validateBusinessByOwner,
 );
 
 export default internalRoutes;
