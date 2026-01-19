@@ -1,0 +1,51 @@
+
+services: 
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - booking-service
+      - business-service
+      - resource-service
+
+  auth-service:
+    build: ./services/auth
+    env_file:
+        - ./services/auth/.env
+    ports:
+    - "3001:3001"
+    
+    
+  booking-service:
+    build: ./services/booking
+    env_file:
+      - ./services/booking/.env
+    ports:
+      - "3002:3002"
+    
+
+  business-service:
+    build: ./services/business
+    env_file:
+      - ./services/business/.env
+    ports:
+      - "3003:3003"
+   
+  resource-service:
+    build: ./services/resource
+    env_file:
+      - ./services/resource/.env
+    ports:
+      - "3004:3004"
+   
+  
+  
