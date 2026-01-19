@@ -2,6 +2,7 @@ import { PrismaClient, Resource, ResourceType, Prisma } from "@prisma/client";
 import Database from "../config/database";
 import bookingClient from "../clients/business.client";
 import { ForbiddenError, NotFoundError } from "../utils/errors";
+import { CreateResourceDTO } from "../types/interfaces";
 
 class ResourceRepository {
   private prisma: PrismaClient;
@@ -10,14 +11,15 @@ class ResourceRepository {
     this.prisma = Database.getInstance();
   }
 
-  async create(data: Prisma.ResourceCreateInput): Promise<Resource> {
+  async create(data: CreateResourceDTO): Promise<Resource> {
     const businessExists = await bookingClient.validateBusiness(
-      data.businessId
+      data.businessId,
     );
-    console.log("Business exists:", businessExists);
+
     if (!businessExists) {
       throw new NotFoundError("Business does not exist");
     }
+    console.log("Creating resource with data:", data);
     return this.prisma.resource.create({ data });
   }
 
@@ -53,7 +55,7 @@ class ResourceRepository {
 
   async update(
     id: string,
-    data: Prisma.ResourceUpdateInput
+    data: Prisma.ResourceUpdateInput,
   ): Promise<Resource> {
     return this.prisma.resource.update({
       where: { id },
@@ -132,6 +134,11 @@ class ResourceRepository {
       where: { id, name },
     });
   }
-}
 
+  async createCategory(name: string, businessId: string) {
+    return this.prisma.resourceCategory.create({
+      data: { name, businessId },
+    });
+  }
+}
 export default new ResourceRepository();

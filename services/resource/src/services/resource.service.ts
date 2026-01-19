@@ -2,18 +2,18 @@ import { Resource, ResourceType } from "@prisma/client";
 import resourceRepository from "../repositories/resource.repository";
 import { NotFoundError } from "../utils/errors";
 import {
-  CreateResourceInput,
   UpdateResourceInput,
   BulkCreateResourceInput,
 } from "../utils/validators";
+import { CreateResourceDTO } from "../types/interfaces";
 
 class ResourceService {
-  async createResource(data: CreateResourceInput): Promise<Resource> {
+  async createResource(data: CreateResourceDTO): Promise<Resource> {
     return resourceRepository.create(data);
   }
 
   async bulkCreateResources(
-    data: BulkCreateResourceInput
+    data: BulkCreateResourceInput,
   ): Promise<{ count: number }> {
     const { businessId, resources } = data;
 
@@ -115,7 +115,7 @@ class ResourceService {
 
   async updateResource(
     id: string,
-    data: UpdateResourceInput
+    data: UpdateResourceInput,
   ): Promise<Resource> {
     // First verify resource exists
     await this.getResourceById(id);
@@ -139,6 +139,11 @@ class ResourceService {
 
   async getResourceStats(businessId: string) {
     return resourceRepository.getStatsByBusiness(businessId);
+  }
+
+  //create resouirce category
+  async createCategory(name: string, businessId: string) {
+    return resourceRepository.createCategory(name, businessId);
   }
 }
 
