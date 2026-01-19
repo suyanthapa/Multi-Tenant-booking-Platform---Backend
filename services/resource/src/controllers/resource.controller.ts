@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import resourceService from "../services/resource.service";
 import { asyncHandler } from "../utils/asyncHandler";
 import {
-  CreateResourceInput,
   UpdateResourceInput,
   BulkCreateResourceInput,
 } from "../utils/validators";
@@ -11,7 +10,9 @@ import { ResourceType } from "@prisma/client";
 class ResourceController {
   // Create resource
   createResource = asyncHandler(async (req: Request, res: Response) => {
-    const data: CreateResourceInput = req.body;
+    const data = req.body;
+    const businessId = req.user?.businessId as string;
+    data.businessId = businessId;
 
     const resource = await resourceService.createResource(data);
 
@@ -93,7 +94,7 @@ class ResourceController {
     console.log("Requested resource type:", type);
 
     const resources = await resourceService.getResourcesByType(
-      type as ResourceType
+      type as ResourceType,
     );
 
     res.status(200).json({

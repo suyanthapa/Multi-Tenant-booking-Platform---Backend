@@ -11,7 +11,7 @@ export class AppError extends Error {
     message: string,
     statusCode: number,
     isOperational = true,
-    code?: string
+    code?: string,
   ) {
     super(message);
     this.statusCode = statusCode;
@@ -49,7 +49,7 @@ export class AuthenticationError extends AppError {
 
 export class AuthorizationError extends AppError {
   constructor(
-    message: string = "You do not have permission to perform this action"
+    message: string = "You do not have permission to perform this action",
   ) {
     super(message, 403, true, "AUTHORIZATION_ERROR");
     Object.setPrototypeOf(this, AuthorizationError.prototype);

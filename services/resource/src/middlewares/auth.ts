@@ -8,6 +8,7 @@ export interface JWTPayload {
   id: string;
   email: string;
   role: string;
+  businessId?: string;
 }
 
 // Extend Express Request type to include user
@@ -41,18 +42,19 @@ export const verifyAccessToken = (token: string): JWTPayload => {
 export const authenticate = (
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     // 1. Read headers injected by the Gateway
     const id = req.headers["x-user-id"] as string;
     const email = req.headers["x-user-email"] as string;
     const role = req.headers["x-user-role"] as string;
+    const businessId = req.headers["x-user-business-id"] as string | undefined;
 
     // 2. If Gateway didn't send these, someone bypassed the Gateway!
     if (!id || !role) {
       throw new AuthenticationError(
-        "Internal Security Breach: No Identity Headers"
+        "Internal Security Breach: No Identity Headers",
       );
     }
 
@@ -61,6 +63,7 @@ export const authenticate = (
       id,
       email,
       role,
+      businessId,
     };
 
     next();
@@ -85,7 +88,7 @@ export const authorize = (...allowedRoles: string[]) => {
 
       if (!hasAccess) {
         throw new AuthorizationError(
-          `Access denied. Required roles: ${allowedRoles.join(", ")}`
+          `Access denied. Required roles: ${allowedRoles.join(", ")}`,
         );
       }
 

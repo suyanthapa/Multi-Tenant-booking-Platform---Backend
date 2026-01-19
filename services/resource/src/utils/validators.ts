@@ -4,7 +4,6 @@ import { ResourceType, ResourceStatus } from "@prisma/client";
 // Create Resource Schema
 export const createResourceSchema = z.object({
   body: z.object({
-    businessId: z.string().min(1, "Business ID is required"),
     name: z.string().min(1, "Resource name is required"),
     type: z.nativeEnum(ResourceType),
     description: z.string().optional().nullable(),
@@ -39,7 +38,7 @@ export const bulkCreateResourceSchema = z.object({
           description: z.string().optional().nullable(),
           price: z.number().positive(),
           currency: z.string().default("USD"),
-        })
+        }),
       )
       .min(1, "At least one resource is required"),
   }),
@@ -68,8 +67,15 @@ export const typeResourceSchema = z.object({
         errorMap: () => ({
           message: "Please select a valid Resource Type ",
         }),
-      })
+      }),
     ),
+  }),
+});
+
+//create respurce category schema
+export const createCategorySchema = z.object({
+  body: z.object({
+    name: z.string().min(1, "Category name is required"),
   }),
 });
 
@@ -81,3 +87,4 @@ export type BulkCreateResourceInput = z.infer<
 >["body"];
 export type QueryResourceInput = z.infer<typeof queryResourceSchema>["query"];
 export type TypeResourceInput = z.infer<typeof typeResourceSchema>["params"];
+export type CreateCategoryInput = z.infer<typeof createCategorySchema>["body"];
