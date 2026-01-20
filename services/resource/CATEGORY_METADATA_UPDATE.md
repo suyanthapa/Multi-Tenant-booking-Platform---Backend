@@ -1,6 +1,7 @@
 # Resource Service Update - Category & Metadata Support
 
 ## Overview
+
 Updated the resource service to support the new Prisma schema with `ResourceCategory` table and `metadata` field. This enables better resource organization for multi-tenant businesses, especially hotel vendors.
 
 ---
@@ -8,6 +9,7 @@ Updated the resource service to support the new Prisma schema with `ResourceCate
 ## Schema Changes
 
 ### New Table: ResourceCategory
+
 ```prisma
 model ResourceCategory {
     id         String @id @default(uuid())
@@ -19,6 +21,7 @@ model ResourceCategory {
 ```
 
 ### Updated Resource Model
+
 - Added `categoryId` (optional) - Link to ResourceCategory
 - Added `category` relation - Category details with resources
 - Added `metadata` field - JSON object for custom fields (e.g., hotel room amenities, doctor specializations)
@@ -28,68 +31,84 @@ model ResourceCategory {
 ## Updated Files
 
 ### 1. **Validators** (`src/utils/validators.ts`)
+
 #### Added Fields:
+
 - `categoryId`: Optional UUID for resource categorization
 - `metadata`: Optional JSON object for flexible custom data
 
 #### New Schemas:
+
 ```typescript
-createCategorySchema      // Create resource category
-updateCategorySchema      // Update category name
-queryCategorySchema       // Query categories by business
+createCategorySchema; // Create resource category
+updateCategorySchema; // Update category name
+queryCategorySchema; // Query categories by business
 ```
 
 ### 2. **Repository** (`src/repositories/resource.repository.ts`)
+
 #### Updated Resource Methods:
+
 All resource queries now include `category` relation:
+
 - `findById()` - Returns resource with category details
 - `findAll()` - Lists resources with categories
 - `findByBusiness()` - Business resources with categories
 - `findByType()` - Type-filtered resources with categories
 
 #### New Category Methods:
+
 ```typescript
-createCategory(data)                          // Create new category
-findCategoryById(id)                          // Get category with resources
-findCategoriesByBusiness(businessId)          // List all categories for business
-updateCategory(id, data)                      // Update category name
-deleteCategory(id)                            // Delete category (unlinks resources)
-findCategoryByBusinessAndName(businessId, name) // Check duplicate names
+createCategory(data); // Create new category
+findCategoryById(id); // Get category with resources
+findCategoriesByBusiness(businessId); // List all categories for business
+updateCategory(id, data); // Update category name
+deleteCategory(id); // Delete category (unlinks resources)
+findCategoryByBusinessAndName(businessId, name); // Check duplicate names
 ```
 
 ### 3. **Service** (`src/services/resource.service.ts`)
+
 #### Updated:
+
 - `getAllResources()` - Now supports `categoryId` filter parameter
 
 #### New Category Methods:
+
 ```typescript
-createCategory(data)           // Validates unique name per business
-getCategoryById(id)            // Fetch single category
-getCategoriesByBusiness(businessId) // List business categories
-updateCategory(id, data)       // Prevents duplicate names
-deleteCategory(id)             // Safe deletion with resource unlinking
+createCategory(data); // Validates unique name per business
+getCategoryById(id); // Fetch single category
+getCategoriesByBusiness(businessId); // List business categories
+updateCategory(id, data); // Prevents duplicate names
+deleteCategory(id); // Safe deletion with resource unlinking
 ```
 
 #### Business Logic:
+
 - Prevents duplicate category names within same business
 - Automatically unlinks resources when deleting a category
 - Returns category with associated resources
 
 ### 4. **Controllers** (`src/controllers/`)
+
 #### Updated: `resource.controller.ts`
+
 - Added `categoryId` query parameter support in `getAllResources`
 
 #### New: `category.controller.ts`
+
 ```typescript
-createCategory          // POST - Create category
-getCategoryById         // GET - Fetch category details
-getCategoriesByBusiness // GET - List business categories  
-updateCategory          // PATCH - Update category
-deleteCategory          // DELETE - Remove category
+createCategory; // POST - Create category
+getCategoryById; // GET - Fetch category details
+getCategoriesByBusiness; // GET - List business categories
+updateCategory; // PATCH - Update category
+deleteCategory; // DELETE - Remove category
 ```
 
 ### 5. **Routes** (`src/routes/`)
+
 #### New: `category.routes.ts`
+
 ```
 POST   /categories                      - Create category (Vendor/Admin)
 GET    /categories/:id                  - Get category by ID
@@ -99,12 +118,15 @@ DELETE /categories/:id                  - Delete category (Vendor/Admin)
 ```
 
 #### Updated: `index.ts`
+
 - Added category routes under `/categories`
 
 ### 6. **Errors** (`src/utils/errors.ts`)
+
 #### Added:
+
 ```typescript
-BadRequestError  // 400 - For duplicate category names, etc.
+BadRequestError; // 400 - For duplicate category names, etc.
 ```
 
 ---
@@ -114,6 +136,7 @@ BadRequestError  // 400 - For duplicate category names, etc.
 ### Resource with Category & Metadata
 
 #### Create Resource (Hotel Room Example)
+
 ```json
 POST /resources
 {
@@ -136,6 +159,7 @@ POST /resources
 ```
 
 #### Create Resource (Doctor Slot Example)
+
 ```json
 POST /resources
 {
@@ -158,6 +182,7 @@ POST /resources
 ### Category Management
 
 #### Create Category
+
 ```json
 POST /categories
 {
@@ -167,6 +192,7 @@ POST /categories
 ```
 
 #### Get Categories with Resources
+
 ```json
 GET /categories/business/hotel-uuid
 
@@ -194,6 +220,7 @@ Response:
 ```
 
 #### Filter Resources by Category
+
 ```json
 GET /resources?categoryId=suite-category-uuid&businessId=hotel-uuid
 
@@ -205,11 +232,13 @@ Response: Paginated list of resources in that category
 ## Benefits for Hotel Vendors
 
 ### Before (Without Categories):
+
 - All rooms mixed together
 - Hard to filter by room type
 - No structured metadata for amenities
 
 ### After (With Categories & Metadata):
+
 - **Organized**: Rooms grouped by type (Standard, Deluxe, Suite, etc.)
 - **Flexible**: Metadata stores custom fields (room number, floor, amenities)
 - **Filterable**: Easy queries by category, price, or custom metadata
@@ -220,6 +249,7 @@ Response: Paginated list of resources in that category
 ## Migration Required
 
 Run Prisma migration to apply schema changes:
+
 ```bash
 npm run prisma:migrate:dev
 ```

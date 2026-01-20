@@ -29,34 +29,26 @@ class CategoryController {
   //     });
   //   });
 
-  //   // Get all resources
-  //   getAllResources = asyncHandler(async (req: Request, res: Response) => {
-  //     const query = req.query as any;
-  //     const page = parseInt(query.page) || 1;
-  //     const limit = parseInt(query.limit) || 10;
-  //     const businessId = query.businessId;
-  //     const type = query.type as ResourceType | undefined;
-  //     const status = query.status as string | undefined;
-  //     const search = query.search;
-  //     const minPrice = query.minPrice ? parseFloat(query.minPrice) : undefined;
-  //     const maxPrice = query.maxPrice ? parseFloat(query.maxPrice) : undefined;
+  // Get all categories
+  getAllCategories = asyncHandler(async (req: Request, res: Response) => {
+    const query = req.query as any;
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const businessId = query.businessId;
+    const search = query.search;
 
-  //     const result = await resourceService.getAllResources({
-  //       page,
-  //       limit,
-  //       businessId,
-  //       type,
-  //       status,
-  //       search,
-  //       minPrice,
-  //       maxPrice,
-  //     });
+    const result = await resourceService.getAllCategories({
+      page,
+      limit,
+      businessId,
+      search,
+    });
 
-  //     res.status(200).json({
-  //       success: true,
-  //       data: result,
-  //     });
-  //   });
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  });
 
   //   // Get resource by ID
   //   getResourceById = asyncHandler(async (req: Request, res: Response) => {

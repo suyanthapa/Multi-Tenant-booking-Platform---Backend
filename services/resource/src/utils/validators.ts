@@ -8,6 +8,7 @@ export const createResourceSchema = z.object({
     type: z.nativeEnum(ResourceType),
     description: z.string().optional().nullable(),
     price: z.number().positive("Price must be positive"),
+    categoryId: z.string().uuid("Invalid Category ID format").optional(),
   }),
 });
 
@@ -45,7 +46,7 @@ export const bulkCreateResourceSchema = z.object({
 });
 
 // Query Schema
-export const queryResourceSchema = z.object({
+export const queryResourceCategorySchema = z.object({
   query: z.object({
     page: z.string().optional().default("1"),
     limit: z.string().optional().default("10"),
@@ -85,6 +86,8 @@ export type UpdateResourceInput = z.infer<typeof updateResourceSchema>["body"];
 export type BulkCreateResourceInput = z.infer<
   typeof bulkCreateResourceSchema
 >["body"];
-export type QueryResourceInput = z.infer<typeof queryResourceSchema>["query"];
+export type QueryResourceCategoryInput = z.infer<
+  typeof queryResourceCategorySchema
+>["query"];
 export type TypeResourceInput = z.infer<typeof typeResourceSchema>["params"];
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>["body"];

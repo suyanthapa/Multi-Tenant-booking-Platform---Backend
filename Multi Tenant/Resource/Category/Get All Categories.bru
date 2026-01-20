@@ -1,0 +1,28 @@
+meta {
+  name: Get All Categories
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:3000/api/resources/category
+  body: none
+  auth: inherit
+}
+
+body:json {
+  {
+    "userId": "uuid",
+    "vendorId": "uuid",
+    "serviceId": "uuid",
+    "bookingDate": "2026-01-15T00:00:00Z",
+    "startTime": "2026-01-15T10:00:00Z",
+    "endTime": "2026-01-15T11:00:00Z",
+    "notes": "Optional notes"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
