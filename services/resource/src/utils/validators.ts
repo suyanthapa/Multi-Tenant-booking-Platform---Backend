@@ -3,13 +3,16 @@ import { ResourceType, ResourceStatus } from "@prisma/client";
 
 // Create Resource Schema
 export const createResourceSchema = z.object({
-  body: z.object({
-    name: z.string().min(1, "Resource name is required"),
-    type: z.nativeEnum(ResourceType),
-    description: z.string().optional().nullable(),
-    price: z.number().positive("Price must be positive"),
-    categoryId: z.string().uuid("Invalid Category ID format").optional(),
-  }),
+  body: z
+    .object({
+      name: z.string().min(1, "Resource name is required"),
+      type: z.nativeEnum(ResourceType),
+      description: z.string().optional().nullable(),
+      price: z.number().positive("Price must be positive"),
+      categoryId: z.string().uuid("Invalid Category ID format").optional(),
+      metadata: z.record(z.any()).optional(),
+    })
+    .strict(),
 });
 
 // Update Resource Schema

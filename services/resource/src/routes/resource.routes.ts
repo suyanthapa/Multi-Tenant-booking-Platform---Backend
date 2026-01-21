@@ -7,9 +7,34 @@ import {
   updateResourceSchema,
   bulkCreateResourceSchema,
   typeResourceSchema,
+  createCategorySchema,
 } from "../utils/validators";
 
 const router = Router();
+
+//get all categories
+router.get(
+  "/categories",
+  authenticate,
+  resourceController.getAllResourceCategories,
+);
+
+//create category
+router.post(
+  "/categories",
+  authenticate,
+  authorize("VENDOR"),
+  validate(createCategorySchema),
+  resourceController.createResourceCategory,
+);
+
+// Get All Resources (Vendor or Admin)
+router.get(
+  "/",
+  authenticate,
+  authorize("VENDOR"),
+  resourceController.getAllResources,
+);
 
 // Create resource (Vendor only)
 router.post(
