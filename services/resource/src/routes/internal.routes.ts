@@ -6,9 +6,15 @@ const internalRoutes = Router();
 
 // routes/internal.routes.ts
 internalRoutes.post(
-  "/:id/exists",
+  "/categories/:categoryId/exists",
   internalAuthMiddleware, // Only other microservices CAN call this
-  ResourceInternalController.checkExists
+  ResourceInternalController.checkExists,
+);
+
+internalRoutes.post(
+  "/categories/:categoryId/active-resources",
+  internalAuthMiddleware,
+  ResourceInternalController.activeResourcesInCategory,
 );
 
 export default internalRoutes;

@@ -4,17 +4,6 @@ import { asyncHandler } from "../utils/asyncHandler";
 
 class CategoryController {
   // Create category
-  createResourceCategory = asyncHandler(async (req: Request, res: Response) => {
-    const { name } = req.body;
-    const businessId = req.user?.businessId as string;
-
-    const category = await resourceService.createCategory(name, businessId);
-
-    res.status(201).json({
-      success: true,
-      data: category,
-    });
-  });
 
   //   // Bulk create resources
   //   bulkCreateResources = asyncHandler(async (req: Request, res: Response) => {
@@ -37,7 +26,7 @@ class CategoryController {
     const businessId = query.businessId;
     const search = query.search;
 
-    const result = await resourceService.getAllCategories({
+    const result = await resourceService.getAllResourceCategories({
       page,
       limit,
       businessId,

@@ -10,32 +10,44 @@ interface ResourceInfo {
   price?: number;
   currency?: string;
   businessId?: string;
-  businessName?: string;
 }
 
 class ResourceInternalController {
   checkExists = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const { name } = req.body;
-
+    console.log("Checking existence for Resource ID:", id, "with name:", name);
     const resource = await resourceRepository.checkExists(id, name);
 
-    const resourceInfo: ResourceInfo = {
+    const resourceInfo = {
       exists: !!resource && resource.name === name,
-      status: resource?.status,
+
       name: resource?.name,
-      type: resource?.type,
-      price: resource ? Number(resource.price) : undefined,
-      currency: resource?.currency,
+
       businessId: resource?.businessId,
-      businessName: "demo name",
     };
+
+    console.log("Resource existence check:", resourceInfo);
     // We return a simple flat object
     res.status(200).json({
       success: true,
       resourceInfo: resourceInfo,
     });
   });
+
+  activeResourcesInCategory = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const { categoryId } = req.params;
+
+      const availableResources: string[] =
+        await resourceRepository.activeResourcesInCategory(categoryId);
+
+      res.status(200).json({
+        success: true,
+        availableResourcesInfo: availableResources,
+      });
+    },
+  );
 }
 
 export default new ResourceInternalController();
