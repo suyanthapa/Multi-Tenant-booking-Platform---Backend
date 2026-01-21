@@ -11,9 +11,8 @@ import bookingRepository from "../repositories/booking.repository";
 export interface CreateBookingDTO {
   businessId: string;
   businessName: string;
-  resourceName: string;
-  resourceId: string;
-  bookingDate: string;
+  categoryId: string;
+  categoryName: string;
   startTime: string;
   endTime: string;
 }
@@ -47,15 +46,10 @@ class BookingService {
   ): Promise<Booking> {
     const startTime = new Date(data.startTime);
     const endTime = new Date(data.endTime);
-    const bookingDate = new Date(data.bookingDate);
 
     // Validate dates
     if (startTime >= endTime) {
       throw new InvalidBookingError("Start time must be before end time");
-    }
-
-    if (bookingDate < new Date()) {
-      throw new InvalidBookingError("Booking date cannot be in the past");
     }
 
     //chekc business existence
@@ -65,49 +59,58 @@ class BookingService {
     }
     console.log("Business exists from service:", business);
     // Fetch resource details
-    const resource = await resourceClient.validateResource(
-      data.resourceId,
-      data.resourceName,
+    const resource = await resourceClient.validateResourceCategory(
+      data.categoryId,
+      data.categoryName,
     );
-    if (!resource) {
-      throw new NotFoundError("Resource not found");
-    }
 
-    // Check if resource is active
-    if (resource.status !== "ACTIVE") {
-      throw new InvalidBookingError("Resource is not available for booking");
+    console.log("Resource category validation result:", resource);
+    const allResourceIds = await resourceClient.getActiveResources(
+      data.categoryId,
+    );
+    if (!allResourceIds || allResourceIds.length === 0) {
+      throw new NotFoundError("No active resources found for this category");
     }
+    console.log("Active resources fetched:", allResourceIds);
 
-    // Check if time slot is available
-    const isAvailable = await bookingRepository.isTimeSlotAvailable(
-      data.resourceId,
+    const conflictBookings = await bookingRepository.findConflictingBookings(
+      allResourceIds,
+      data.businessId,
       startTime,
       endTime,
     );
 
-    if (!isAvailable) {
+    console.log("Conflicting bookings found:", conflictBookings);
+
+    const availableResource = allResourceIds.filter(
+      (id) => !conflictBookings.includes(id),
+    );
+
+    console.log("Available resources after filtering:", availableResource);
+    if (availableResource.length === 0) {
       throw new BookingConflictError(
-        "This time slot is not available. Please choose another time.",
+        "No available resources for the selected time slot. Please choose another time.",
       );
     }
-    console.log("Creating booking for user:", userId);
-    console.log("Booking data:", data);
+
+    const bookingDate = new Date();
+    const bookingResource = availableResource[0];
+    console.log("Selected resource for booking:", bookingResource);
+
     // Create booking with snapshot data
     const booking = await bookingRepository.create({
       userId: userId,
       vendorId: business.vendorId,
       businessId: business.businessId,
-      resourceId: data.resourceId,
+      resourceId: bookingResource,
       bookingDate: bookingDate,
-      startTime,
-      endTime,
+      startTime: startTime,
+      endTime: endTime,
       businessName: data.businessName,
-      resourceName: data.resourceName,
-      resourceType: resource.type as string,
-
-      priceAtBooking: resource.price || 0,
-      currency: resource.currency || "USD",
-      status: BookingStatus.PENDING,
+      resourceName: "resource.name",
+      resourceType: "resource.type",
+      priceAtBooking: 0,
+      status: BookingStatus.CONFIRMED,
     });
 
     return booking;

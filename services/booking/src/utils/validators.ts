@@ -8,9 +8,8 @@ export const createBookingSchema = z.object({
   body: z.object({
     businessId: z.string().min(1, "Business ID is required"),
     businessName: z.string().min(1, "Business name is required"),
-    resourceId: z.string().uuid("Invalid resource ID"),
-    resourceName: z.string().min(1, "Resource name is required"),
-    bookingDate: z.string().datetime("Invalid booking date"),
+    categoryId: z.string().uuid("Invalid category ID"),
+    categoryName: z.string().min(1, "Category name is required"),
     startTime: z.string().datetime("Invalid start time"),
     endTime: z.string().datetime("Invalid end time"),
   }),
@@ -172,7 +171,7 @@ export const bulkCreateResourcesSchema = z.object({
           .string()
           .length(3, "Currency must be 3 characters")
           .optional(),
-      })
+      }),
     ),
   }),
 });

@@ -20,8 +20,9 @@ const router = Router();
 router.post(
   "/",
   authenticate,
+  // authorize("USER"),
   validate(createBookingSchema),
-  bookingController.createBooking
+  bookingController.createBooking,
 );
 
 /**
@@ -33,7 +34,7 @@ router.get(
   "/",
   authenticate,
   validate(getBookingsSchema),
-  bookingController.getBookings
+  bookingController.getBookings,
 );
 
 /**
@@ -45,7 +46,7 @@ router.get(
   "/:id",
   authenticate,
   validate(getBookingByIdSchema),
-  bookingController.getBookingById
+  bookingController.getBookingById,
 );
 
 /**
@@ -57,7 +58,7 @@ router.patch(
   "/:id",
   authenticate,
   validate(updateBookingSchema),
-  bookingController.updateBooking
+  bookingController.updateBooking,
 );
 
 /**
@@ -69,7 +70,7 @@ router.post(
   "/:id/cancel",
   authenticate,
   validate(cancelBookingSchema),
-  bookingController.cancelBooking
+  bookingController.cancelBooking,
 );
 
 /**
@@ -88,7 +89,7 @@ router.get(
   "/vendor/:vendorId",
   authenticate,
   authorize("ADMIN", "VENDOR"),
-  bookingController.getVendorBookings
+  bookingController.getVendorBookings,
 );
 
 /**
@@ -101,7 +102,7 @@ router.delete(
   authenticate,
   authorize("ADMIN"),
   validate(getBookingByIdSchema),
-  bookingController.deleteBooking
+  bookingController.deleteBooking,
 );
 
 export default router;

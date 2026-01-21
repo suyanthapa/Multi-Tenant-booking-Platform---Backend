@@ -9,7 +9,11 @@ interface ResourceInfo {
   price?: number;
   currency?: string;
   businessId?: string;
-  businessName?: string;
+}
+
+interface ResourceCategoryInfo {
+  exists: boolean;
+  name?: string;
 }
 
 class ResourceClient {
@@ -25,13 +29,13 @@ class ResourceClient {
 
   async validateResource(
     resourceId: string,
-    ResourceName: string
+    ResourceName: string,
   ): Promise<ResourceInfo> {
     try {
       console.log("Validating resource ID:", resourceId);
       console.log(
         "Using RESOURCE_SERVICE_URL:",
-        process.env.RESOURCE_SERVICE_URL
+        process.env.RESOURCE_SERVICE_URL,
       );
       const response = await this.client.post(`/${resourceId}/exists`, {
         name: ResourceName,
@@ -43,7 +47,50 @@ class ResourceClient {
       // If it's a timeout or 500, log it and throw an error so the user knows it's a system issue
       console.error(`[BookingClient Error]: ${error.message}`);
       throw new InternalServerError(
-        "Unable to verify business identity at this time."
+        "Unable to verify business identity at this time.",
+      );
+    }
+  }
+
+  async validateResourceCategory(
+    categoryId: string,
+    categoryName: string,
+  ): Promise<ResourceInfo> {
+    try {
+      const response = await this.client.post(
+        `/categories/${categoryId}/exists`,
+        {
+          name: categoryName,
+        },
+      );
+
+      console.log("Resource info extracted:", response.data.resourceInfo);
+      return response.data.resourceInfo;
+    } catch (error: any) {
+      //  logging can be added here
+      console.log("Booking Service Rejected with:", error.response?.data);
+      // If it's a timeout or 500, log it and throw an error so the user knows it's a system issue
+      console.error(`[BookingClient Error]: ${error.message}`);
+      throw new InternalServerError(
+        "Unable to verify business identity at this time.",
+      );
+    }
+  }
+
+  async getActiveResources(categoryId: string): Promise<string[]> {
+    try {
+      const response = await this.client.post(
+        `/categories/${categoryId}/active-resources`,
+      );
+      console.log("Active resources fetched:", response.data);
+      return response.data.availableResourcesInfo;
+    } catch (error: any) {
+      //  logging can be added here
+      console.log("Booking Service Rejected with:", error.response?.data);
+      // If it's a timeout or 500, log it and throw an error so the user knows it's a system issue
+      console.error(`[BookingClient Error]: ${error.message}`);
+      throw new InternalServerError(
+        "Unable to verify business identity at this time.",
       );
     }
   }

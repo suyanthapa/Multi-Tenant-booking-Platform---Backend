@@ -66,7 +66,7 @@ export class BookingRepository {
   async findByUserId(
     userId: string,
     skip?: number,
-    take?: number
+    take?: number,
   ): Promise<Booking[]> {
     return this.prisma.booking.findMany({
       where: { userId },
@@ -82,7 +82,7 @@ export class BookingRepository {
   async findByVendorId(
     vendorId: string,
     skip?: number,
-    take?: number
+    take?: number,
   ): Promise<Booking[]> {
     return this.prisma.booking.findMany({
       where: { vendorId },
@@ -98,7 +98,7 @@ export class BookingRepository {
   async findByResourceId(
     resourceId: string,
     skip?: number,
-    take?: number
+    take?: number,
   ): Promise<Booking[]> {
     return this.prisma.booking.findMany({
       where: { resourceId },
@@ -114,7 +114,7 @@ export class BookingRepository {
   async findByStatus(
     status: BookingStatus,
     skip?: number,
-    take?: number
+    take?: number,
   ): Promise<Booking[]> {
     return this.prisma.booking.findMany({
       where: { status },
@@ -131,7 +131,7 @@ export class BookingRepository {
     resourceId: string,
     startTime: Date,
     endTime: Date,
-    excludeBookingId?: string
+    excludeBookingId?: string,
   ): Promise<boolean> {
     const where: Prisma.BookingWhereInput = {
       resourceId,
@@ -191,6 +191,40 @@ export class BookingRepository {
         cancelReason,
       },
     });
+  }
+
+  /**
+   * Find conflicting bookings for given resources and time range
+   */
+  async findConflictingBookings(
+    resourceIds: string[],
+    businessId: string,
+    startTime: Date,
+    endTime: Date,
+  ): Promise<string[]> {
+    const bookings = await this.prisma.booking.findMany({
+      where: {
+        resourceId: { in: resourceIds },
+        businessId,
+        status: "CONFIRMED",
+        AND: [
+          {
+            // The existing booking starts before the user's session is over
+            startTime: { lt: endTime },
+          },
+          {
+            // The existing booking ends after the user's session begins
+            endTime: { gt: startTime },
+          },
+        ],
+      },
+      select: {
+        resourceId: true,
+      },
+    });
+    const conflictBookings = bookings.map((booking) => booking.resourceId);
+    console.log("Conflict bookings found in repository:", conflictBookings);
+    return conflictBookings;
   }
 }
 
