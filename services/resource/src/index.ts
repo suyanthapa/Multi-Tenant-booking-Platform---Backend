@@ -10,6 +10,7 @@ import { errorHandler, notFoundHandler } from "./middlewares/errorHandler";
 import logger from "./utils/logger";
 
 const app: Application = express();
+const morganFormat = config.nodeEnv === "development" ? "dev" : "combined";
 
 // Middlewares
 app.use(helmet()); // Security headers
@@ -17,7 +18,7 @@ app.use(cors()); // Enable CORS
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(cookieParser()); // Parse cookies
-app.use(morgan("combined")); // HTTP request logger
+app.use(morgan(morganFormat)); // HTTP request logger
 
 // Health check
 app.get("/health", async (_req, res) => {
