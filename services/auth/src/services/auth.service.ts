@@ -262,6 +262,10 @@ class AuthService {
     // Get user
     const user = await this.userRepository.findById(payload.id);
 
+    const business = await businessClient.validateBusinessByOwner(
+      user?.id || "",
+    );
+
     if (!user || user.status !== UserStatus.ACTIVE) {
       throw new AuthenticationError("User not found or inactive");
     }
@@ -271,6 +275,7 @@ class AuthService {
       id: user.id,
       email: user.email,
       role: user.role,
+      ...(business && { businessId: business.businessId }),
     };
 
     const { accessToken, refreshToken } = generateTokenPair(newPayload);
