@@ -1,8 +1,15 @@
-import { PrismaClient, Resource, ResourceType, Prisma } from "@prisma/client";
+import {
+  PrismaClient,
+  Resource,
+  ResourceType,
+  Prisma,
+  ResourceCategory,
+} from "@prisma/client";
 import Database from "../config/database";
 import bookingClient from "../clients/business.client";
 import { ForbiddenError, NotFoundError } from "../utils/errors";
 import { CreateResourceDTO } from "../types/interfaces";
+import { dbHandler } from "../utils/repositoryHandler";
 
 class ResourceRepository {
   private prisma: PrismaClient;
@@ -11,7 +18,7 @@ class ResourceRepository {
     this.prisma = Database.getInstance();
   }
 
-  async create(data: CreateResourceDTO): Promise<Resource> {
+  create = dbHandler(async (data: CreateResourceDTO): Promise<Resource> => {
     const businessExists = await bookingClient.validateBusiness(
       data.businessId,
     );
@@ -20,63 +27,71 @@ class ResourceRepository {
       throw new NotFoundError("Business does not exist");
     }
     console.log("Creating resource with data:", data);
-    return this.prisma.resource.create({ data });
-  }
+    return await this.prisma.resource.create({ data });
+  });
 
-  async createMany(data: Prisma.ResourceCreateManyInput[]): Promise<number> {
-    const result = await this.prisma.resource.createMany({ data });
-    return result.count;
-  }
+  createMany = dbHandler(
+    async (data: Prisma.ResourceCreateManyInput[]): Promise<number> => {
+      const result = await this.prisma.resource.createMany({ data });
+      return result.count;
+    },
+  );
 
-  async findById(id: string): Promise<Resource | null> {
+  //find all resources
+  findAllResources = dbHandler(
+    async (params: {
+      skip?: number;
+      take?: number;
+      where?: Prisma.ResourceWhereInput;
+      orderBy?: Prisma.ResourceOrderByWithRelationInput;
+    }): Promise<Resource[]> => {
+      const { skip, take, where, orderBy } = params;
+      return this.prisma.resource.findMany({
+        skip,
+        take,
+        where,
+        orderBy,
+      });
+    },
+  );
+
+  findById = dbHandler(async (id: string): Promise<Resource | null> => {
     return this.prisma.resource.findUnique({
       where: { id },
     });
-  }
+  });
 
-  async findAll(params: {
-    skip?: number;
-    take?: number;
-    where?: Prisma.ResourceWhereInput;
-    orderBy?: Prisma.ResourceOrderByWithRelationInput;
-  }): Promise<Resource[]> {
-    const { skip, take, where, orderBy } = params;
-    return this.prisma.resource.findMany({
-      skip,
-      take,
-      where,
-      orderBy,
-    });
-  }
+  count = dbHandler(
+    async (where?: Prisma.ResourceWhereInput): Promise<number> => {
+      return this.prisma.resource.count({ where });
+    },
+  );
 
-  async count(where?: Prisma.ResourceWhereInput): Promise<number> {
-    return this.prisma.resource.count({ where });
-  }
+  update = dbHandler(
+    async (id: string, data: Prisma.ResourceUpdateInput): Promise<Resource> => {
+      return this.prisma.resource.update({
+        where: { id },
+        data,
+      });
+    },
+  );
 
-  async update(
-    id: string,
-    data: Prisma.ResourceUpdateInput,
-  ): Promise<Resource> {
-    return this.prisma.resource.update({
-      where: { id },
-      data,
-    });
-  }
-
-  async delete(id: string): Promise<Resource> {
+  delete = dbHandler(async (id: string): Promise<Resource> => {
     return this.prisma.resource.delete({
       where: { id },
     });
-  }
+  });
 
-  async findByBusiness(businessId: string): Promise<Resource[]> {
-    return this.prisma.resource.findMany({
-      where: { businessId },
-      orderBy: { createdAt: "desc" },
-    });
-  }
+  findByBusiness = dbHandler(
+    async (businessId: string): Promise<Resource[]> => {
+      return this.prisma.resource.findMany({
+        where: { businessId },
+        orderBy: { createdAt: "desc" },
+      });
+    },
+  );
 
-  async findByType(type: ResourceType): Promise<Resource[]> {
+  findByType = dbHandler(async (type: ResourceType): Promise<Resource[]> => {
     const result = await this.prisma.resource.findMany({
       where: { type },
       orderBy: { createdAt: "desc" },
@@ -86,30 +101,35 @@ class ResourceRepository {
       throw new NotFoundError(`No resources found for type '${type}'`);
     }
     return result;
-  }
+  });
 
-  async toggleStatus(id: string, userRole: string): Promise<Resource> {
-    const resource = await this.findById(id);
-    if (!resource) {
-      throw new NotFoundError("Resource not found");
-    }
+  toggleStatus = dbHandler(
+    async (id: string, userRole: string): Promise<Resource> => {
+      const resource = await this.findById(id);
+      if (!resource) {
+        throw new NotFoundError("Resource not found");
+      }
 
-    const restrictedStatuses = ["MAINTENANCE", "DELETED"];
+      const restrictedStatuses = ["MAINTENANCE", "DELETED"];
 
-    if (restrictedStatuses.includes(resource.status) && userRole !== "ADMIN") {
-      throw new ForbiddenError(`You cannot modify a resource `);
-    }
+      if (
+        restrictedStatuses.includes(resource.status) &&
+        userRole !== "ADMIN"
+      ) {
+        throw new ForbiddenError(`You cannot modify a resource `);
+      }
 
-    // Toggle between ACTIVE and INACTIVE
-    const newStatus = resource.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+      // Toggle between ACTIVE and INACTIVE
+      const newStatus = resource.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
 
-    return this.prisma.resource.update({
-      where: { id },
-      data: { status: newStatus },
-    });
-  }
+      return this.prisma.resource.update({
+        where: { id },
+        data: { status: newStatus },
+      });
+    },
+  );
 
-  async getStatsByBusiness(businessId: string) {
+  getStatsByBusiness = dbHandler(async (businessId: string) => {
     const businessExists = await bookingClient.validateBusiness(businessId);
     if (!businessExists) {
       throw new NotFoundError("Business does not exist");
@@ -127,18 +147,54 @@ class ResourceRepository {
       inactive,
       maintenance,
     };
-  }
+  });
 
-  async checkExists(id: string, name: string): Promise<Resource | null> {
-    return await this.prisma.resource.findFirst({
-      where: { id, name },
-    });
-  }
+  checkExists = dbHandler(
+    async (id: string, name: string): Promise<ResourceCategory | null> => {
+      return await this.prisma.resourceCategory.findFirst({
+        where: { id, name },
+      });
+    },
+  );
 
-  async createCategory(name: string, businessId: string) {
+  createCategory = dbHandler(async (name: string, businessId: string) => {
     return this.prisma.resourceCategory.create({
       data: { name, businessId },
     });
-  }
+  });
+
+  findAllCategories = dbHandler(
+    async (params: {
+      skip?: number;
+      take?: number;
+      where?: Prisma.ResourceCategoryWhereInput;
+      orderBy?: Prisma.ResourceCategoryOrderByWithRelationInput;
+    }): Promise<ResourceCategory[]> => {
+      const { skip, take, where, orderBy } = params;
+      return this.prisma.resourceCategory.findMany({
+        skip,
+        take,
+        where,
+        orderBy,
+      });
+    },
+  );
+
+  //check activbe resources in category
+  activeResourcesInCategory = dbHandler(
+    async (categoryId: string): Promise<string[]> => {
+      const resources = await this.prisma.resource.findMany({
+        where: {
+          categoryId,
+          status: "ACTIVE",
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      return resources.map((resource) => resource.id);
+    },
+  );
 }
 export default new ResourceRepository();

@@ -11,6 +11,7 @@ class ResourceController {
   // Create resource
   createResource = asyncHandler(async (req: Request, res: Response) => {
     const data = req.body;
+    console.log("Request body for creating resource:", data);
     const businessId = req.user?.businessId as string;
     data.businessId = businessId;
 
@@ -35,7 +36,7 @@ class ResourceController {
     });
   });
 
-  // Get all resources
+  // Get all  categories
   getAllResources = asyncHandler(async (req: Request, res: Response) => {
     const query = req.query as any;
     const page = parseInt(query.page) || 1;
@@ -151,6 +152,42 @@ class ResourceController {
       data: stats,
     });
   });
+
+  // Create Resource Category
+  createResourceCategory = asyncHandler(async (req: Request, res: Response) => {
+    const { name } = req.body;
+    const businessId = req.user?.businessId as string;
+
+    const category = await resourceService.createCategory(name, businessId);
+
+    res.status(201).json({
+      success: true,
+      data: category,
+    });
+  });
+
+  // Get all resources categories
+  getAllResourceCategories = asyncHandler(
+    async (req: Request, res: Response) => {
+      const query = req.query as any;
+      const page = parseInt(query.page) || 1;
+      const limit = parseInt(query.limit) || 10;
+      const businessId = query.businessId;
+      const search = query.search;
+
+      const result = await resourceService.getAllResourceCategories({
+        page,
+        limit,
+        businessId,
+        search,
+      });
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    },
+  );
 }
 
 export default new ResourceController();

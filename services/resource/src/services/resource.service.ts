@@ -1,4 +1,4 @@
-import { Resource, ResourceType } from "@prisma/client";
+import { Resource, ResourceCategory, ResourceType } from "@prisma/client";
 import resourceRepository from "../repositories/resource.repository";
 import { NotFoundError } from "../utils/errors";
 import {
@@ -87,7 +87,7 @@ class ResourceService {
     }
 
     const [resources, total] = await Promise.all([
-      resourceRepository.findAll({
+      resourceRepository.findAllResources({
         skip,
         take: limit,
         where,
@@ -144,6 +144,55 @@ class ResourceService {
   //create resouirce category
   async createCategory(name: string, businessId: string) {
     return resourceRepository.createCategory(name, businessId);
+  }
+
+  //get all categories
+  async getAllResourceCategories(params: {
+    page?: number;
+    limit?: number;
+    businessId?: string;
+    search?: string;
+  }): Promise<{
+    resources: ResourceCategory[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const page = params.page || 1;
+    const limit = params.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    if (params.businessId) {
+      where.businessId = params.businessId;
+    }
+
+    if (params.search) {
+      where.OR = [
+        { name: { contains: params.search, mode: "insensitive" } },
+        { description: { contains: params.search, mode: "insensitive" } },
+      ];
+    }
+
+    const [resources, total] = await Promise.all([
+      resourceRepository.findAllCategories({
+        skip,
+        take: limit,
+        where,
+        orderBy: { createdAt: "desc" },
+      }),
+      resourceRepository.count(where),
+    ]);
+
+    return {
+      resources,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 }
 
