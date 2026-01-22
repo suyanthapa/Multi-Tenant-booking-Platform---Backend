@@ -1,16 +1,7 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../../utils/asyncHandler";
 import resourceRepository from "../../repositories/resource.repository";
-
-interface ResourceInfo {
-  exists: boolean;
-  status?: string;
-  name?: string;
-  type?: string;
-  price?: number;
-  currency?: string;
-  businessId?: string;
-}
+import { ActiveResourceInfo } from "../../types/interfaces";
 
 class ResourceInternalController {
   checkExists = asyncHandler(async (req: Request, res: Response) => {
@@ -39,7 +30,7 @@ class ResourceInternalController {
     async (req: Request, res: Response): Promise<void> => {
       const { categoryId } = req.params;
 
-      const availableResources: string[] =
+      const availableResources: ActiveResourceInfo[] =
         await resourceRepository.activeResourcesInCategory(categoryId);
 
       res.status(200).json({

@@ -11,9 +11,10 @@ interface ResourceInfo {
   businessId?: string;
 }
 
-interface ResourceCategoryInfo {
-  exists: boolean;
-  name?: string;
+interface ActiveResourceInfo {
+  id: string;
+  name: string;
+  type: string;
 }
 
 class ResourceClient {
@@ -77,7 +78,7 @@ class ResourceClient {
     }
   }
 
-  async getActiveResources(categoryId: string): Promise<string[]> {
+  async getActiveResources(categoryId: string): Promise<ActiveResourceInfo[]> {
     try {
       const response = await this.client.post(
         `/categories/${categoryId}/active-resources`,

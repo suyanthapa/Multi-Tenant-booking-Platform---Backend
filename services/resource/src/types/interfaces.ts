@@ -8,3 +8,14 @@ export interface CreateResourceDTO {
   categoryId: string;
   metadata?: Record<string, any>;
 }
+
+export interface activeResourcesInCategoryResponse {
+  status: boolean;
+  availableResourcesInfo: ActiveResourceInfo[];
+}
+
+export interface ActiveResourceInfo {
+  id: string;
+  name: string;
+  type: ResourceType;
+}

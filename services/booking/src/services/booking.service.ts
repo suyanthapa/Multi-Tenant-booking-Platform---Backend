@@ -65,14 +65,15 @@ class BookingService {
     );
 
     console.log("Resource category validation result:", resource);
-    const allResourceIds = await resourceClient.getActiveResources(
+    const allResources = await resourceClient.getActiveResources(
       data.categoryId,
     );
-    if (!allResourceIds || allResourceIds.length === 0) {
+    if (!allResources || allResources.length === 0) {
       throw new NotFoundError("No active resources found for this category");
     }
-    console.log("Active resources fetched:", allResourceIds);
+    console.log("Active resources fetched:", allResources);
 
+    const allResourceIds = allResources.map((r) => r.id);
     const conflictBookings = await bookingRepository.findConflictingBookings(
       allResourceIds,
       data.businessId,
@@ -82,19 +83,19 @@ class BookingService {
 
     console.log("Conflicting bookings found:", conflictBookings);
 
-    const availableResource = allResourceIds.filter(
-      (id) => !conflictBookings.includes(id),
+    const availableResources = allResources.filter(
+      (resource) => !conflictBookings.includes(resource.id),
     );
 
-    console.log("Available resources after filtering:", availableResource);
-    if (availableResource.length === 0) {
+    console.log("Available resources after filtering:", availableResources);
+    if (availableResources.length === 0) {
       throw new BookingConflictError(
         "No available resources for the selected time slot. Please choose another time.",
       );
     }
 
     const bookingDate = new Date();
-    const bookingResource = availableResource[0];
+    const bookingResource = availableResources[0];
     console.log("Selected resource for booking:", bookingResource);
 
     // Create booking with snapshot data
@@ -102,13 +103,13 @@ class BookingService {
       userId: userId,
       vendorId: business.vendorId,
       businessId: business.businessId,
-      resourceId: bookingResource,
+      resourceId: bookingResource.id,
       bookingDate: bookingDate,
       startTime: startTime,
       endTime: endTime,
       businessName: data.businessName,
-      resourceName: "resource.name",
-      resourceType: "resource.type",
+      resourceName: bookingResource.name,
+      resourceType: bookingResource.type,
       priceAtBooking: 0,
       status: BookingStatus.CONFIRMED,
     });

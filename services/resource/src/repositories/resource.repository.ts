@@ -8,7 +8,7 @@ import {
 import Database from "../config/database";
 import bookingClient from "../clients/business.client";
 import { ForbiddenError, NotFoundError } from "../utils/errors";
-import { CreateResourceDTO } from "../types/interfaces";
+import { ActiveResourceInfo, CreateResourceDTO } from "../types/interfaces";
 import { dbHandler } from "../utils/repositoryHandler";
 
 class ResourceRepository {
@@ -182,7 +182,7 @@ class ResourceRepository {
 
   //check activbe resources in category
   activeResourcesInCategory = dbHandler(
-    async (categoryId: string): Promise<string[]> => {
+    async (categoryId: string): Promise<ActiveResourceInfo[]> => {
       const resources = await this.prisma.resource.findMany({
         where: {
           categoryId,
@@ -190,10 +190,16 @@ class ResourceRepository {
         },
         select: {
           id: true,
+          name: true,
+          type: true,
         },
       });
 
-      return resources.map((resource) => resource.id);
+      return resources.map((resource) => ({
+        id: resource.id,
+        name: resource.name,
+        type: resource.type,
+      }));
     },
   );
 }
