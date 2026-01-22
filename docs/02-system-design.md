@@ -2,17 +2,18 @@
 
 ## 1. Purpose
 
-This document describes the high-level system design of a **generic, resource-based booking platform** built using a **microservices architecture**.
+This document describes the high-level system design of a **multi-tenant, resource-based booking platform** built using a **microservices architecture** with an **API Gateway** pattern.
 
 The platform enables users to book different types of vendor resources (hotels, clinics, salons, etc.) through a unified backend while allowing independent scaling, deployment, and ownership of core domains.
 
 The design prioritizes:
 
-- Independent scalability
-- Fault isolation
-- Security
-- Domain ownership
-- Production readiness
+- Independent scalability and service isolation
+- Fault tolerance and resilience
+- Security and tenant isolation
+- Domain ownership and clear boundaries
+- Production readiness and maintainability
+- Clean architecture with Repository Pattern
 
 ---
 
@@ -22,51 +23,123 @@ The design prioritizes:
 
 The system is designed as a set of **independently deployable services**, where each service:
 
-- Owns its business logic
-- Owns its database
-- Exposes functionality via APIs or events
-- Communicates with other services using well-defined contracts
+- Owns its business logic and domain
+- Owns its database (database-per-service pattern)
+- Exposes functionality via RESTful APIs
+- Implements Repository Pattern for data access abstraction
+- Uses Prisma ORM with connection pooling for optimal performance
+- Communicates via API Gateway for centralized routing
 
-This avoids tight coupling and shared state between services.
+This architecture ensures:
+
+- No tight coupling or shared database
+- Independent scaling and deployment
+- Clear service boundaries
+- Easier testing and maintenance
 
 ---
 
-## 3. Core Services Overview
+## 3. System Architecture Overview
 
+```
 Client (Web / Mobile)
-|
-v
-API Gateway
-|
-v
-| Auth | Booking | Business | Resource | Payment | Notify |
-|
-v
+         |
+         v
+   API Gateway (Port 3000)
+   - Request Routing
+   - JWT Authentication
+   - Load Balancing
+   - Service Discovery
+         |
+    ┌────┴────┬────────┬──────────┐
+    v         v        v          v
+  Auth    Business  Resource   Booking
+ (3001)    (3003)   (3004)     (3002)
+    |         |        |          |
+    v         v        v          v
+ Auth DB  Business  Resource  Booking
+          DB        DB        DB
+```
+
+### Architecture Highlights:
+
+- **Centralized API Gateway**: Single entry point for all client requests
+- **Service Isolation**: Each service runs independently with its own database
+- **Database-per-Service**: Complete data isolation and independent schema evolution
+- **Connection Pooling**: Optimized database connections via Prisma
+- **Repository Pattern**: Clean data access layer in each service
 
 ---
 
 ## 4. Core Services & Responsibilities
 
-### 4.1 Authentication Service
+### 4.0 API Gateway (Port 3000)
+
+**Purpose**: Centralized entry point for all client requests
 
 Responsibilities:
 
-- User registration and login
-- Email verification via OTP
-- Forgot password via OTP
-- JWT access & refresh token issuance
-- OAuth (Google)
-- Role-based access control (RBAC)
+- Request routing to appropriate microservices
+- JWT token validation and authentication
+- Service proxy with authentication middleware
+- Request/response transformation
+- Health monitoring
+- Environment-based service discovery
 
-Database ownership:
+Technology Stack:
 
-- Users
-- OTP tokens
-- Auth sessions
+- Express.js with TypeScript
+- HTTP proxy for service communication
+- Cookie parser for token management
+- Helmet for security headers
+- Morgan for request logging
+
+Service Configuration:
+
+- Auth Service: http://localhost:3001
+- Booking Service: http://localhost:3002
+- Business Service: http://localhost:3003
+- Resource Service: http://localhost:3004
 
 ---
 
-### 4.2 Business Service
+### 4.1 Authentication Service (Port 3001)
+
+Responsibilities:
+
+- User registration with username and email
+- Email verification via OTP (6-digit code with expiry)
+- JWT access & refresh token issuance
+- Token refresh and revocation
+- Forgot password via OTP
+- Password reset functionality
+- Role-based access control (CUSTOMER, VENDOR, ADMIN)
+- User status management (ACTIVE, SUSPENDED, PENDING_VERIFICATION, DELETED)
+
+Database ownership:
+
+- Users (with passwordHash, isEmailVerified, role, status)
+- OTP tokens (with purpose: EMAIL_VERIFICATION, PASSWORD_RESET, TWO_FACTOR_AUTH)
+- Refresh tokens (with revocation support)
+
+Architecture:
+
+- Repository Pattern for data access
+- Service layer for business logic
+- Controller layer for request handling
+- Prisma ORM with connection pooling
+
+Security Features:
+
+- Bcrypt password hashing
+- OTP hashing for secure storage
+- Token expiry and revocation
+- Single-use OTP validation
+- Background job for OTP cleanup
+
+---
+
+### 4.2 Business Service (Port 3003)
 
 Responsibilities:
 
@@ -75,20 +148,38 @@ Responsibilities:
 - Business status management (PENDING, ACTIVE, INACTIVE, SUSPENDED, DELETED)
 - Business type categorization (HOTEL, CLINIC, SALON, CO_WORKING, OTHER)
 - **One-to-one relationship**: Each vendor (user with VENDOR role) can only own ONE business
+- Business filtering by type and status
+- Ownership transfer prevention logic
 
 Database ownership:
 
-- Businesses
+- Businesses (with unique ownerId constraint)
 - Business metadata
 
 Key Constraint:
 
-- `ownerId` has a UNIQUE constraint ensuring one business per vendor
+- `ownerId` has a **UNIQUE constraint** ensuring one business per vendor
 - Enforced at both application and database level
+- Prevents vendor account sprawl
+
+Architecture:
+
+- Repository Pattern for business data access
+- Service layer with validation logic
+- Middleware for ownership verification
+- Prisma ORM with PostgreSQL
+
+Business Types Supported:
+
+- HOTEL (rooms, suites)
+- CLINIC (appointment slots, wards)
+- SALON (chairs, services)
+- CO_WORKING (desks, meeting rooms)
+- OTHER (extensible for new types)
 
 ---
 
-### 4.3 Resource Service
+### 4.3 Resource Service (Port 3004)
 
 A **resource** represents any bookable entity within a business.
 
@@ -98,6 +189,36 @@ Examples:
 - Doctor appointment slot (DOCTOR_SLOT)
 - Salon chair (SALON_CHAIR)
 - Co-working desk (DESK)
+
+Responsibilities:
+
+- Resource creation and management
+- Resource categorization (e.g., "Deluxe Room", "Presidential Suite")
+- Flexible metadata storage for resource-specific attributes
+- Resource type and status management
+- Price and currency handling
+- Resource filtering and statistics
+- Business-specific resource queries
+
+Database ownership:
+
+- Resources (with businessId foreign key)
+- ResourceCategory (with unique constraint per business)
+
+Architecture:
+
+- Repository Pattern for data abstraction
+- Service layer for business rules
+- Type-safe interfaces for metadata
+- Prisma ORM with connection pooling
+
+Resource Features:
+
+- Flexible JSON metadata for custom attributes
+- Category management (unique per business)
+- Status: ACTIVE, INACTIVE, MAINTENANCE, DELETED
+- Decimal precision for pricing
+- Multi-currency support
 
 Responsibilities:
 
@@ -119,90 +240,207 @@ Key Relationships:
 
 ---
 
-### 4.4 Booking Service (Critical Domain)
+### 4.4 Booking Service (Port 3002)
+
+**Purpose**: Core domain for managing resource bookings
 
 Responsibilities:
 
 - Booking creation and lifecycle management
-- Availability validation
+- Time-based booking with start/end time
+- Availability validation and conflict detection
 - Overlapping booking prevention
-- Cancellation handling
-- Idempotency enforcement
+- Booking status transitions (PENDING → CONFIRMED → IN_PROGRESS → COMPLETED)
+- Cancellation handling with reason tracking
+- Snapshot storage of resource and business data at booking time
 
 Database ownership:
 
-- Bookings
-- Booking state transitions
+- Bookings (with multiple foreign keys: userId, vendorId, businessId, resourceId)
+- Booking state history
+
+Architecture:
+
+- Repository Pattern for booking operations
+- Service layer for validation and business rules
+- Complex indexing for overlap detection
+- Prisma ORM with optimized queries
+
+Booking Features:
+
+- **Data Snapshot**: Stores business and resource names/prices at booking time
+- **Overlap Prevention**: Indexed queries on (resourceId, startTime, endTime)
+- **Status Management**: PENDING, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW
+- **Cancellation Tracking**: Timestamp and reason for cancellations
+- Decimal precision for booking prices
+
+Key Indexes:
+
+- Combined index on (resourceId, startTime, endTime) for overlap checks
+- Individual indexes on userId, vendorId, businessId, resourceId, status
+- Date-based index for efficient date queries
 
 ---
 
-### 4.5 Payment Service
+## 5. Architecture Patterns & Best Practices
 
-Responsibilities:
+### 5.1 Repository Pattern Implementation
 
-- Payment intent creation
-- Payment confirmation
-- Retry and failure handling
-- Refund processing
+**Purpose**: Abstract database operations and ensure clean separation of concerns
 
-Database ownership:
+All services implement a consistent Repository Pattern:
 
-- Payments
-- Transactions
+```typescript
+interface IRepository<T> {
+  findById(id: string): Promise<T | null>;
+  findMany(where?: any): Promise<T[]>;
+  create(data: any): Promise<T>;
+  update(id: string, data: any): Promise<T>;
+  delete(id: string): Promise<T>;
+}
+```
 
----
+**Benefits**:
 
-### 4.6 Notification Service
+- **Testability**: Easy to mock repositories in unit tests
+- **Maintainability**: Business logic independent of data access
+- **Flexibility**: Can switch ORMs without changing service layer
+- **Clean Architecture**: Clear separation between layers (Controller → Service → Repository)
 
-Responsibilities:
+**Implementation Example** (Auth Service):
 
-- Email notifications
-- Booking confirmations
-- Payment status updates
-- Async message processing
+- **UserRepository**: Handles all user-related database operations
+  - findByEmail, findByUsername, findByRole, etc.
+- **OTPRepository**: Manages OTP token operations
+  - createOTP, validateOTP, consumeOTP
+- **RefreshTokenRepository**: Manages token lifecycle
+  - createToken, revokeToken, findValidToken
 
-Database ownership:
+Each repository:
 
-- Notification logs (optional)
-
----
-
-## 5. Communication Patterns
-
-### Current Implementation Status
-
-**⚠️ Note**: The system currently uses an **API Gateway routing pattern** without inter-service communication.
-
-- **API Gateway**: Proxies requests to individual services based on route prefixes
-- **No Service-to-Service Communication**: Services operate independently
-- **Each service**: Has its own database and handles requests in isolation
-
-### Planned Communication Patterns
-
-The system is designed to support **both synchronous and asynchronous communication** as the platform scales.
+- Extends the base IRepository interface
+- Uses dependency injection (PrismaClient injected)
+- Provides domain-specific query methods
+- Handles Prisma-specific types and error handling
+- Encapsulates all SQL/ORM logic
 
 ---
 
-### 5.1 Synchronous Communication (REST) - Planned
+### 5.2 Connection Pooling with Prisma
+
+**Purpose**: Optimize database connections and handle concurrent requests efficiently
+
+**Configuration** (per service):
+
+```typescript
+// Prisma connection pooling is automatic
+const prisma = new PrismaClient({
+  log: ["query", "info", "warn", "error"],
+});
+```
+
+**Pooling Strategy**:
+
+- Prisma automatically manages connection pooling via PgBouncer
+- Connection reuse across requests
+- Automatic connection lifecycle management
+- Singleton pattern for PrismaClient instance
+
+**Pool Configuration**:
+
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/dbname?connection_limit=10"
+```
+
+**Benefits**:
+
+- **Performance**: Reduced connection overhead (no new connection per request)
+- **Scalability**: Efficient handling of concurrent requests
+- **Resource Management**: Prevents database connection exhaustion
+- **Multi-Tenancy Ready**: Can scale to handle multiple tenant databases
+
+**Best Practices Implemented**:
+
+- Single PrismaClient instance per service (module-level singleton)
+- Proper connection cleanup on service shutdown
+- Environment-based connection string configuration
+- Connection timeout and retry logic
+- Graceful degradation on connection failures
+
+---
+
+### 5.3 Dependency Injection Pattern
+
+**Purpose**: Loose coupling and enhanced testability
+
+All services use constructor-based dependency injection:
+
+```typescript
+class UserService {
+  constructor(
+    private userRepository: UserRepository,
+    private otpRepository: OTPRepository,
+  ) {}
+}
+```
+
+**Benefits**:
+
+- Easy to mock dependencies in tests
+- Flexible service composition
+- Clear dependency declarations
+
+---
+
+## 6. Communication Patterns
+
+### Current Implementation: API Gateway Pattern
+
+**Architecture**:
+
+```typescript
+// API Gateway routes all client requests
+app.use("/api/auth", createServiceProxy(SERVICES.AUTH));
+app.use("/api/businesses", authenticate, createServiceProxy(SERVICES.BUSINESS));
+app.use("/api/resources", authenticate, createServiceProxy(SERVICES.RESOURCE));
+app.use("/api/bookings", authenticate, createServiceProxy(SERVICES.BOOKING));
+```
+
+**How it Works**:
+
+1. Client sends request to API Gateway (port 3000)
+2. Gateway validates JWT token (if required)
+3. Gateway proxies request to appropriate service
+4. Service processes request independently
+5. Response flows back through gateway to client
+
+**Current State**:
+
+- ✅ **API Gateway Routing**: Centralized entry point
+- ✅ **JWT Authentication**: Token validation at gateway
+- ✅ **Service Isolation**: Each service has its own database
+- ⏳ **No Inter-Service Communication**: Services don't call each other yet
+
+---
+
+### 6.1 Planned: Synchronous Communication (REST)
 
 To be implemented when **immediate cross-service validation** is required.
 
 Planned examples:
 
-- Booking Service → Auth Service (user validation)
 - Booking Service → Resource Service (availability check + business validation)
 - Resource Service → Business Service (verify business ownership)
-- Booking Service → Payment Service (payment initiation)
 
 Reasons:
 
 - User-facing workflows require immediate feedback
 - Ensures strong consistency for critical actions
-- Prevents invalid bookings (non-existent users/resources)
+- Prevents invalid bookings (non-existent resources/businesses)
 
 ---
 
-### 5.2 Asynchronous Communication (Events / Queues) - Planned
+### 6.2 Planned: Asynchronous Communication (Events)
 
 To be implemented for **side effects and non-blocking operations**.
 
@@ -210,9 +448,7 @@ Planned examples:
 
 - User registered → send verification email
 - Booking confirmed → send confirmation email
-- Payment completed → update booking status
-- Business verified → notify vendor
-- Expired bookings → cleanup jobs
+- Booking completed → trigger payment processing
 
 Reasons:
 
@@ -221,25 +457,53 @@ Reasons:
 - Better scalability under high load
 - No cascading failures
 
-**Technologies to consider**: RabbitMQ, Kafka, Redis Streams, or AWS SQS/SNS
-
 ---
 
-## 6. Data Consistency Strategy
+## 7. Data Consistency Strategy
 
 ### Current Implementation
 
-- **Database per service**: Each microservice has its own PostgreSQL database
+- **Database-per-Service Pattern**: Complete data isolation
 - **Strong consistency within service**: ACID transactions via Prisma
+- **Connection Pooling**: Singleton PrismaClient with automatic pooling
 - **No cross-service dependencies**: Services currently operate independently
-- **Connection pooling**: Each service uses singleton pattern with pg connection pool
 
 ### Service-Database Mapping
 
-- **Auth Service**: `auth_db` (users, OTP tokens, sessions)
-- **Business Service**: `business_db` (businesses with unique owner constraint)
-- **Resource Service**: `resource_db` (resources linked to businesses via businessId)
-- **Booking Service**: `booking_db` (bookings, booking states)
+| Service  | Port | Database    | Key Models                   |
+| -------- | ---- | ----------- | ---------------------------- |
+| Auth     | 3001 | auth_db     | User, OTPToken, RefreshToken |
+| Business | 3003 | business_db | Business (unique ownerId)    |
+| Resource | 3004 | resource_db | Resource, ResourceCategory   |
+| Booking  | 3002 | booking_db  | Booking                      |
+
+### Database Schema Highlights
+
+**Auth Service**:
+
+- Unique constraints on email and username
+- Indexed fields for fast lookups (userId, expiresAt)
+- Cascade delete for related OTP and refresh tokens
+
+**Business Service**:
+
+- **UNIQUE constraint on ownerId**: Enforces one business per vendor
+- Indexes on type and status for filtering
+- Soft delete support via DELETED status
+
+**Resource Service**:
+
+- Foreign key to businessId (no database-level FK, managed in code)
+- Unique constraint on (businessId, categoryName)
+- JSON metadata field for flexible resource attributes
+- Decimal type for precise price handling
+
+**Booking Service**:
+
+- Composite index on (resourceId, startTime, endTime) for overlap detection
+- Snapshot fields preserve business/resource data at booking time
+- Multiple foreign keys (userId, vendorId, businessId, resourceId)
+- Cancellation tracking with timestamp and reason
 
 ### Planned Consistency Model
 
@@ -250,15 +514,9 @@ As inter-service communication is implemented:
 - **Idempotency**: To handle duplicate events/retries
 - **Saga pattern**: For distributed transactions (e.g., booking + payment)
 
-Critical flows (booking + payment):
-
-- Transactional consistency within the service
-- Event-driven updates across services
-- Compensating transactions for rollbacks
-
 ---
 
-## 7. Scalability Considerations
+## 8. Scalability Considerations
 
 - Stateless service instances
 - Horizontal scaling per service
