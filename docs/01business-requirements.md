@@ -1,46 +1,5 @@
 # Business Requirements
 
-## Actors
-
-### User (Customer)
-
-- Register and authenticate
-- Browse available resources
-- Book a resource for a time range
-- Make payments
-- Cancel bookings within allowed rules
-
-### Vendor
-
-- Register as a vendor
-- Create and manage resources
-- Define availability
-- View bookings related to their resources
-
-### Admin
-
-- Approve or suspend vendors
-- Monitor bookings and payments
-- Resolve disputes and trigger refunds
-
-## Functional Requirements
-
-- Time-based booking of exclusive resources
-- Prevention of overlapping bookings
-- Secure authentication and role-based access
-- Payment lifecycle tied to booking state
-- Asynchronous notifications
-
-## Non-Functional Requirements
-
-- High security (auth, RBAC, validation)
-- Data consistency
-- Scalability
-- Fault tolerance
-- Observability and logging
-
-# Business Requirements
-
 ## 1. Purpose
 
 This document defines the **business and functional requirements** of the booking platform from a backend perspective.
@@ -81,23 +40,34 @@ This document defines the **business and functional requirements** of the bookin
 ### 3.1 Authentication & Authorization
 
 - Users must authenticate to create bookings
-- Support JWT-based authentication
-- Role-based access control (USER, VENDOR, ADMIN)
-- Optional OAuth login (Google)
+- JWT-based authentication with access and refresh tokens
+- Role-based access control (CUSTOMER, VENDOR, ADMIN)
+- Email verification via OTP (6-digit code)
+- Forgot password via OTP flow
+- Password reset functionality
+- Session management with token revocation
 
 ---
 
 ### 3.2 Vendor Management
 
 - Vendors can onboard and update profiles
-- Vendors can create multiple resources
+- **Each vendor can own exactly ONE business** (enforced at database level)
+- Vendors can create multiple resources within their business
 - Vendors cannot directly modify booking state
+- Business verification by admin required
+- Business status management (PENDING, ACTIVE, INACTIVE, SUSPENDED, DELETED)
 
 ---
 
 ### 3.3 Resource Management
 
-- Resources must belong to a vendor
+- Resources must belong to a business
+- Support for resource categories (e.g., "Deluxe Room", "Presidential Suite")
+- Flexible metadata field for resource-specific attributes
+- Resource types: HOTEL_ROOM, DOCTOR_SLOT, SALON_CHAIR, DESK, OTHER
+- Resource status: ACTIVE, INACTIVE, MAINTENANCE, DELETED
+- Price and currency management per resource
 - Each resource must define:
   - Type
   - Availability
