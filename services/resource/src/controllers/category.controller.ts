@@ -4,19 +4,17 @@ import { asyncHandler } from "../utils/asyncHandler";
 
 class CategoryController {
   // Create category
+  createCategory = asyncHandler(async (req: Request, res: Response) => {
+    const { name, businessId } = req.body;
 
-  //   // Bulk create resources
-  //   bulkCreateResources = asyncHandler(async (req: Request, res: Response) => {
-  //     const data: BulkCreateResourceInput = req.body;
+    const category = await resourceService.createCategory(name, businessId);
 
-  //     const result = await resourceService.bulkCreateResources(data);
-
-  //     res.status(201).json({
-  //       success: true,
-  //       data: result,
-  //       message: `${result.count} resources created successfully`,
-  //     });
-  //   });
+    res.status(201).json({
+      success: true,
+      data: category,
+      message: "Category created successfully",
+    });
+  });
 
   // Get all categories
   getAllCategories = asyncHandler(async (req: Request, res: Response) => {
@@ -39,42 +37,43 @@ class CategoryController {
     });
   });
 
-  //   // Get resource by ID
-  //   getResourceById = asyncHandler(async (req: Request, res: Response) => {
-  //     const { id } = req.params;
+  // Get category by ID
+  getCategoryById = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
 
-  //     const resource = await resourceService.getResourceById(id);
+    const category = await resourceService.getCategoryById(id);
 
-  //     res.status(200).json({
-  //       success: true,
-  //       data: resource,
-  //     });
-  //   });
+    res.status(200).json({
+      success: true,
+      data: category,
+    });
+  });
 
-  //   // Update resource
-  //   updateResource = asyncHandler(async (req: Request, res: Response) => {
-  //     const { id } = req.params;
-  //     const data: UpdateResourceInput = req.body;
+  // Update category
+  updateCategory = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { name } = req.body;
 
-  //     const resource = await resourceService.updateResource(id, data);
+    const category = await resourceService.updateCategory(id, { name });
 
-  //     res.status(200).json({
-  //       success: true,
-  //       data: resource,
-  //     });
-  //   });
+    res.status(200).json({
+      success: true,
+      data: category,
+      message: "Category updated successfully",
+    });
+  });
 
-  //   // Delete resource
-  //   deleteResource = asyncHandler(async (req: Request, res: Response) => {
-  //     const { id } = req.params;
+  // Delete category
+  deleteCategory = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
 
-  //     await resourceService.deleteResource(id);
+    await resourceService.deleteCategory(id);
 
-  //     res.status(200).json({
-  //       success: true,
-  //       message: "Resource deleted successfully",
-  //     });
-  //   });
+    res.status(200).json({
+      success: true,
+      message: "Category deleted successfully",
+    });
+  });
 }
 
 export default new CategoryController();

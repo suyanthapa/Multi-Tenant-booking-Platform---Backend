@@ -180,6 +180,32 @@ class ResourceRepository {
     },
   );
 
+  findCategoryById = dbHandler(
+    async (id: string): Promise<ResourceCategory | null> => {
+      return await this.prisma.resourceCategory.findUnique({
+        where: { id },
+      });
+    },
+  );
+
+  updateCategory = dbHandler(
+    async (
+      id: string,
+      data: Prisma.ResourceCategoryUpdateInput,
+    ): Promise<ResourceCategory> => {
+      return await this.prisma.resourceCategory.update({
+        where: { id },
+        data,
+      });
+    },
+  );
+
+  deleteCategory = dbHandler(async (id: string): Promise<ResourceCategory> => {
+    return await this.prisma.resourceCategory.delete({
+      where: { id },
+    });
+  });
+
   //check activbe resources in category
   activeResourcesInCategory = dbHandler(
     async (categoryId: string): Promise<ActiveResourceInfo[]> => {

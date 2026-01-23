@@ -141,7 +141,7 @@ class ResourceService {
     return resourceRepository.getStatsByBusiness(businessId);
   }
 
-  //create resouirce category
+  //create resource category
   async createCategory(name: string, businessId: string) {
     return resourceRepository.createCategory(name, businessId);
   }
@@ -193,6 +193,34 @@ class ResourceService {
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+
+  //get category by ID
+  async getCategoryById(id: string): Promise<ResourceCategory> {
+    const category = await resourceRepository.findCategoryById(id);
+    if (!category) {
+      throw new NotFoundError("Category not found");
+    }
+    return category;
+  }
+
+  //update category
+  async updateCategory(
+    id: string,
+    data: { name?: string },
+  ): Promise<ResourceCategory> {
+    // First verify category exists
+    await this.getCategoryById(id);
+
+    return resourceRepository.updateCategory(id, data);
+  }
+
+  //delete category
+  async deleteCategory(id: string): Promise<void> {
+    // First verify category exists
+    await this.getCategoryById(id);
+
+    await resourceRepository.deleteCategory(id);
   }
 }
 

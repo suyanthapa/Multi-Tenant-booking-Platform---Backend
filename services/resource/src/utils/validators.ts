@@ -80,6 +80,17 @@ export const typeResourceSchema = z.object({
 export const createCategorySchema = z.object({
   body: z.object({
     name: z.string().min(1, "Category name is required"),
+    businessId: z.string().uuid("Invalid Business ID format"),
+  }),
+});
+
+//update category schema
+export const updateCategorySchema = z.object({
+  params: z.object({
+    id: z.string().uuid("Invalid Category ID format"),
+  }),
+  body: z.object({
+    name: z.string().min(1, "Category name is required"),
   }),
 });
 
@@ -94,3 +105,4 @@ export type QueryResourceCategoryInput = z.infer<
 >["query"];
 export type TypeResourceInput = z.infer<typeof typeResourceSchema>["params"];
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>["body"];
+export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>["body"];

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import resourceController from "../controllers/resource.controller";
+import categoryController from "../controllers/category.controller";
 import { authenticate, authorize } from "../middlewares/auth";
 import { validate } from "../middlewares/validator";
 import {
@@ -8,16 +9,14 @@ import {
   bulkCreateResourceSchema,
   typeResourceSchema,
   createCategorySchema,
+  updateCategorySchema,
 } from "../utils/validators";
 
 const router = Router();
 
+// Category Routes
 //get all categories
-router.get(
-  "/categories",
-  authenticate,
-  resourceController.getAllResourceCategories,
-);
+router.get("/categories", authenticate, categoryController.getAllCategories);
 
 //create category
 router.post(
@@ -25,7 +24,27 @@ router.post(
   authenticate,
   authorize("VENDOR"),
   validate(createCategorySchema),
-  resourceController.createResourceCategory,
+  categoryController.createCategory,
+);
+
+//get category by ID
+router.get("/categories/:id", authenticate, categoryController.getCategoryById);
+
+//update category
+router.patch(
+  "/categories/:id",
+  authenticate,
+  authorize("VENDOR", "ADMIN"),
+  validate(updateCategorySchema),
+  categoryController.updateCategory,
+);
+
+//delete category
+router.delete(
+  "/categories/:id",
+  authenticate,
+  authorize("VENDOR", "ADMIN"),
+  categoryController.deleteCategory,
 );
 
 // Get All Resources (Vendor or Admin)
