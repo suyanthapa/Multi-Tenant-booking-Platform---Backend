@@ -8,6 +8,14 @@ import cookieParser from "cookie-parser";
 import { errorHandler } from "./middlewares/error.middleware";
 import { notFound } from "./middlewares/notFound.middleware";
 import { authenticate } from "./middlewares/auth.middleware";
+import {
+  generalLimiter,
+  authLimiter,
+  signupLimiter,
+  passwordResetLimiter,
+  otpLimiter,
+  bookingLimiter,
+} from "./middlewares/rateLimit.middleware";
 import dotenv from "dotenv";
 import { SERVICES } from "./config/service";
 import { createServiceProxy } from "./utils/proxy";
@@ -25,7 +33,34 @@ app.use((_req, res, next) => {
 
 app.use(cookieParser());
 
-// Auth routes (public)
+// Apply general rate limiter to all routes
+app.use(generalLimiter);
+
+// Auth routes with specific rate limiters
+app.use("/api/auth/login", authLimiter, createServiceProxy(SERVICES.AUTH));
+app.use("/api/auth/register", signupLimiter, createServiceProxy(SERVICES.AUTH));
+app.use(
+  "/api/auth/forgot-password",
+  passwordResetLimiter,
+  createServiceProxy(SERVICES.AUTH),
+);
+app.use(
+  "/api/auth/reset-password",
+  passwordResetLimiter,
+  createServiceProxy(SERVICES.AUTH),
+);
+app.use(
+  "/api/auth/verify-email",
+  otpLimiter,
+  createServiceProxy(SERVICES.AUTH),
+);
+app.use(
+  "/api/auth/resend-verification",
+  otpLimiter,
+  createServiceProxy(SERVICES.AUTH),
+);
+
+// Catch-all for other auth routes
 app.use("/api/auth", createServiceProxy(SERVICES.AUTH));
 
 // Business routes (public read, auth for write)
@@ -34,12 +69,17 @@ app.use("/api/businesses", authenticate, createServiceProxy(SERVICES.BUSINESS));
 // Resource routes (public read, auth for write)
 app.use("/api/resources", authenticate, createServiceProxy(SERVICES.RESOURCE));
 
-// Booking routes (authenticated)
-app.use("/api/bookings", authenticate, createServiceProxy(SERVICES.BOOKING));
+// Booking routes with specific rate limiter
+app.use(
+  "/api/bookings",
+  authenticate,
+  bookingLimiter,
+  createServiceProxy(SERVICES.BOOKING),
+);
 
 // Health check
 app.get("/health", (_, res) =>
-  res.json({ status: "ok", service: "api-gateway" })
+  res.json({ status: "ok", service: "api-gateway" }),
 );
 
 // Gateway safety net
