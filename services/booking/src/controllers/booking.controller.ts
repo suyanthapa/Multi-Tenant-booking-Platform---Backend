@@ -74,11 +74,21 @@ class BookingController {
   cancelBooking = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const { cancelReason }: CancelBookingInput = req.body;
-    const booking = await bookingService.cancelBooking(id, cancelReason);
+    const userId = req.user?.id as string;
+
+    const result = await bookingService.cancelBooking(id, cancelReason, userId);
 
     res.status(200).json({
       success: true,
-      data: booking,
+      data: {
+        booking: result.booking,
+        refund: {
+          percentage: result.refundPercentage,
+          amount: result.refundAmount,
+          currency: result.booking.currency,
+        },
+      },
+      message: result.message,
     });
   });
 

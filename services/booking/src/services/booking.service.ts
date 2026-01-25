@@ -7,6 +7,7 @@ import {
 import resourceClient from "../clients/resource.client";
 import businessClient from "../clients/business.client";
 import bookingRepository from "../repositories/booking.repository";
+import { calculateRefund } from "../config/cancellationPolicy";
 
 export interface CreateBookingDTO {
   businessId: string;
@@ -34,6 +35,13 @@ export interface BookingQueryParams {
   resourceId?: string;
   startDate?: string;
   endDate?: string;
+}
+
+export interface CancellationResult {
+  booking: Booking;
+  refundPercentage: number;
+  refundAmount: number;
+  message: string;
 }
 
 class BookingService {
@@ -251,20 +259,53 @@ class BookingService {
   }
 
   /**
-   * Cancel booking
+   * Cancel booking with refund policy
    */
-  async cancelBooking(id: string, cancelReason: string): Promise<Booking> {
+  async cancelBooking(
+    id: string,
+    cancelReason: string,
+    userId: string,
+  ): Promise<CancellationResult> {
     const booking = await this.getBookingById(id);
 
+    // Validation: Check if already cancelled
     if (booking.status === BookingStatus.CANCELLED) {
       throw new InvalidBookingError("Booking is already cancelled");
     }
 
+    // Validation: Cannot cancel completed bookings
     if (booking.status === BookingStatus.COMPLETED) {
       throw new InvalidBookingError("Cannot cancel a completed booking");
     }
 
-    return bookingRepository.cancel(id, cancelReason);
+    // Validation: Cannot cancel in-progress bookings
+    if (booking.status === BookingStatus.IN_PROGRESS) {
+      throw new InvalidBookingError(
+        "Cannot cancel a booking that is currently in progress",
+      );
+    }
+
+    // Authorization: Only the user who created the booking can cancel it
+    // (Vendors should use updateBookingStatus for their side)
+    if (booking.userId !== userId) {
+      throw new InvalidBookingError("You can only cancel your own bookings");
+    }
+
+    // Calculate refund based on cancellation policy
+    const { refundPercentage, message } = calculateRefund(booking.startTime);
+
+    const refundAmount =
+      (Number(booking.priceAtBooking) * refundPercentage) / 100;
+
+    // Cancel the booking
+    const cancelledBooking = await bookingRepository.cancel(id, cancelReason);
+
+    return {
+      booking: cancelledBooking,
+      refundPercentage,
+      refundAmount,
+      message,
+    };
   }
 
   /**
