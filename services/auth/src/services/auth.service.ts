@@ -216,7 +216,7 @@ class AuthService {
     await this.refreshTokenRepository.create({
       user: { connect: { id: user.id } },
       token: refreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 30 * 60 * 60 * 1000),
     });
 
     // Update last login
