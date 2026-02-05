@@ -96,7 +96,7 @@ export const otpLimiter = rateLimit({
 // Rate limiter for booking creation
 export const bookingLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 20, // Limit each IP to 20 booking requests per hour
+  max: 40, // Limit each IP to 40 booking requests per hour
   message: {
     success: false,
     error: "Too many booking requests from this IP, please try again later.",
