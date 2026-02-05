@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
 import resourceService from "../services/resource.service";
 import { asyncHandler } from "../utils/asyncHandler";
+import { NotFoundError } from "../utils/errors";
 
 class CategoryController {
   // Create category
   createCategory = asyncHandler(async (req: Request, res: Response) => {
-    const { name, businessId } = req.body;
-
+    const { name } = req.body;
+    const businessId = req.user?.businessId as string;
     const category = await resourceService.createCategory(name, businessId);
 
     res.status(201).json({
@@ -21,8 +22,17 @@ class CategoryController {
     const query = req.query as any;
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 10;
-    const businessId = query.businessId;
+
     const search = query.search;
+    let businessId: string | undefined;
+    if (req.user?.role === "VENDOR") {
+      businessId = req.user.businessId;
+      if (!businessId) {
+        throw new NotFoundError("Vendor must have a businessId assigned");
+      }
+    } else if (req.user?.role === "CUSTOMER") {
+      businessId = query.businessId;
+    }
 
     const result = await resourceService.getAllResourceCategories({
       page,

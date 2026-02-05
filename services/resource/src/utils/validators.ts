@@ -80,7 +80,6 @@ export const typeResourceSchema = z.object({
 export const createCategorySchema = z.object({
   body: z.object({
     name: z.string().min(1, "Category name is required"),
-    businessId: z.string().uuid("Invalid Business ID format"),
   }),
 });
 

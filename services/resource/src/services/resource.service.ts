@@ -168,6 +168,7 @@ class ResourceService {
     if (params.businessId) {
       where.businessId = params.businessId;
     }
+    console.log("Search BusinessId:", params.businessId);
 
     if (params.search) {
       where.OR = [
