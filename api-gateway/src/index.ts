@@ -37,7 +37,7 @@ app.use(cookieParser());
 app.use(generalLimiter);
 
 // Auth routes with specific rate limiters
-app.use("/api/auth/login", authLimiter, createServiceProxy(SERVICES.AUTH));
+app.use("/api/auth/login", createServiceProxy(SERVICES.AUTH));
 app.use("/api/auth/register", signupLimiter, createServiceProxy(SERVICES.AUTH));
 app.use(
   "/api/auth/forgot-password",

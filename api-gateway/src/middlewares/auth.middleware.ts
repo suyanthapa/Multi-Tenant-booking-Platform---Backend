@@ -45,7 +45,10 @@ export const authenticate = (
     req.headers["x-user-id"] = req.user.id;
     req.headers["x-user-role"] = req.user.role;
     req.headers["x-user-email"] = req.user.email;
-    req.headers["x-user-business-id"] = req.user.businessId;
+    if (req.user.businessId) {
+      req.headers["x-user-business-id"] = req.user.businessId;
+    }
+
     next();
   } catch (err: any) {
     if (err.name === "TokenExpiredError") {
