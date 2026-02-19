@@ -6,24 +6,21 @@ import {
   ConflictError,
 } from "../utils/errors";
 import { CreateBusinessInput, UpdateBusinessInput } from "../utils/validators";
+import { BusinessResponseDTO } from "../dto/business/response.dto";
 
 class BusinessService {
-  async createBusiness(
-    ownerId: string,
-    data: CreateBusinessInput
-  ): Promise<Business> {
+  async createBusiness(data: CreateBusinessInput): Promise<Business> {
+    console.log("Creating business with data:", data);
     // Check if vendor already has a business
-    const existingBusiness = await businessRepository.findByOwner(ownerId);
+    const existingBusiness = await businessRepository.findByOwner(data.ownerId);
     if (existingBusiness) {
       throw new ConflictError(
-        "You already have a business. A vendor can only own one business."
+        "You already have a business. A vendor can only own one business.",
       );
     }
-
-    return businessRepository.create({
-      ...data,
-      ownerId,
-    });
+    const response = await businessRepository.create(data);
+    console.log("Result", response);
+    return response;
   }
 
   async getBusinessById(id: string): Promise<Business> {
@@ -118,14 +115,14 @@ class BusinessService {
     id: string,
     userId: string,
     userRole: string,
-    data: UpdateBusinessInput
+    data: UpdateBusinessInput,
   ): Promise<Business> {
     const business = await this.getBusinessById(id);
 
     // Only owner or admin can update
     if (business.ownerId !== userId && userRole !== "ADMIN") {
       throw new AuthorizationError(
-        "You don't have permission to update this business"
+        "You don't have permission to update this business",
       );
     }
 
@@ -135,14 +132,14 @@ class BusinessService {
   async deleteBusiness(
     id: string,
     userId: string,
-    userRole: string
+    userRole: string,
   ): Promise<void> {
     const business = await this.getBusinessById(id);
 
     // Only owner or admin can delete
     if (business.ownerId !== userId && userRole !== "ADMIN") {
       throw new AuthorizationError(
-        "You don't have permission to delete this business"
+        "You don't have permission to delete this business",
       );
     }
 
@@ -152,14 +149,14 @@ class BusinessService {
   async toggleBusinessStatus(
     id: string,
     userId: string,
-    userRole: string
+    userRole: string,
   ): Promise<Business> {
     const business = await this.getBusinessById(id);
 
     // Only owner or admin can toggle status
     if (business.ownerId !== userId && userRole !== "ADMIN") {
       throw new AuthorizationError(
-        "You don't have permission to modify this business"
+        "You don't have permission to modify this business",
       );
     }
 
@@ -175,12 +172,23 @@ class BusinessService {
     // Only owner or admin can toggle status
     if (userRole !== "ADMIN") {
       throw new AuthorizationError(
-        "You don't have permission to modify this business"
+        "You don't have permission to modify this business",
       );
     }
 
     return businessRepository.verifyBusiness(id);
   }
-}
 
+  async getAvailableSlots(
+    startDate: string,
+    endDate: string,
+    location?: string,
+  ): Promise<BusinessResponseDTO[]> {
+    console.log(
+      "Service received request for available slots with location:",
+      location,
+    );
+    return businessRepository.getAvailableSlots(startDate, endDate, location);
+  }
+}
 export default new BusinessService();

@@ -11,7 +11,7 @@ export class AppError extends Error {
     message: string,
     statusCode: number,
     isOperational = true,
-    code?: string
+    code?: string,
   ) {
     super(message);
     this.statusCode = statusCode;
@@ -42,7 +42,7 @@ export class AuthenticationError extends AppError {
 
 export class AuthorizationError extends AppError {
   constructor(
-    message: string = "You do not have permission to perform this action"
+    message: string = "You do not have permission to perform this action",
   ) {
     super(message, 403, true, "AUTHORIZATION_ERROR");
     Object.setPrototypeOf(this, AuthorizationError.prototype);
@@ -81,5 +81,12 @@ export class DatabaseError extends AppError {
   constructor(message: string = "Database operation failed") {
     super(message, 500, false, "DATABASE_ERROR");
     Object.setPrototypeOf(this, DatabaseError.prototype);
+  }
+}
+
+export class InvalidInputError extends AppError {
+  constructor(message: string = "Invalid input") {
+    super(message, 400, true, "INVALID_INPUT");
+    Object.setPrototypeOf(this, InvalidInputError.prototype);
   }
 }

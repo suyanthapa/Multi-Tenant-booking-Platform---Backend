@@ -16,7 +16,7 @@ businessRoutes.post(
   authenticate,
   authorize("VENDOR"),
   validate(createBusinessSchema),
-  businessController.createBusiness
+  businessController.createBusiness,
 );
 
 // Get all businesses (Public)
@@ -24,7 +24,7 @@ businessRoutes.get(
   "/",
   authenticate,
   validate(queryBusinessSchema),
-  businessController.getAllBusinesses
+  businessController.getAllBusinesses,
 );
 
 // Get my businesses (Vendor only)
@@ -32,8 +32,10 @@ businessRoutes.get(
   "/my-businesses",
   authenticate,
   authorize("VENDOR"),
-  businessController.getBusinessesByOwner
+  businessController.getBusinessesByOwner,
 );
+// Get active resource categories for a business (Public)
+businessRoutes.post("/search", businessController.getBusinesses);
 
 // Get businesses by type (Public)
 businessRoutes.get("/type/:type", businessController.getBusinessesByType);
@@ -47,7 +49,7 @@ businessRoutes.patch(
   authenticate,
   authorize("VENDOR", "ADMIN"),
   validate(updateBusinessSchema),
-  businessController.updateBusiness
+  businessController.updateBusiness,
 );
 
 // Delete business (Owner or Admin)
@@ -55,7 +57,7 @@ businessRoutes.delete(
   "/:id",
   authenticate,
   authorize("VENDOR", "ADMIN"),
-  businessController.deleteBusiness
+  businessController.deleteBusiness,
 );
 
 // Toggle business status (Owner or Admin)
@@ -63,7 +65,7 @@ businessRoutes.patch(
   "/:id/toggle-status",
   authenticate,
   authorize("VENDOR", "ADMIN"),
-  businessController.toggleBusinessStatus
+  businessController.toggleBusinessStatus,
 );
 
 // Verify business (Admin only)
@@ -71,6 +73,7 @@ businessRoutes.patch(
   "/:id/verify",
   authenticate,
   authorize("ADMIN"),
-  businessController.verifyBusiness
+  businessController.verifyBusiness,
 );
+
 export default businessRoutes;

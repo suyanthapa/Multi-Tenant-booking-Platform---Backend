@@ -1,5 +1,8 @@
 import { PrismaClient, Business, BusinessType, Prisma } from "@prisma/client";
 import Database from "../config/database";
+import { toBusinessDTO } from "../mappers/business.mapper";
+import { NotFoundError } from "../utils/errors";
+import { BusinessResponseDTO } from "../dto/business/response.dto";
 
 class BusinessRepository {
   private prisma: PrismaClient;
@@ -9,7 +12,19 @@ class BusinessRepository {
   }
 
   async create(data: Prisma.BusinessCreateInput): Promise<Business> {
-    return this.prisma.business.create({ data });
+    return this.prisma.business.create({
+      data: {
+        ownerId: data.ownerId,
+        name: data.name,
+        description: data.description,
+        type: data.type,
+        address: data.address,
+        phone: data.phone,
+        email: data.email,
+        isVerified: false,
+        status: "PENDING",
+      },
+    });
   }
 
   async findById(id: string): Promise<Business | null> {
@@ -39,7 +54,7 @@ class BusinessRepository {
 
   async update(
     id: string,
-    data: Prisma.BusinessUpdateInput
+    data: Prisma.BusinessUpdateInput,
   ): Promise<Business> {
     return this.prisma.business.update({
       where: { id },
@@ -59,7 +74,7 @@ class BusinessRepository {
     return this.prisma.business.findUnique({
       where: {
         ownerId,
-        status: { notIn: ["DELETED", "SUSPENDED", "INACTIVE"] },
+        // status: { notIn: ["DELETED", "SUSPENDED", "INACTIVE"] },
       },
     });
   }
@@ -104,6 +119,41 @@ class BusinessRepository {
     });
     return business;
   }
-}
 
+  async getAvailableSlots(
+    startDate: string,
+    endDate: string,
+    location?: string,
+  ): Promise<BusinessResponseDTO[]> {
+    console.log(
+      "Fetching available slots for location:",
+      location,
+      "between",
+      startDate,
+      "and",
+      endDate,
+    );
+    //get businesses
+    const businesses = await this.prisma.business.findMany({
+      where: {
+        AND: [
+          { status: "ACTIVE" },
+          {
+            OR: [
+              { address: { path: ["city"], equals: location } },
+              { address: { path: ["state"], equals: location } },
+              { address: { path: ["country"], equals: location } },
+            ],
+          },
+        ],
+      },
+    });
+
+    if (businesses.length === 0) {
+      throw new NotFoundError("No businesses found in this location");
+    }
+
+    return businesses.map((business) => toBusinessDTO(business));
+  }
+}
 export default new BusinessRepository();

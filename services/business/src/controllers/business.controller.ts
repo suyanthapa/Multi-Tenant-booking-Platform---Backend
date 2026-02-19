@@ -3,14 +3,14 @@ import businessService from "../services/business.service";
 import { asyncHandler } from "../utils/asyncHandler";
 import { CreateBusinessInput, UpdateBusinessInput } from "../utils/validators";
 import { BusinessType } from "@prisma/client";
+import { InvalidInputError } from "../utils/errors";
 
 class BusinessController {
   // Create business
   createBusiness = asyncHandler(async (req: Request, res: Response) => {
     const data: CreateBusinessInput = req.body;
-    const ownerId = req.user!.id;
 
-    const business = await businessService.createBusiness(ownerId, data);
+    const business = await businessService.createBusiness(data);
 
     res.status(201).json({
       success: true,
@@ -75,7 +75,7 @@ class BusinessController {
     const { type } = req.params;
 
     const businesses = await businessService.getBusinessesByType(
-      type as BusinessType
+      type as BusinessType,
     );
 
     res.status(200).json({
@@ -95,7 +95,7 @@ class BusinessController {
       id,
       userId,
       userRole,
-      data
+      data,
     );
 
     res.status(200).json({
@@ -127,7 +127,7 @@ class BusinessController {
     const business = await businessService.toggleBusinessStatus(
       id,
       userId,
-      userRole
+      userRole,
     );
 
     res.status(200).json({
@@ -148,6 +148,55 @@ class BusinessController {
       message: "Business verified successfully",
     });
   });
-}
 
+  //Get Businesses
+  getBusinesses = asyncHandler(async (req: Request, res: Response) => {
+    const { location, startDate, endDate } = req.body;
+
+    // 1. Convert strings to actual Date objects
+    const start = new Date(startDate as string);
+    const end = new Date(endDate as string);
+
+    // 2. Validate using the timestamp value
+    if (start.getTime() >= end.getTime()) {
+      throw new InvalidInputError("Start time must be before end time");
+    }
+    const slots = await businessService.getAvailableSlots(
+      startDate as string,
+      endDate as string,
+      location as string,
+    );
+    res.status(200).json({
+      success: true,
+      data: {
+        business: slots,
+      },
+    });
+  });
+
+  //Get Available Slots for a business
+  checkAvailableSlots = asyncHandler(async (req: Request, res: Response) => {
+    const { location, startDate, endDate } = req.body;
+
+    // 1. Convert strings to actual Date objects
+    const start = new Date(startDate as string);
+    const end = new Date(endDate as string);
+
+    // 2. Validate using the timestamp value
+    if (start.getTime() >= end.getTime()) {
+      throw new InvalidInputError("Start time must be before end time");
+    }
+    const slots = await businessService.getAvailableSlots(
+      startDate as string,
+      endDate as string,
+      location as string,
+    );
+    res.status(200).json({
+      success: true,
+      data: {
+        business: slots,
+      },
+    });
+  });
+}
 export default new BusinessController();

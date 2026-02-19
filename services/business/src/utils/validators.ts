@@ -4,10 +4,17 @@ import { BusinessType } from "@prisma/client";
 // Create Business Schema
 export const createBusinessSchema = z.object({
   body: z.object({
+    ownerId: z.string().min(1, "Owner ID is required"),
     name: z.string().min(1, "Business name is required"),
     description: z.string().optional(),
     type: z.nativeEnum(BusinessType),
-    address: z.string().min(1, "Address is required"),
+    address: z.object({
+      street: z.string().min(1, "Street is required"),
+      city: z.string().min(1, "City is required"),
+      state: z.string().min(1, "State is required"),
+      postalCode: z.string().min(1, "Postal code is required"),
+      country: z.string().min(1, "Country is required"),
+    }),
     phone: z.string().min(1, "Phone is required"),
     email: z.string().email("Invalid email address"),
   }),
