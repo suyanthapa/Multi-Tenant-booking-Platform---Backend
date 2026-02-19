@@ -2,18 +2,18 @@ import { Request, Response } from "express";
 import authService from "../services/auth.service";
 import { asyncHandler } from "../utils/asyncHandler";
 import config from "../config";
-import {
-  RegisterInput,
-  LoginInput,
-  VerifyEmailInput,
-  VerifyOtpInput,
-  ForgotPasswordInput,
-  ResetPasswordInput,
-  ResendVerificationOTPInput,
-  RegisterBusinessInput,
-} from "../utils/validators";
 
 import { UserRole, UserStatus } from "../generated/prisma/enums";
+import {
+  ForgotPasswordInput,
+  LoginInput,
+  RegisterBusinessInput,
+  RegisterInput,
+  ResendVerificationOTPInput,
+  ResetPasswordInput,
+  VerifyEmailInput,
+  VerifyOtpInput,
+} from "../types/auth.types";
 
 class AuthController {
   /**

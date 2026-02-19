@@ -14,17 +14,7 @@ import {
   TokenExpiredError,
   ValidationError,
 } from "../utils/errors";
-import {
-  RegisterInput,
-  LoginInput,
-  VerifyEmailInput,
-  VerifyOtpInput,
-  ForgotPasswordInput,
-  ResetPasswordInput,
-  ResendOTPInput,
-  GetAllUsersInput,
-  RegisterBusinessInput,
-} from "../utils/validators";
+
 import otpService from "./otp.service";
 import emailService from "./email.service";
 import logger from "../utils/logger";
@@ -33,6 +23,18 @@ import { PaginatedUsers, UserResponse } from "../interfaces/user.interface";
 import { sanitizeUser } from "../utils/sanitizer";
 import businessClient from "../clients/businessClient";
 import jwt from "jsonwebtoken";
+import {
+  ForgotPasswordInput,
+  LoginInput,
+  RegisterBusinessInput,
+  RegisterInput,
+  ResendOTPInput,
+  ResetPasswordInput,
+  VerifyEmailInput,
+  VerifyOtpInput,
+} from "../types/auth.types";
+import { GetAllUsersInput } from "../types/user.types";
+import { OTPPurpose } from "../generated/prisma/enums";
 
 class AuthService {
   private prisma = Database.getInstance(); // The Singleton Retrieval
@@ -152,7 +154,11 @@ class AuthService {
     }
 
     // Verify OTP and get userId
-    const userId = await otpService.findValidOTPsByPurpose(user.id, otp);
+    const userId = await otpService.findValidOTPs(
+      user.id,
+      otp,
+      OTPPurpose.EMAIL_VERIFICATION,
+    );
 
     // Update user
     await this.userRepository.markEmailAsVerified(userId);
@@ -178,9 +184,10 @@ class AuthService {
     const user = await this.userRepository.findByEmail(email);
     if (!user) throw new NotFoundError("User not found");
 
-    const verifiedUserId = await otpService.findValidOTPsByPurpose(
+    const verifiedUserId = await otpService.findValidOTPs(
       user.id,
       otp,
+      OTPPurpose.EMAIL_VERIFICATION,
     );
     if (!verifiedUserId) {
       throw new NotFoundError("Invalid verification code");

@@ -42,11 +42,15 @@ class OTPService {
   /**
    * Verify email verification OTP
    */
-  async findValidOTPsByPurpose(userId: string, otp: string): Promise<string> {
+  async findValidOTPs(
+    userId: string,
+    otp: string,
+    purpose: OTPPurpose,
+  ): Promise<string> {
     // Get all non-consumed, non-expired OTPs
     const otpTokens = await this.otpRepository.findValidOTPsByPurpose(
       userId,
-      OTPPurpose.PASSWORD_RESET,
+      purpose,
     );
 
     if (otpTokens.length === 0) {

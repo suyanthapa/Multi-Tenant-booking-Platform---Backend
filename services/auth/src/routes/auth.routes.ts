@@ -4,17 +4,17 @@ import { validate } from "../middlewares/validator";
 import { authenticate, authorize } from "../middlewares/auth";
 import { UserRole } from "@prisma/client";
 import {
-  registerSchema,
+  forgotPasswordSchema,
   loginSchema,
+  refreshTokenSchema,
+  registerBusinessSchema,
+  registerSchema,
+  resendVerificationOTPSchema,
+  resetPasswordSchema,
   verifyEmailSchema,
   verifyOtpSchema,
-  forgotPasswordSchema,
-  resetPasswordSchema,
-  refreshTokenSchema,
-  resendVerificationOTPSchema,
-  editUserSchema,
-  registerBusinessSchema,
-} from "../utils/validators";
+} from "../dtos/auth.dto";
+import { editUserSchema } from "../dtos/user.dto";
 
 const router = Router();
 
