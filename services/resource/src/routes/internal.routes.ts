@@ -17,4 +17,10 @@ internalRoutes.post(
   ResourceInternalController.activeResourcesInCategory,
 );
 
+internalRoutes.post(
+  "/batch-active-categories",
+  internalAuthMiddleware,
+  ResourceInternalController.getBatchBusinessCategories,
+);
+
 export default internalRoutes;

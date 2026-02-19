@@ -39,6 +39,23 @@ class ResourceInternalController {
       });
     },
   );
+
+  getBatchBusinessCategories = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const { businessIds } = req.body;
+      console.log(
+        "Received batch category request for business IDs:",
+        businessIds,
+      );
+      const categoriesMap =
+        await resourceRepository.getBatchBusinessCategories(businessIds);
+
+      res.status(200).json({
+        success: true,
+        availableCategoriesInfo: categoriesMap,
+      });
+    },
+  );
 }
 
 export default new ResourceInternalController();

@@ -228,5 +228,28 @@ class ResourceRepository {
       }));
     },
   );
+
+  getBatchBusinessCategories = dbHandler(
+    async (businessIds: string[]): Promise<any> => {
+      const categories = await this.prisma.resourceCategory.findMany({
+        where: {
+          businessId: { in: businessIds },
+        },
+        select: {
+          id: true,
+          name: true,
+          businessId: true,
+        },
+      });
+      console.log(
+        "Fetched Categories for Businesses:",
+        categories.length,
+        "Categories:",
+        categories,
+      );
+
+      return categories;
+    },
+  );
 }
 export default new ResourceRepository();
