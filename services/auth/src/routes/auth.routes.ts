@@ -7,11 +7,13 @@ import {
   registerSchema,
   loginSchema,
   verifyEmailSchema,
+  verifyOtpSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   refreshTokenSchema,
   resendVerificationOTPSchema,
   editUserSchema,
+  registerBusinessSchema,
 } from "../utils/validators";
 
 const router = Router();
@@ -24,6 +26,16 @@ const router = Router();
 router.post("/register", validate(registerSchema), authController.register);
 
 /**
+ * @route   POST /auth/register-business
+ * @desc    Register a new business user
+ * @access  Public
+ */
+router.post(
+  "/register-business",
+  validate(registerBusinessSchema),
+  authController.registerBusiness,
+);
+/**
  * @route   POST /auth/verify-email
  * @desc    Verify email with OTP
  * @access  Public
@@ -31,8 +43,15 @@ router.post("/register", validate(registerSchema), authController.register);
 router.post(
   "/verify-email",
   validate(verifyEmailSchema),
-  authController.verifyEmail
+  authController.verifyEmail,
 );
+
+/**
+ * @route   POST /auth/verify-otp
+ * @desc    Verify OTP for email verification
+ * @access  Public
+ */
+router.post("/verify-otp", validate(verifyOtpSchema), authController.verifyOtp);
 
 /**
  * @route   POST /auth/resend-verification
@@ -43,7 +62,7 @@ router.post(
 router.post(
   "/resend-verification",
   validate(resendVerificationOTPSchema),
-  authController.resendVerificationOTP
+  authController.resendVerificationOTP,
 );
 
 /**
@@ -61,7 +80,7 @@ router.post("/login", validate(loginSchema), authController.login);
 router.post(
   "/refresh",
   validate(refreshTokenSchema),
-  authController.refreshToken
+  authController.refreshToken,
 );
 
 /**
@@ -79,7 +98,7 @@ router.post("/logout", authController.logout);
 router.post(
   "/forgot-password",
   validate(forgotPasswordSchema),
-  authController.forgotPassword
+  authController.forgotPassword,
 );
 
 /**
@@ -90,7 +109,7 @@ router.post(
 router.post(
   "/reset-password",
   validate(resetPasswordSchema),
-  authController.resetPassword
+  authController.resetPassword,
 );
 
 /**
@@ -109,7 +128,7 @@ router.get(
   "/users",
   authenticate,
   authorize(UserRole.ADMIN),
-  authController.getAllUsers
+  authController.getAllUsers,
 );
 
 /**
@@ -122,7 +141,7 @@ router.patch(
   authenticate,
   authorize(UserRole.ADMIN),
   validate(editUserSchema),
-  authController.editUser
+  authController.editUser,
 );
 
 /**
@@ -134,7 +153,7 @@ router.delete(
   "/users/:userId",
   authenticate,
   authorize(UserRole.ADMIN),
-  authController.deleteUser
+  authController.deleteUser,
 );
 
 export default router;

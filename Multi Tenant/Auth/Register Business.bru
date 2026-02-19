@@ -1,0 +1,40 @@
+meta {
+  name: Register Business
+  type: http
+  seq: 13
+}
+
+post {
+  url: http://localhost:8000/api/auth/register-business
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "firstName": "Suyan",
+    "lastName": "Thapa",
+    "ownerName": "Suyan ",
+    "email": "owneqr@hotellde.com",
+    "password": "Password123!",
+    "confirmPassword": "Password123!",
+    "businessName": "Hotel Lakeside",
+    "businessPhone": "+977-9800000000",
+   
+    "businessDescription": "A luxury stay located right by the lake in Pokhara.",
+    "businessType": "CLINIC",
+    "businessAddress": {
+      "street": "Lakeside Road 6",
+      "city": "Pokhara",
+      "state": "Gandaki",
+      "postalCode": "33700",
+      "country": "Nepal"
+    },
+    "agreeToTerms": true
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

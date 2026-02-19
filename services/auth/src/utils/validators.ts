@@ -5,6 +5,21 @@ import { z } from "zod";
  * Structured to match Universal Middleware { body, params, query }
  */
 
+const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+  .regex(/[0-9]/, "Password must contain at least one number");
+
+export enum BusinessType {
+  HOTEL = "HOTEL",
+  CLINIC = "CLINIC",
+  SALON = "SALON",
+  CO_WORKING = "CO_WORKING",
+  OTHER = "OTHER",
+}
+
 export const registerSchema = z.object({
   body: z.object({
     email: z.string().email("Invalid email address"),
@@ -14,23 +29,49 @@ export const registerSchema = z.object({
       .max(30, "Username must be at most 30 characters")
       .regex(
         /^[a-zA-Z0-9_]+$/,
-        "Username can only contain letters, numbers, and underscores"
+        "Username can only contain letters, numbers, and underscores",
       ),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-      .regex(/[0-9]/, "Password must contain at least one number")
-      .regex(
-        /[^A-Za-z0-9]/,
-        "Password must contain at least one special character"
-      ),
-    role: z
-      .enum(["CUSTOMER", "VENDOR", "ADMIN"])
-      .optional()
-      .default("CUSTOMER"),
+    password: passwordSchema,
   }),
+});
+
+export const registerBusinessSchema = z.object({
+  body: z
+    .object({
+      // Owner Info
+      firstName: z.string().min(1, "First name is required"),
+      lastName: z.string().min(1, "Last name is required"),
+      ownerName: z.string().optional(),
+      email: z.string().email("Invalid email address"),
+      password: passwordSchema,
+      confirmPassword: z.string().min(1, "Please confirm your password"),
+
+      // Business Info
+      businessName: z.string().min(2, "Business name is required"),
+      businessPhone: z.string().min(1, "Business phone is required"),
+
+      businessDescription: z
+        .string()
+        .max(500, "Description must be under 500 characters"),
+      businessType: z.nativeEnum(BusinessType),
+
+      // Address
+      businessAddress: z.object({
+        street: z.string().min(1, "Street is required"),
+        city: z.string().min(1, "City is required"),
+        state: z.string().min(1, "State is required"),
+        postalCode: z.string().min(1, "Postal code is required"),
+        country: z.string().min(1, "Country is required"),
+      }),
+
+      agreeToTerms: z.literal(true, {
+        errorMap: () => ({ message: "You must agree to the terms" }),
+      }),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords do not match",
+      path: ["confirmPassword"], // This ensures the error is attached to the confirmPassword field
+    }),
 });
 
 export const loginSchema = z.object({
@@ -43,7 +84,14 @@ export const loginSchema = z.object({
 export const verifyEmailSchema = z.object({
   body: z.object({
     email: z.string().email("Invalid email address"),
-    token: z.string().min(1, "Token is required"),
+    otp: z.string().min(1, "OTP is required"),
+  }),
+});
+
+export const verifyOtpSchema = z.object({
+  body: z.object({
+    email: z.string().email("Invalid email address"),
+    otp: z.string().min(1, "OTP is required"),
   }),
 });
 
@@ -62,7 +110,7 @@ export const resendOTPSchema = z.object({
 export const resetPasswordSchema = z.object({
   body: z
     .object({
-      token: z.string().min(1, "Token is required"),
+      resetToken: z.string().min(1, "Reset token is required"),
       newPassword: z
         .string()
         .min(8, "Password must be at least 8 characters")
@@ -71,11 +119,12 @@ export const resetPasswordSchema = z.object({
         .regex(/[0-9]/, "Password must contain at least one number")
         .regex(
           /[^A-Za-z0-9]/,
-          "Password must contain at least one special character"
+          "Password must contain at least one special character",
         ),
       confirmNewPassword: z
         .string()
         .min(8, "Password must be at least 8 characters"),
+      email: z.string().email("Invalid email address"),
     })
     .refine((data) => data.newPassword === data.confirmNewPassword, {
       message: "Passwords do not match",
@@ -135,8 +184,12 @@ export const deleteUserSchema = z.object({
  */
 export type UserRole = "CUSTOMER" | "VENDOR" | "ADMIN";
 export type RegisterInput = z.infer<typeof registerSchema>["body"];
+export type RegisterBusinessInput = z.infer<
+  typeof registerBusinessSchema
+>["body"];
 export type LoginInput = z.infer<typeof loginSchema>["body"];
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>["body"];
+export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>["body"];
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>["body"];
 export type ResendOTPInput = z.infer<typeof resendOTPSchema>["body"];
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>["body"];

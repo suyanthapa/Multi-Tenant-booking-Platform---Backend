@@ -6,9 +6,11 @@ import {
   RegisterInput,
   LoginInput,
   VerifyEmailInput,
+  VerifyOtpInput,
   ForgotPasswordInput,
   ResetPasswordInput,
   ResendVerificationOTPInput,
+  RegisterBusinessInput,
 } from "../utils/validators";
 
 import { UserRole, UserStatus } from "../generated/prisma/enums";
@@ -28,6 +30,20 @@ class AuthController {
     });
   });
 
+  //register a business
+  registerBusiness = asyncHandler(async (req: Request, res: Response) => {
+    const input: RegisterBusinessInput = req.body;
+    console.log("Received business registration request with input:", input);
+    const result = await authService.registerBusiness(input);
+
+    res.status(201).json({
+      success: true,
+      data: result,
+      message:
+        "Business registration successful. Please verify your email to activate your account.",
+    });
+  });
+
   /**
    * Verify email with OTP
    * POST /auth/verify-email
@@ -39,6 +55,24 @@ class AuthController {
     res.status(200).json({
       success: true,
       data: result,
+    });
+  });
+
+  /**
+   * Verify OTP
+   * POST /auth/verify-otp
+   */
+  verifyOtp = asyncHandler(async (req: Request, res: Response) => {
+    const input: VerifyOtpInput = req.body;
+    const result = await authService.verifyOtp(input);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        message: result.message,
+
+        resetToken: result.resetToken, // Include reset token if present
+      },
     });
   });
 

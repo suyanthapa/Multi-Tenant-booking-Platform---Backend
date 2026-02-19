@@ -21,7 +21,7 @@ export class OTPRepository {
    */
   async findLatestValidOTP(
     userId: string,
-    purpose: OTPPurpose
+    purpose: OTPPurpose,
   ): Promise<OTPToken | null> {
     return this.prisma.oTPToken.findFirst({
       where: {
@@ -39,9 +39,13 @@ export class OTPRepository {
   /**
    * Find all valid OTPs by purpose (non-consumed, non-expired)
    */
-  async findValidOTPsByPurpose(purpose: OTPPurpose): Promise<OTPToken[]> {
+  async findValidOTPsByPurpose(
+    userId: string,
+    purpose: OTPPurpose,
+  ): Promise<OTPToken[]> {
     return this.prisma.oTPToken.findMany({
       where: {
+        userId,
         purpose,
         consumedAt: null,
         expiresAt: { gte: new Date() },
@@ -141,7 +145,7 @@ export class OTPRepository {
    */
   async invalidateUserOTPs(
     userId: string,
-    purpose: OTPPurpose
+    purpose: OTPPurpose,
   ): Promise<Prisma.BatchPayload> {
     return this.prisma.oTPToken.updateMany({
       where: {
@@ -158,7 +162,7 @@ export class OTPRepository {
    */
   async countByUserAndPurpose(
     userId: string,
-    purpose: OTPPurpose
+    purpose: OTPPurpose,
   ): Promise<number> {
     return this.prisma.oTPToken.count({
       where: {
@@ -177,7 +181,7 @@ export class OTPRepository {
   async hasExceededLimit(
     userId: string,
     purpose: OTPPurpose,
-    limit: number = 5
+    limit: number = 5,
   ): Promise<boolean> {
     const count = await this.countByUserAndPurpose(userId, purpose);
     return count >= limit;

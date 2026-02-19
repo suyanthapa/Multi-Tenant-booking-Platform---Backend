@@ -13,8 +13,9 @@ export const hashPassword = async (password: string): Promise<string> => {
  */
 export const comparePassword = async (
   plainPassword: string,
-  hashedPassword: string
+  hashedPassword: string,
 ): Promise<boolean> => {
+  console.log("Comparing passwords:", { plainPassword, hashedPassword });
   return await bcrypt.compare(plainPassword, hashedPassword);
 };
 
@@ -25,7 +26,7 @@ export const generateOTP = (length: number = config.otp.length): string => {
   const digits = "0123456789";
   let otp = "";
   for (let i = 0; i < length; i++) {
-    otp += digits[Math.floor(Math.random() * 10)];
+    otp += digits[Math.floor(Math.random() * 10)].toString();
   }
   return otp;
 };
@@ -42,7 +43,7 @@ export const hashOTP = async (otp: string): Promise<string> => {
  */
 export const verifyOTP = async (
   otp: string,
-  hash: string
+  hash: string,
 ): Promise<boolean> => {
   return await bcrypt.compare(otp, hash);
 };

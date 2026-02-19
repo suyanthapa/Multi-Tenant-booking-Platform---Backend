@@ -9,6 +9,7 @@ import {
 import {
   AuthenticationError,
   ConflictError,
+  InternalServerError,
   NotFoundError,
   TokenExpiredError,
   ValidationError,
@@ -17,10 +18,12 @@ import {
   RegisterInput,
   LoginInput,
   VerifyEmailInput,
+  VerifyOtpInput,
   ForgotPasswordInput,
   ResetPasswordInput,
   ResendOTPInput,
   GetAllUsersInput,
+  RegisterBusinessInput,
 } from "../utils/validators";
 import otpService from "./otp.service";
 import emailService from "./email.service";
@@ -29,6 +32,7 @@ import { RepositoryFactory } from "../repositories";
 import { PaginatedUsers, UserResponse } from "../interfaces/user.interface";
 import { sanitizeUser } from "../utils/sanitizer";
 import businessClient from "../clients/businessClient";
+import jwt from "jsonwebtoken";
 
 class AuthService {
   private prisma = Database.getInstance(); // The Singleton Retrieval
@@ -42,7 +46,7 @@ class AuthService {
   async register(
     input: RegisterInput,
   ): Promise<{ user: Partial<User>; message: string }> {
-    const { email, username, password, role } = input;
+    const { email, username, password } = input;
 
     // Check if user already exists
     const existingUser = await this.userRepository.findByEmailOrUsername(email);
@@ -64,7 +68,7 @@ class AuthService {
       email,
       username,
       passwordHash,
-      role: (role as UserRole) || UserRole.CUSTOMER,
+      role: UserRole.CUSTOMER,
       status: UserStatus.PENDING_VERIFICATION,
       isEmailVerified: false,
     });
@@ -88,28 +92,67 @@ class AuthService {
     };
   }
 
+  // register a business
+  async registerBusiness(input: RegisterBusinessInput): Promise<void> {
+    // check if email already exists
+    const existingUser = await this.userRepository.findByEmailOrUsername(
+      input.email,
+    );
+    if (existingUser) {
+      throw new ConflictError("Email already registered");
+    }
+
+    // Hash password
+    const passwordHash = await hashPassword(input.password);
+
+    // Create user with VENDOR role
+    const user = await this.userRepository.create({
+      email: input.email,
+      username:
+        `${input.firstName} ${input.lastName}` || input.email.split("@")[0],
+      passwordHash,
+      role: UserRole.VENDOR,
+      status: UserStatus.PENDING_VERIFICATION,
+      isEmailVerified: false,
+    });
+
+    const business = await businessClient.createBusiness({
+      ownerId: user.id,
+      name: input.businessName,
+      description: input.businessDescription,
+      type: input.businessType,
+      address: input.businessAddress,
+      phone: input.businessPhone,
+      email: input.email,
+    });
+
+    if (!business) {
+      throw new InternalServerError("Failed to create business");
+    }
+
+    console.log("Business created:", business);
+    // Generate and send OTP
+    // const otp = await otpService.generateEmailVerificationOTP(user.id);
+    // await emailService.sendVerificationEmail(input.email, otp);
+
+    logger.info(`Business registered: ${user.id} (${input.email})`);
+  }
+
   /**
    * Verify email with OTP
    */
   async verifyEmail(input: VerifyEmailInput): Promise<{ message: string }> {
-    const { email, token } = input;
+    const { email, otp } = input;
 
-    // Verify OTP and get userId
-    const userId = await otpService.verifyEmailVerificationOTP(token);
-
-    // Get user and validate email matches
-    const user = await this.userRepository.findById(userId);
+    // Get user by email
+    const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
       throw new NotFoundError("User not found");
     }
 
-    // Verify email matches the OTP owner
-    if (user.email !== email) {
-      throw new AuthenticationError(
-        "Email does not match the verification token",
-      );
-    }
+    // Verify OTP and get userId
+    const userId = await otpService.findValidOTPsByPurpose(user.id, otp);
 
     // Update user
     await this.userRepository.markEmailAsVerified(userId);
@@ -121,6 +164,56 @@ class AuthService {
 
     return {
       message: "Email verified successfully. You can now log in.",
+    };
+  }
+
+  /**
+   * Verify OTP (standalone verification endpoint)
+   */
+  async verifyOtp(
+    input: VerifyOtpInput,
+  ): Promise<{ message: string; user: UserResponse; resetToken?: string }> {
+    const { email, otp } = input;
+
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) throw new NotFoundError("User not found");
+
+    const verifiedUserId = await otpService.findValidOTPsByPurpose(
+      user.id,
+      otp,
+    );
+    if (!verifiedUserId) {
+      throw new NotFoundError("Invalid verification code");
+    }
+
+    // Verify email matches the OTP owner
+    if (user.email !== email) {
+      throw new AuthenticationError(
+        "Email does not match the verification token",
+      );
+    }
+
+    // Update user
+    await this.userRepository.markEmailAsVerified(user.id);
+
+    // Send welcome email
+    // await emailService.sendWelcomeEmail(user.email, user.username);
+
+    // 3. Generate a temporary Reset Token (valid for 10-15 minutes)
+    const resetToken = jwt.sign(
+      {
+        userId: user.id,
+        purpose: "PASSWORD_RESET",
+      },
+      process.env.JWT_RESET_SECRET || "fallback_secret",
+      { expiresIn: "15m" },
+    );
+    logger.info(`OTP verified successfully for user: ${user.id}`);
+
+    return {
+      message: "OTP verified successfully. Email confirmed.",
+      user: sanitizeUser(user),
+      resetToken: resetToken,
     };
   }
 
@@ -342,19 +435,30 @@ class AuthService {
    * Reset password with OTP
    */
   async resetPassword(input: ResetPasswordInput): Promise<{ message: string }> {
-    const { token, newPassword, confirmNewPassword }: ResetPasswordInput =
-      input;
+    const {
+      email,
+      resetToken,
+      newPassword,
+      confirmNewPassword,
+    }: ResetPasswordInput = input;
 
     // Check password match
     if (newPassword !== confirmNewPassword) {
       throw new ValidationError("New password and confirmation do not match");
     }
-    // Verify OTP
-    const userId = await otpService.verifyPasswordResetOTP(token);
+
+    const decoded = jwt.verify(
+      resetToken,
+      process.env.JWT_RESET_SECRET || "fallback_secret",
+    ) as { userId: string; purpose: string };
+
+    if (decoded.purpose !== "PASSWORD_RESET") {
+      throw new AuthenticationError("Invalid token purpose");
+    }
 
     // Get user to compare with old password
-    const user = await this.userRepository.findById(userId);
-
+    const user = await this.userRepository.findByEmail(email);
+    console.log("User found for password reset:", user);
     if (!user) {
       throw new NotFoundError("User not found");
     }
@@ -363,7 +467,7 @@ class AuthService {
       newPassword,
       user.passwordHash,
     );
-
+    console.log("Is new password same as old?", isSamePassword);
     if (isSamePassword) {
       throw new ConflictError(
         "New password cannot be the same as the old password",
@@ -372,18 +476,17 @@ class AuthService {
 
     // Hash new password
     const passwordHash = await hashPassword(newPassword);
-
+    console.log("Password hash generated for reset:", passwordHash);
     // Update password
-    await this.userRepository.updatePassword(userId, passwordHash);
-
+    await this.userRepository.updatePassword(decoded.userId, passwordHash);
+    console.log("Password updated for user:", decoded.userId);
     // Revoke all refresh tokens for security
     await this.prisma.refreshToken.updateMany({
-      where: { userId, revokedAt: null },
+      where: { userId: decoded.userId, revokedAt: null },
       data: { revokedAt: new Date() },
     });
 
-    logger.info(`Password reset successful for user: ${userId}`);
-
+    logger.info(`Password reset successful for user: ${decoded.userId}`);
     return {
       message:
         "Password reset successfully. Please log in with your new password.",
@@ -465,5 +568,19 @@ class AuthService {
     // Delete user
     await this.userRepository.delete(userId);
   }
+
+  //validate user
+  async validateUser(userId: string): Promise<{ success: boolean }> {
+    const user = await this.userRepository.findById(userId);
+
+    if (!user || user.status !== UserStatus.ACTIVE) {
+      throw new NotFoundError("User not found");
+    }
+
+    return {
+      success: true,
+    };
+  }
 }
+
 export default new AuthService();
