@@ -1,6 +1,7 @@
 import { Router } from "express";
 import BusinessInternalController from "../controllers/internal/business.internal";
 import { internalAuthMiddleware } from "../middlewares/internalAuthMiddleware";
+import businessController from "../controllers/business.controller";
 
 const internalRoutes = Router();
 
@@ -22,5 +23,9 @@ internalRoutes.get(
   internalAuthMiddleware, // Only other microservices CAN call this
   BusinessInternalController.validateBusinessByOwner,
 );
+
+internalRoutes.post("/search", businessController.getBusinesses);
+
+internalRoutes.post("/create", BusinessInternalController.createBusiness);
 
 export default internalRoutes;

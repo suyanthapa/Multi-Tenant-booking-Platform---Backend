@@ -18,9 +18,9 @@ model Business {
     description String?
     type        BusinessType
 
-    address String?
+    address Json
     phone   String?
-    email   String?
+    email   String
 
     status     BusinessStatus @default(PENDING)
     isVerified Boolean        @default(false) @map("is_verified")
