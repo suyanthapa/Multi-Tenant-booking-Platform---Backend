@@ -1,8 +1,7 @@
 import { Router } from "express";
 import authController from "../controllers/auth.controller";
 import { validate } from "../middlewares/validator";
-import { authenticate, authorize } from "../middlewares/auth";
-import { UserRole } from "@prisma/client";
+import { authenticate } from "../middlewares/auth";
 import {
   forgotPasswordSchema,
   loginSchema,
@@ -14,23 +13,22 @@ import {
   verifyEmailSchema,
   verifyOtpSchema,
 } from "../dtos/auth.dto";
-import { editUserSchema } from "../dtos/user.dto";
 
-const router = Router();
+const authRouter = Router();
 
 /**
  * @route   POST /auth/register
  * @desc    Register a new user
  * @access  Public
  */
-router.post("/register", validate(registerSchema), authController.register);
+authRouter.post("/register", validate(registerSchema), authController.register);
 
 /**
  * @route   POST /auth/register-business
  * @desc    Register a new business user
  * @access  Public
  */
-router.post(
+authRouter.post(
   "/register-business",
   validate(registerBusinessSchema),
   authController.registerBusiness,
@@ -40,7 +38,7 @@ router.post(
  * @desc    Verify email with OTP
  * @access  Public
  */
-router.post(
+authRouter.post(
   "/verify-email",
   validate(verifyEmailSchema),
   authController.verifyEmail,
@@ -51,7 +49,11 @@ router.post(
  * @desc    Verify OTP for email verification
  * @access  Public
  */
-router.post("/verify-otp", validate(verifyOtpSchema), authController.verifyOtp);
+authRouter.post(
+  "/verify-otp",
+  validate(verifyOtpSchema),
+  authController.verifyOtp,
+);
 
 /**
  * @route   POST /auth/resend-verification
@@ -59,7 +61,7 @@ router.post("/verify-otp", validate(verifyOtpSchema), authController.verifyOtp);
  * @access  Public
  */
 
-router.post(
+authRouter.post(
   "/resend-verification",
   validate(resendVerificationOTPSchema),
   authController.resendVerificationOTP,
@@ -70,14 +72,14 @@ router.post(
  * @desc    Login user
  * @access  Public
  */
-router.post("/login", validate(loginSchema), authController.login);
+authRouter.post("/login", validate(loginSchema), authController.login);
 
 /**
  * @route   POST /auth/refresh
  * @desc    Refresh access token
  * @access  Public
  */
-router.post(
+authRouter.post(
   "/refresh",
   validate(refreshTokenSchema),
   authController.refreshToken,
@@ -88,14 +90,14 @@ router.post(
  * @desc    Logout user
  * @access  Public
  */
-router.post("/logout", authController.logout);
+authRouter.post("/logout", authController.logout);
 
 /**
  * @route   POST /auth/forgot-password
  * @desc    Request password reset OTP
  * @access  Public
  */
-router.post(
+authRouter.post(
   "/forgot-password",
   validate(forgotPasswordSchema),
   authController.forgotPassword,
@@ -106,7 +108,7 @@ router.post(
  * @desc    Reset password with OTP
  * @access  Public
  */
-router.post(
+authRouter.post(
   "/reset-password",
   validate(resetPasswordSchema),
   authController.resetPassword,
@@ -117,43 +119,6 @@ router.post(
  * @desc    Get current user profile
  * @access  Private
  */
-router.get("/me", authenticate, authController.getProfile);
+authRouter.get("/me", authenticate, authController.getProfile);
 
-/**
- * @route  GET /auth/users
- * @desc   Get all users (Admin only)
- * @access Private
- */
-router.get(
-  "/users",
-  authenticate,
-  authorize(UserRole.ADMIN),
-  authController.getAllUsers,
-);
-
-/**
- * @route  PATCH /auth/users/:userId
- * @desc   Edit user (Admin only)
- * @access Private
- */
-router.patch(
-  "/users/:userId",
-  authenticate,
-  authorize(UserRole.ADMIN),
-  validate(editUserSchema),
-  authController.editUser,
-);
-
-/**
- * @route DELETE /auth/users/:userId
- * @desc  Delete user (Admin only)
- * @access Private
- */
-router.delete(
-  "/users/:userId",
-  authenticate,
-  authorize(UserRole.ADMIN),
-  authController.deleteUser,
-);
-
-export default router;
+export default authRouter;
