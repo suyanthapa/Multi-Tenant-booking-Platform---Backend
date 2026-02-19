@@ -9,3 +9,9 @@ export type UserRole = "CUSTOMER" | "VENDOR" | "ADMIN";
 export type GetAllUsersInput = z.infer<typeof getAllUsersSchema>["query"];
 export type EditUserInput = z.infer<typeof editUserSchema>;
 export type DeleteUserInput = z.infer<typeof deleteUserSchema>;
+
+export type EditUserDto = {
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+};

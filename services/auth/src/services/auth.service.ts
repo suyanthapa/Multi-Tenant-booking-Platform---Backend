@@ -33,7 +33,7 @@ import {
   VerifyEmailInput,
   VerifyOtpInput,
 } from "../types/auth.types";
-import { GetAllUsersInput } from "../types/user.types";
+import { EditUserDto, GetAllUsersInput } from "../types/user.types";
 import { OTPPurpose } from "../generated/prisma/enums";
 
 class AuthService {
@@ -550,7 +550,7 @@ class AuthService {
   //edit user
   async editUser(
     userId: string,
-    updateData: Partial<User>,
+    updateData: EditUserDto,
   ): Promise<UserResponse> {
     // Check if user exists
     const user = await this.userRepository.findById(userId);

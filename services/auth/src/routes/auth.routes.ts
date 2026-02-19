@@ -5,7 +5,6 @@ import { authenticate } from "../middlewares/auth";
 import {
   forgotPasswordSchema,
   loginSchema,
-  refreshTokenSchema,
   registerBusinessSchema,
   registerSchema,
   resendVerificationOTPSchema,
@@ -81,7 +80,7 @@ authRouter.post("/login", validate(loginSchema), authController.login);
  */
 authRouter.post(
   "/refresh",
-  validate(refreshTokenSchema),
+
   authController.refreshToken,
 );
 
