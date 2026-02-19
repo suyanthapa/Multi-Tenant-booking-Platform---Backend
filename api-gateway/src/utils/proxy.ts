@@ -21,23 +21,28 @@ export const createServiceProxy = (target: string) => {
       proxyReq: (proxyReq, req: any) => {
         // 1. Logging for Observability
         console.log(
-          `[Gateway] ${req.method} ${req.originalUrl} -> ${target}${proxyReq.path}`
+          `[Gateway] ${req.method} ${req.originalUrl} -> ${target}${proxyReq.path}`,
         );
 
-        console.log(" [Gateway] Propagating User:", req.user);
         // 2. Identity Propagation (X-Headers)
         if (req.user) {
+          console.log(
+            " [Gateway] Propagating User:",
+            req.user.email || req.user.id,
+          );
           proxyReq.setHeader("x-user-id", String(req.user.id));
           proxyReq.setHeader("x-user-role", String(req.user.role));
           proxyReq.setHeader("x-user-email", String(req.user.email));
+        } else {
+          console.log(" [Gateway] Unauthenticated request");
         }
       },
       proxyRes: (proxyRes, _req, _res) => {
-        // 3. Custom header to track which service handled the request
+        // Custom header to track which service handled the request
         proxyRes.headers["x-proxy-service"] = target;
       },
       error: (err, _req, res: any) => {
-        // 4. Clean error handling
+        // Clean error handling
         res.status(502).json({
           success: false,
           error: "Service Unavailable",
