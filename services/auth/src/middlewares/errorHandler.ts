@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/errors";
 import logger from "../utils/logger";
+import { sanitizeBody } from "../utils/sanitizer";
 
 /**
  * Global error handling middleware
@@ -10,7 +11,7 @@ export const errorHandler = (
   err: Error | AppError,
   req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ) => {
   // Default error values
   let statusCode = 500;
@@ -26,7 +27,7 @@ export const errorHandler = (
     url: req.url,
     method: req.method,
     ip: req.ip,
-    body: req.body,
+    body: sanitizeBody(req.body),
     params: req.params,
     query: req.query,
   });
