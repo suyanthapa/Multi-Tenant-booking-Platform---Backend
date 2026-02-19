@@ -29,7 +29,7 @@ class App {
       cors({
         origin: process.env.ALLOWED_ORIGINS?.split(",") || "*",
         credentials: true,
-      })
+      }),
     );
 
     // Body parsing
@@ -48,19 +48,19 @@ class App {
           stream: {
             write: (message: string) => logger.info(message.trim()),
           },
-        })
+        }),
       );
     }
 
     // Rate limiting
-    const limiter = rateLimit({
-      windowMs: config.rateLimit.windowMs,
-      max: config.rateLimit.max,
-      message: "Too many requests from this IP, please try again later.",
-      standardHeaders: true,
-      legacyHeaders: false,
-    });
-    this.app.use("/api/", limiter);
+    // const limiter = rateLimit({
+    //   windowMs: config.rateLimit.windowMs,
+    //   max: config.rateLimit.max,
+    //   message: "Too many requests from this IP, please try again later.",
+    //   standardHeaders: true,
+    //   legacyHeaders: false,
+    // });
+    // this.app.use("/api/", limiter);
 
     // Strict rate limiting for auth endpoints
     const authLimiter = rateLimit({
