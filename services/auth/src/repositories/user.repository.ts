@@ -243,4 +243,25 @@ export class UserRepository implements IRepository<User> {
       limit,
     };
   }
+
+  async rotateToken(
+    oldTokenId: string,
+    userId: string,
+    newToken: string,
+    expiresAt: Date,
+  ): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.refreshToken.update({
+        where: { id: oldTokenId },
+        data: { revokedAt: new Date() },
+      });
+      await tx.refreshToken.create({
+        data: {
+          userId,
+          token: newToken,
+          expiresAt,
+        },
+      });
+    });
+  }
 }

@@ -1,6 +1,6 @@
 ## 🔧 Refactors & Improvements
 
-## 1. Separated Validation Schemas from Type Definitions
+### 1. Separated Validation Schemas from Type Definitions
 
 **Before:** All Zod schemas and inferred types lived in a single `utils/validator.ts` file.
 
@@ -20,7 +20,7 @@ The difference between runtime validation (Zod, runs in JS) and
 compile-time types (TypeScript, erased at runtime) — and why treating
 them as separate concerns leads to a cleaner architecture.
 
-## 2. Split Auth Routes into Separate Route Files
+### 2. Split Auth Routes into Separate Route Files
 
 **Before:** All routes (login, register, OTP, user management) lived in a single `auth.routes.ts` file.
 
@@ -39,7 +39,7 @@ and would only get worse as the app grows.
 Express Router composition — each router handles its own
 concern, and a central index mounts them all.
 
-## 3. Reused passwordSchema in resetPasswordSchema (DRY Fix)
+### 3. Reused passwordSchema in resetPasswordSchema (DRY Fix)
 
 **Before:**
 `resetPasswordSchema` duplicated all the regex checks from `passwordSchema`
@@ -61,7 +61,7 @@ DRY (Don't Repeat Yourself) — extract reusable logic once and
 reference it everywhere it's needed. Zod schemas are just objects,
 so they can be reused like any other variable.
 
-## 5. Sanitized Sensitive Fields from Error Logs (P0 Security Fix)
+### 5. Sanitized Sensitive Fields from Error Logs (P0 Security Fix)
 
 **Bug:**
 `errorHandler.ts` was logging `req.body` directly, which included
@@ -103,7 +103,7 @@ anything written to logs should be safe to expose. Sensitive data
 must be redacted at the point of logging, not assumed to be safe
 because logs are "internal".
 
-## 6. Replaced Hardcoded JWT Fallbacks with Startup Validation
+### 6. Replaced Hardcoded JWT Fallbacks with Startup Validation
 
 **Bug:**
 Critical secrets had hardcoded fallbacks in `config.ts`:
@@ -133,7 +133,7 @@ Fail fast — a server that refuses to start with a clear error is
 safer and easier to debug than one that starts silently in a broken
 state.
 
-## 7. Replaced Math.random with crypto.randomInt for OTP Generation
+### 7. Replaced Math.random with crypto.randomInt for OTP Generation
 
 **Bug:**
 OTPs were generated using `Math.random()` which is pseudorandom —
@@ -149,3 +149,41 @@ otp += digits[Math.floor(Math.random() * 10)].toString();
 // after
 otp += crypto.randomInt(0, 10).toString();
 ```
+
+### 8. Added Global Express Request Type Augmentation
+
+**Problem:**
+`req.user`were declared inside `auth.middleware.ts`
+locally. TypeScript augmentations defined inside middleware files are
+not reliably recognized globally — other files would get type errors
+or need to re-declare the same types.
+
+**Fix:**
+Created `src/types/express.d.ts` as the single source of truth:
+
+```ts
+declare global {
+  namespace Express {
+    interface Request {
+      user?: JWTPayload;
+    }
+  }
+}
+```
+
+Updated `tsconfig.json` to use `typeRoots` instead of `types`:
+
+```json
+"typeRoots": ["./src/types", "./node_modules/@types"]
+```
+
+**Why:**
+`"types": ["node"]` was telling TypeScript to only load `@types/node`,
+which could cause custom type declarations to be ignored. `typeRoots`
+tells TypeScript to look in `src/types/` first, picking up
+`express.d.ts` automatically across the entire project.
+
+**What I learned:**
+TypeScript module augmentation must be in a dedicated `.d.ts` file
+to be reliably global. Declaration files in `src/types/` are the
+standard place for project-wide type extensions.

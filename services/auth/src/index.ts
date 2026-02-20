@@ -91,7 +91,7 @@ class App {
     this.app.use("/api", routes);
 
     // Root
-    this.app.get("/", (res: Response) => {
+    this.app.get("/", (_req: Request, res: Response) => {
       res.json({
         message: "Auth Service API",
         version: "1.0.0",

@@ -381,20 +381,12 @@ class AuthService {
 
     const { accessToken, refreshToken } = generateTokenPair(newPayload);
 
-    // Revoke old token and store new one
-    await this.prisma.$transaction(async (tx) => {
-      await tx.refreshToken.update({
-        where: { id: tokenRecord.id },
-        data: { revokedAt: new Date() },
-      });
-      await tx.refreshToken.create({
-        data: {
-          userId: user.id,
-          token: refreshToken,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        },
-      });
-    });
+    await this.userRepository.rotateToken(
+      tokenRecord.id,
+      user.id,
+      refreshToken,
+      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    );
 
     logger.info(`Token refreshed for user: ${user.id}`);
 
