@@ -14,6 +14,7 @@ import {
   VerifyEmailInput,
   VerifyOtpInput,
 } from "../types/auth.types";
+import { successResponse, errorResponse } from "../utils/response";
 
 class AuthController {
   /**
@@ -24,10 +25,12 @@ class AuthController {
     const input: RegisterInput = req.body;
     const result = await authService.register(input);
 
-    res.status(201).json({
-      success: true,
-      data: result,
-    });
+    successResponse(
+      res,
+      result,
+      "Registration successful. Please verify your email to activate your account.",
+      201,
+    );
   });
 
   //register a business
@@ -36,12 +39,12 @@ class AuthController {
     console.log("Received business registration request with input:", input);
     const result = await authService.registerBusiness(input);
 
-    res.status(201).json({
-      success: true,
-      data: result,
-      message:
-        "Business registration successful. Please verify your email to activate your account.",
-    });
+    return successResponse(
+      res,
+      result,
+      "Business registration successful. Please verify your email to activate your account.",
+      201,
+    );
   });
 
   /**
@@ -52,10 +55,7 @@ class AuthController {
     const input: VerifyEmailInput = req.body;
     const result = await authService.verifyEmail(input);
 
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
+    return successResponse(res, result, "Email verified successfully", 201);
   });
 
   /**
@@ -66,14 +66,11 @@ class AuthController {
     const input: VerifyOtpInput = req.body;
     const result = await authService.verifyOtp(input);
 
-    res.status(200).json({
-      success: true,
-      data: {
-        message: result.message,
-
-        resetToken: result.resetToken, // Include reset token if present
-      },
-    });
+    return successResponse(
+      res,
+      { resetToken: result.resetToken },
+      result.message,
+    );
   });
 
   /**
@@ -85,10 +82,7 @@ class AuthController {
     const { email }: ResendVerificationOTPInput = req.body;
     const result = await authService.resendEmailVerificationOTP({ email });
 
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
+    return successResponse(res, null, result.message);
   });
 
   /**
@@ -114,13 +108,7 @@ class AuthController {
       maxAge: config.cookie.maxAge,
     });
 
-    res.status(200).json({
-      success: true,
-      data: {
-        user: result.user,
-        message: "Login successful",
-      },
-    });
+    return successResponse(res, { user: result.user }, "Login successful");
   });
 
   /**
@@ -132,11 +120,7 @@ class AuthController {
     const refreshToken = req.cookies?.refreshToken;
 
     if (!refreshToken) {
-      res.status(400).json({
-        success: false,
-        message: "Refresh token is required",
-      });
-      return;
+      return errorResponse(res, "Refresh token is required", 400, "MISSING_TOKEN");
     }
 
     const result = await authService.refreshToken(refreshToken);
@@ -156,10 +140,7 @@ class AuthController {
       maxAge: config.cookie.maxAge,
     });
 
-    res.status(200).json({
-      success: true,
-      data: { message: "Token refreshed successfully" },
-    });
+    return successResponse(res, null, "Token refreshed successfully");
   });
 
   /**
@@ -187,10 +168,7 @@ class AuthController {
       sameSite: config.cookie.sameSite,
     });
 
-    res.status(200).json({
-      success: true,
-      data: { message: "Logout successful" },
-    });
+    return successResponse(res, null, "Logout successful");
   });
 
   /**
@@ -201,10 +179,7 @@ class AuthController {
     const input: ForgotPasswordInput = req.body;
     const result = await authService.forgotPassword(input);
 
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
+    return successResponse(res, null, result.message);
   });
 
   /**
@@ -215,10 +190,7 @@ class AuthController {
     const input: ResetPasswordInput = req.body;
     const result = await authService.resetPassword(input);
 
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
+    return successResponse(res, null, result.message);
   });
 
   /**
@@ -229,10 +201,7 @@ class AuthController {
     const userId = req.user!.id;
     const result = await authService.getProfile(userId);
 
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
+    return successResponse(res, result);
   });
 
   /**
@@ -248,10 +217,7 @@ class AuthController {
       status: status as UserStatus,
     });
 
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
+    return successResponse(res, result);
   });
 
   /**
@@ -265,10 +231,7 @@ class AuthController {
 
     const result = await authService.editUser(userId, updateData);
 
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
+    return successResponse(res, result);
   });
 
   /**
@@ -281,10 +244,7 @@ class AuthController {
 
     await authService.deleteUser(userId);
 
-    res.status(200).json({
-      success: true,
-      data: { message: "User deleted successfully" },
-    });
+    return successResponse(res, null, "User deleted successfully");
   });
 }
 

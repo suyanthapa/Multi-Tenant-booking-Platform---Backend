@@ -80,7 +80,7 @@ class BusinessClient {
   async createBusiness(data: createBusinessData): Promise<BusinessResponse> {
     try {
       console.log("Creating business with data:", data);
-      const response = await this.client.post(`/create`, data);
+      const response = await this.client.post(`/`, data);
       console.log("Business created successfully:", response.data);
       return response.data;
     } catch (error: any) {

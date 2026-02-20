@@ -1,5 +1,16 @@
 ## 🔧 Refactors & Improvements
 
+### Table of Contents
+
+- [1. Separated Validation Schemas](#1-separated-validation-schemas-from-type-definitions)
+- [2. Split Auth Routes](#2-split-auth-routes-into-separate-route-files)
+- [3. Reused passwordSchema](#3-reused-passwordschema-in-resetpasswordschema-dry-fix)
+- [5. Sanitized Sensitive Fields](#5-sanitized-sensitive-fields-from-error-logs-p0-security-fix)
+- [6. Replaced JWT Fallbacks](#6-replaced-hardcoded-jwt-fallbacks-with-startup-validation)
+- [7. Replaced Math.random](#7-replaced-mathrandom-with-cryptorandomint-for-otp-generation)
+- [8. Express Type Augmentation](#8-added-global-express-request-type-augmentation)
+- [9. Consistent Success/Error Response](#9-added-consistent-success-error-response-envelope)
+
 ### 1. Separated Validation Schemas from Type Definitions
 
 **Before:** All Zod schemas and inferred types lived in a single `utils/validator.ts` file.
@@ -187,3 +198,50 @@ tells TypeScript to look in `src/types/` first, picking up
 TypeScript module augmentation must be in a dedicated `.d.ts` file
 to be reliably global. Declaration files in `src/types/` are the
 standard place for project-wide type extensions.
+
+### 9. Added Consistent Success Error Response Envelope
+
+**Problem:**
+Response shapes were inconsistent across the entire API:
+
+- Some placed `message` inside `data`
+- Some placed `message` at the top level
+- Error responses had `message` nested inside `error`
+- No single source of truth for response structure
+
+```ts
+// before — inconsistent
+res.json({ success: true, data: { message: "Login successful", user } });
+res.json({ success: true, data: result, message: "Business registration..." });
+res.json({ success: false, error: { code, message } });
+```
+
+**Fix:**
+Created `src/utils/response.ts` with two utility functions:
+
+```ts
+successResponse(res, data, message, statusCode);
+errorResponse(res, message, statusCode, code, errors, stack);
+```
+
+Every response now follows the same envelope:
+
+```json
+// success
+{ "success": true, "message": "...", "data": {...} }
+
+// error
+{ "success": false, "message": "...", "error": { "code": "..." } }
+```
+
+**Status codes used consistently:**
+
+- `200` — default for fetch/update/actions
+- `201` — something created in DB
+- `204` — deleted, no body needed
+
+**What I learned:**
+A consistent response envelope is a contract between the backend
+and frontend. Inconsistent shapes force the frontend to handle
+multiple cases for the same thing. Centralizing it in one utility
+means one change updates every response in the app.
