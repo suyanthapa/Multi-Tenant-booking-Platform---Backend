@@ -26,6 +26,6 @@ internalRoutes.get(
 
 internalRoutes.post("/search", businessController.getBusinesses);
 
-internalRoutes.post("/create", BusinessInternalController.createBusiness);
+internalRoutes.post("/", BusinessInternalController.createBusiness);
 
 export default internalRoutes;

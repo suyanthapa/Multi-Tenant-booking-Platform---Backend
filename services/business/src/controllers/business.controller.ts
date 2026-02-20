@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { CreateBusinessInput, UpdateBusinessInput } from "../utils/validators";
 import { BusinessType } from "@prisma/client";
 import { InvalidInputError } from "../utils/errors";
+import { successResponse } from "../utils/response";
 
 class BusinessController {
   // Create business
@@ -12,10 +13,7 @@ class BusinessController {
 
     const business = await businessService.createBusiness(data);
 
-    res.status(201).json({
-      success: true,
-      data: business,
-    });
+    successResponse(res, business, "Business created successfully", 201);
   });
 
   // Get all businesses
@@ -40,10 +38,7 @@ class BusinessController {
       userRole,
     });
 
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
+    successResponse(res, result);
   });
 
   // Get business by ID
@@ -52,10 +47,7 @@ class BusinessController {
 
     const business = await businessService.getBusinessById(id);
 
-    res.status(200).json({
-      success: true,
-      data: business,
-    });
+    successResponse(res, business);
   });
 
   // Get businesses by owner
@@ -64,10 +56,7 @@ class BusinessController {
 
     const business = await businessService.getBusinessesByOwner(ownerId);
 
-    res.status(200).json({
-      success: true,
-      data: business,
-    });
+    successResponse(res, business);
   });
 
   // Get businesses by type
@@ -78,10 +67,7 @@ class BusinessController {
       type as BusinessType,
     );
 
-    res.status(200).json({
-      success: true,
-      data: businesses,
-    });
+    successResponse(res, businesses);
   });
 
   // Update business
@@ -98,10 +84,7 @@ class BusinessController {
       data,
     );
 
-    res.status(200).json({
-      success: true,
-      data: business,
-    });
+    successResponse(res, business, "Business updated successfully");
   });
 
   // Delete business
@@ -112,10 +95,7 @@ class BusinessController {
 
     await businessService.deleteBusiness(id, userId, userRole);
 
-    res.status(200).json({
-      success: true,
-      message: "Business deleted successfully",
-    });
+    successResponse(res, null, "Business deleted successfully");
   });
 
   // Toggle business status
@@ -130,10 +110,7 @@ class BusinessController {
       userRole,
     );
 
-    res.status(200).json({
-      success: true,
-      data: business,
-    });
+    successResponse(res, business, "Business status updated successfully");
   });
 
   // Verify a business
@@ -143,10 +120,7 @@ class BusinessController {
 
     await businessService.verifyBusiness(id, userRole);
 
-    res.status(200).json({
-      success: true,
-      message: "Business verified successfully",
-    });
+    successResponse(res, null, "Business verified successfully");
   });
 
   //Get Businesses
@@ -166,12 +140,7 @@ class BusinessController {
       endDate as string,
       location as string,
     );
-    res.status(200).json({
-      success: true,
-      data: {
-        business: slots,
-      },
-    });
+    successResponse(res, { business: slots });
   });
 
   //Get Available Slots for a business
@@ -191,12 +160,7 @@ class BusinessController {
       endDate as string,
       location as string,
     );
-    res.status(200).json({
-      success: true,
-      data: {
-        business: slots,
-      },
-    });
+    successResponse(res, { business: slots });
   });
 }
 export default new BusinessController();

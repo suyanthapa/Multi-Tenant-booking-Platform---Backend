@@ -1,23 +1,18 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/errors";
 import logger from "../utils/logger";
+import { sanitizeBody } from "../utils/sanitizer";
+import { errorResponse } from "../utils/response";
 
 /**
  * Global error handling middleware
- * IMPORTANT: Must have 4 parameters for Express to recognize it as error handler
  */
 export const errorHandler = (
   err: Error | AppError,
   req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ) => {
-  // Default error values
-  let statusCode = 500;
-  let code = "INTERNAL_SERVER_ERROR";
-  let message = "An unexpected error occurred";
-  let errors: any[] | undefined;
-
   // Log error details (always log full details internally)
   logger.error("Error occurred:", {
     name: err.name,
@@ -26,135 +21,116 @@ export const errorHandler = (
     url: req.url,
     method: req.method,
     ip: req.ip,
-    body: req.body,
+    body: sanitizeBody(req.body),
     params: req.params,
     query: req.query,
   });
 
-  // Handle known operational errors (custom AppError instances)
+  // AppError
   if (err instanceof AppError) {
-    statusCode = err.statusCode;
-    code = err.code || "INTERNAL_SERVER_ERROR";
-    message = err.message;
+    const errors =
+      "errors" in err && Array.isArray((err as any).errors)
+        ? (err as any).errors
+        : undefined;
 
-    // Check if it has validation errors
-    if ("errors" in err && Array.isArray((err as any).errors)) {
-      errors = (err as any).errors;
-    }
-
-    return res.status(statusCode).json({
-      success: false,
-      error: {
-        code,
-        message,
-        ...(errors && { errors }),
-        ...(process.env.NODE_ENV === "development" && {
-          stack: err.stack,
-        }),
-      },
-    });
+    return errorResponse(
+      res,
+      err.message,
+      err.statusCode,
+      err.code,
+      errors,
+      err.stack,
+    );
   }
 
-  // Handle Prisma errors
+  // Prisma errors
   if (err.constructor.name === "PrismaClientKnownRequestError") {
     const prismaError = err as any;
     if (prismaError.code === "P2002") {
-      return res.status(409).json({
-        success: false,
-        error: {
-          code: "DUPLICATE_ENTRY",
-          message: "A record with this value already exists",
-        },
-      });
+      return errorResponse(
+        res,
+        "A record with this value already exists",
+        409,
+        "DUPLICATE_ENTRY",
+        undefined,
+        err.stack,
+      );
     }
     if (prismaError.code === "P2025") {
-      return res.status(404).json({
-        success: false,
-        error: {
-          code: "NOT_FOUND",
-          message: "Record not found",
-        },
-      });
+      return errorResponse(
+        res,
+        "Record not found",
+        404,
+        "NOT_FOUND",
+        undefined,
+        err.stack,
+      );
     }
   }
 
-  // Handle validation errors from Zod
+  // Zod
   if (err.name === "ZodError") {
-    return res.status(400).json({
-      success: false,
-      error: {
-        code: "VALIDATION_ERROR",
-        message: "Validation failed",
-        errors: (err as any).errors,
-      },
-    });
+    return errorResponse(
+      res,
+      "Validation failed",
+      400,
+      "VALIDATION_ERROR",
+      (err as any).errors,
+      err.stack,
+    );
   }
 
-  // Handle JWT errors
+  // JWT
   if (err.name === "JsonWebTokenError") {
-    return res.status(401).json({
-      success: false,
-      error: {
-        code: "INVALID_TOKEN",
-        message: "Invalid token",
-      },
-    });
+    return errorResponse(
+      res,
+      "Invalid token",
+      401,
+      "INVALID_TOKEN",
+      undefined,
+      err.stack,
+    );
   }
 
+  //Token Expired
   if (err.name === "TokenExpiredError") {
-    return res.status(401).json({
-      success: false,
-      error: {
-        code: "TOKEN_EXPIRED",
-        message: "Token has expired",
-      },
-    });
+    return errorResponse(
+      res,
+      "Token has expired",
+      401,
+      "TOKEN_EXPIRED",
+      undefined,
+      err.stack,
+    );
   }
 
-  // Handle syntax errors (invalid JSON in request body)
-  if (err instanceof SyntaxError && "body" in err) {
-    return res.status(400).json({
-      success: false,
-      error: {
-        code: "INVALID_JSON",
-        message: "Invalid JSON in request body",
-      },
-    });
-  }
-
-  // Unknown errors - don't expose internal details in production
-  if (process.env.NODE_ENV === "production") {
-    message = "Internal server error";
-  } else {
-    message = err.message || "An unexpected error occurred";
-  }
-
-  return res.status(statusCode).json({
-    success: false,
-    error: {
-      code,
-      message,
-      ...(process.env.NODE_ENV === "development" && {
-        stack: err.stack,
-      }),
-    },
+  // Fallback
+  logger.error("Unhandled error:", {
+    name: err.name,
+    message: err.message,
+    stack: err.stack,
   });
+
+  return errorResponse(
+    res,
+    process.env.NODE_ENV === "production"
+      ? "An unexpected error occurred. Please try again later."
+      : err.message,
+    500,
+    "INTERNAL_SERVER_ERROR",
+    undefined,
+    err.stack,
+  );
 };
 
 /**
- * 404 Not Found Handler
- * Call this AFTER all routes are registered
+ * Handle 404 - Route not found
  */
-export const notFoundHandler = (
-  req: Request,
-  res: Response,
-  _next: NextFunction
-) => {
-  res.status(404).json({
-    success: false,
-    error: {
-      code: "NOT_FOUND",
-      message: `Route ${req.originalUrl} not found`,
-    },
-  });
+export const notFoundHandler = (req: Request, res: Response) => {
+  return errorResponse(
+    res,
+    `Route ${req.method} ${req.url} not found`,
+    404,
+    "NOT_FOUND",
+  );
 };

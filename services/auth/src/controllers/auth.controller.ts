@@ -120,7 +120,12 @@ class AuthController {
     const refreshToken = req.cookies?.refreshToken;
 
     if (!refreshToken) {
-      return errorResponse(res, "Refresh token is required", 400, "MISSING_TOKEN");
+      return errorResponse(
+        res,
+        "Refresh token is required",
+        400,
+        "MISSING_TOKEN",
+      );
     }
 
     const result = await authService.refreshToken(refreshToken);
