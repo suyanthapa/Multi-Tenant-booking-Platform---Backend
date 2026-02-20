@@ -1,16 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyAccessToken, JWTPayload } from "../utils/jwt";
+import { verifyAccessToken } from "../utils/jwt";
 import { AuthenticationError, AuthorizationError } from "../utils/errors";
 import { UserRole } from "@prisma/client";
-
-// Extend Express Request type to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: JWTPayload;
-    }
-  }
-}
 
 /**
  * Middleware to authenticate requests using JWT
