@@ -102,3 +102,50 @@ Never log `req.body` directly. Treat logs as a public surface —
 anything written to logs should be safe to expose. Sensitive data
 must be redacted at the point of logging, not assumed to be safe
 because logs are "internal".
+
+## 6. Replaced Hardcoded JWT Fallbacks with Startup Validation
+
+**Bug:**
+Critical secrets had hardcoded fallbacks in `config.ts`:
+
+```ts
+accessSecret: process.env.JWT_ACCESS_SECRET || "your-access-secret-key";
+```
+
+If a secret was missing in production, the app ran silently with a
+known static secret — allowing anyone to forge valid tokens.
+
+**Fix:**
+Added a `requireEnv()` helper in `config.ts` that throws immediately
+at startup if a required variable is missing:
+
+```bash
+Error: Missing required environment variable: DATABASE_URL
+# server refuses to start
+```
+
+**Fields that now require explicit env vars:**
+`DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`,
+`EMAIL_USER`, `EMAIL_PASSWORD`
+
+**What I learned:**
+Fail fast — a server that refuses to start with a clear error is
+safer and easier to debug than one that starts silently in a broken
+state.
+
+## 7. Replaced Math.random with crypto.randomInt for OTP Generation
+
+**Bug:**
+OTPs were generated using `Math.random()` which is pseudorandom —
+predictable if an attacker observes enough outputs and reverse
+engineers the seed.
+
+**Fix:**
+
+```ts
+// before
+otp += digits[Math.floor(Math.random() * 10)].toString();
+
+// after
+otp += crypto.randomInt(0, 10).toString();
+```

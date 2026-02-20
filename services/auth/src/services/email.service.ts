@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import config from "../config";
 import logger from "../utils/logger";
+import { InternalServerError } from "../utils/errors";
 
 class EmailService {
   private transporter: nodemailer.Transporter;
@@ -41,7 +42,7 @@ class EmailService {
       logger.info(`Verification email sent to ${email}`);
     } catch (error) {
       logger.error("Failed to send verification email:", error);
-      throw new Error("Failed to send verification email");
+      throw new InternalServerError("Failed to send verification email");
     }
   }
 

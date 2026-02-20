@@ -9,6 +9,7 @@ interface Config {
   jwt: {
     accessSecret: string;
     refreshSecret: string;
+    resetSecret: string;
     accessExpiresIn: string;
     refreshExpiresIn: string;
   };
@@ -39,17 +40,20 @@ interface Config {
   };
 }
 
+const requireEnv = (key: string): string => {
+  const value = process.env[key];
+  if (!value) throw new Error(`Missing required environment variable: ${key}`);
+  return value;
+};
+
 const config: Config = {
   port: parseInt(process.env.PORT || "4000", 10),
   nodeEnv: process.env.NODE_ENV || "development",
-  databaseUrl: process.env.DATABASE_URL || "",
+  databaseUrl: requireEnv("DATABASE_URL"),
   jwt: {
-    accessSecret:
-      process.env.JWT_ACCESS_SECRET ||
-      "your-access-secret-key-change-in-production",
-    refreshSecret:
-      process.env.JWT_REFRESH_SECRET ||
-      "your-refresh-secret-key-change-in-production",
+    accessSecret: requireEnv("JWT_ACCESS_SECRET"),
+    refreshSecret: requireEnv("JWT_REFRESH_SECRET"),
+    resetSecret: requireEnv("JWT_RESET_SECRET"),
     accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "30m",
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
   },
@@ -60,8 +64,8 @@ const config: Config = {
     host: process.env.EMAIL_HOST || "smtp.gmail.com",
     port: parseInt(process.env.EMAIL_PORT || "587", 10),
     secure: process.env.EMAIL_SECURE === "true",
-    user: process.env.EMAIL_USER || "",
-    password: process.env.EMAIL_PASSWORD || "",
+    user: requireEnv("EMAIL_USER"),
+    password: requireEnv("EMAIL_PASSWORD"),
     from: process.env.EMAIL_FROM || "noreply@booking.com",
   },
   rateLimit: {

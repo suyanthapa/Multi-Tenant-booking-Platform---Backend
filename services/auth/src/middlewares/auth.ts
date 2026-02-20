@@ -19,7 +19,7 @@ declare global {
 export const authenticate = (
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     //  Check Cookies (Web/Browser)
@@ -65,9 +65,7 @@ export const authorize = (...allowedRoles: UserRole[]) => {
       const hasAccess = allowedRoles.includes(req.user.role as UserRole);
 
       if (!hasAccess) {
-        throw new AuthorizationError(
-          `Access denied. Required roles: ${allowedRoles.join(", ")}`
-        );
+        throw new AuthorizationError(`Insufficient permissions`);
       }
 
       next();
@@ -104,7 +102,7 @@ export const hasRole = (role: UserRole) => {
 export const optionalAuth = (
   req: Request,
 
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     // Get token from cookie first, then fall back to Authorization header

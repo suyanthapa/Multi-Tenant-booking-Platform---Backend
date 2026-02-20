@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import config from "../config";
-
+import crypto from "crypto";
 /**
  * Hash a password using bcrypt
  */
@@ -15,7 +15,6 @@ export const comparePassword = async (
   plainPassword: string,
   hashedPassword: string,
 ): Promise<boolean> => {
-  console.log("Comparing passwords:", { plainPassword, hashedPassword });
   return await bcrypt.compare(plainPassword, hashedPassword);
 };
 
@@ -23,10 +22,9 @@ export const comparePassword = async (
  * Generate a random OTP code
  */
 export const generateOTP = (length: number = config.otp.length): string => {
-  const digits = "0123456789";
   let otp = "";
   for (let i = 0; i < length; i++) {
-    otp += digits[Math.floor(Math.random() * 10)].toString();
+    otp += crypto.randomInt(0, 10).toString();
   }
   return otp;
 };

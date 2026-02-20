@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { InternalServerError } from "../utils/errors";
-import { BusinessType } from "../utils/validators";
+import { BusinessType } from "../dtos/auth.dto";
 
 interface BusinessInfo {
   businessId: string;
@@ -63,7 +63,7 @@ class BusinessClient {
       return response.data.businessInfo;
     } catch (error: any) {
       //  logging can be added here
-      console.log("Booking Service Rejected with:", error.response?.data);
+      console.log("Business Service Rejected with:", error.response?.data);
 
       if (error.response && error.response.status === 404) {
         return null; // Return null so the AuthService knows there's no business

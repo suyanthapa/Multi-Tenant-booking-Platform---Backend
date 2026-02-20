@@ -47,22 +47,20 @@ class OTPService {
     otp: string,
     purpose: OTPPurpose,
   ): Promise<string> {
-    // Get all non-consumed, non-expired OTPs
-    const otpTokens = await this.otpRepository.findValidOTPsByPurpose(
+    // Get non-consumed, non-expired OTPs
+    const otpToken = await this.otpRepository.findValidOTPByPurpose(
       userId,
       purpose,
     );
 
-    if (otpTokens.length === 0) {
+    if (!otpToken) {
       throw new ValidationError("No valid OTP found for this user");
     }
 
-    for (const token of otpTokens) {
-      const isValid = await verifyOTP(otp, token.otpHash);
-      if (isValid) {
-        await this.otpRepository.markAsUsed(token.id);
-        return token.userId;
-      }
+    const isValid = await verifyOTP(otp, otpToken.otpHash);
+    if (isValid) {
+      await this.otpRepository.markAsUsed(otpToken.id);
+      return otpToken.userId;
     }
 
     throw new ValidationError("Invalid OTP");
@@ -102,31 +100,29 @@ class OTPService {
   async verifyPasswordResetOTP(userId: string, otp: string): Promise<string> {
     // Get all non-consumed, non-expired OTPs
     console.log("Finding valid OTPs for user:", { userId, otp });
-    const otpTokens = await this.otpRepository.findValidOTPsByPurpose(
+    const otpToken = await this.otpRepository.findValidOTPByPurpose(
       userId,
       OTPPurpose.PASSWORD_RESET,
     );
 
-    if (otpTokens.length === 0) {
-      throw new ValidationError("Invalid or expired OTPP");
+    if (!otpToken) {
+      throw new ValidationError("Invalid or expired OTP");
     }
 
     // Try to match OTP
-    for (const token of otpTokens) {
-      console.log("Verifying OTP:", { otp, tokenId: token.id });
-      const isValid = await verifyOTP(otp, token.otpHash);
-      console.log("OTP verification result:", {
-        otp,
-        tokenId: token.id,
-        isValid,
-      });
-      if (isValid) {
-        // Mark as consumed
-        await this.otpRepository.markAsUsed(token.id);
 
-        logger.info(`Password reset OTP verified for user: ${token.userId}`);
-        return token.userId;
-      }
+    const isValid = await verifyOTP(otp, otpToken.otpHash);
+    console.log("OTP verification result:", {
+      otp,
+      tokenId: otpToken.id,
+      isValid,
+    });
+    if (isValid) {
+      // Mark as consumed
+      await this.otpRepository.markAsUsed(otpToken.id);
+
+      logger.info(`Password reset OTP verified for user: ${otpToken.userId}`);
+      return otpToken.userId;
     }
 
     throw new ValidationError("Invalid or expired OTP");

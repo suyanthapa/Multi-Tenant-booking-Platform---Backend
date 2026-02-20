@@ -37,19 +37,20 @@ export class OTPRepository {
   }
 
   /**
-   * Find all valid OTPs by purpose (non-consumed, non-expired)
+   * Find all valid OTP by purpose (non-consumed, non-expired)
    */
-  async findValidOTPsByPurpose(
+  async findValidOTPByPurpose(
     userId: string,
     purpose: OTPPurpose,
-  ): Promise<OTPToken[]> {
-    return this.prisma.oTPToken.findMany({
+  ): Promise<OTPToken | null> {
+    return this.prisma.oTPToken.findFirst({
       where: {
         userId,
         purpose,
         consumedAt: null,
         expiresAt: { gte: new Date() },
       },
+      orderBy: { createdAt: "desc" }, // get the most recent one
     });
   }
 

@@ -35,6 +35,7 @@ import {
 } from "../types/auth.types";
 import { EditUserDto, GetAllUsersInput } from "../types/user.types";
 import { OTPPurpose } from "../generated/prisma/enums";
+import config from "../config";
 
 class AuthService {
   private prisma = Database.getInstance(); // The Singleton Retrieval
@@ -212,7 +213,7 @@ class AuthService {
         userId: user.id,
         purpose: "PASSWORD_RESET",
       },
-      process.env.JWT_RESET_SECRET || "fallback_secret",
+      config.jwt.accessExpiresIn,
       { expiresIn: "15m" },
     );
     logger.info(`OTP verified successfully for user: ${user.id}`);
@@ -454,10 +455,10 @@ class AuthService {
       throw new ValidationError("New password and confirmation do not match");
     }
 
-    const decoded = jwt.verify(
-      resetToken,
-      process.env.JWT_RESET_SECRET || "fallback_secret",
-    ) as { userId: string; purpose: string };
+    const decoded = jwt.verify(resetToken, config.jwt.resetSecret) as {
+      userId: string;
+      purpose: string;
+    };
 
     if (decoded.purpose !== "PASSWORD_RESET") {
       throw new AuthenticationError("Invalid token purpose");
