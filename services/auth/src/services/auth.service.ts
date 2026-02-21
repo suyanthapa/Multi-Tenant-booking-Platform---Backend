@@ -135,8 +135,8 @@ class AuthService {
 
     console.log("Business created:", business);
     // Generate and send OTP
-    // const otp = await otpService.generateEmailVerificationOTP(user.id);
-    // await emailService.sendVerificationEmail(input.email, otp);
+    const otp = await otpService.generateEmailVerificationOTP(user.id);
+    await emailService.sendVerificationEmail(input.email, otp);
 
     logger.info(`Business registered: ${user.id} (${input.email})`);
   }
