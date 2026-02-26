@@ -38,7 +38,16 @@ export const createServiceProxy = (target: string) => {
         }
       },
       proxyRes: (proxyRes, _req, _res) => {
-        // Custom header to track which service handled the request
+        // Strip upstream CORS headers — the gateway is the only one
+        // that should set these. If upstream sends Access-Control-Allow-Origin: *
+        // and the browser uses withCredentials:true, it gets blocked.
+        delete proxyRes.headers["access-control-allow-origin"];
+        delete proxyRes.headers["access-control-allow-methods"];
+        delete proxyRes.headers["access-control-allow-headers"];
+        delete proxyRes.headers["access-control-allow-credentials"];
+        delete proxyRes.headers["access-control-expose-headers"];
+
+        // Track which service handled the request
         proxyRes.headers["x-proxy-service"] = target;
       },
       error: (err, _req, res: any) => {

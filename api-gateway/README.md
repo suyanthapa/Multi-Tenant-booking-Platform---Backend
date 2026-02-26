@@ -53,8 +53,8 @@ Create a `.env` file in the root directory:
 
 ```env
 # Service URLs
-AUTH_SERVICE_URL=http://localhost:5001
-BOOKING_SERVICE_URL=http://localhost:5002
+AUTH_SERVICE_URL=http://localhost:3001
+BOOKING_SERVICE_URL=http://localhost:3002
 RESOURCE_SERVICE_URL=http://localhost:3004
 PAYMENT_SERVICE_URL=http://localhost:5004
 

@@ -18,9 +18,9 @@ dotenv.config();
 const app = express();
 app.use(
   cors({
-    origin: (origin, callback) => {
-      callback(null, true); // Allow all origins
-    },
+    origin: [
+      "http://localhost:3000", // Next.js frontend
+    ],
     credentials: true,
   }),
 );
@@ -41,7 +41,7 @@ app.use(generalLimiter);
 app.use("/api/auth", createServiceProxy(SERVICES.AUTH));
 
 // Business routes (public read, auth for write)
-app.use("/api/businesses", createServiceProxy(SERVICES.BUSINESS));
+app.use("/api/businesses", authenticate, createServiceProxy(SERVICES.BUSINESS));
 
 // Resource routes (public read, auth for write)
 app.use("/api/resources", authenticate, createServiceProxy(SERVICES.RESOURCE));
