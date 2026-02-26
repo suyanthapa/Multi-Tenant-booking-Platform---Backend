@@ -4,7 +4,8 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { CreateBusinessInput, UpdateBusinessInput } from "../utils/validators";
 import { BusinessType } from "@prisma/client";
 import { InvalidInputError } from "../utils/errors";
-import { successResponse } from "../utils/response";
+import { paginatedResponse, successResponse } from "../utils/response";
+import authClient from "../clients/auth.client";
 
 class BusinessController {
   // Create business
@@ -38,7 +39,12 @@ class BusinessController {
       userRole,
     });
 
-    successResponse(res, result);
+    return paginatedResponse(
+      res,
+      result.data, // array of businesses
+      result.meta, // { total, page, limit, totalPages }
+      "Businesses fetched successfully",
+    );
   });
 
   // Get business by ID
@@ -161,6 +167,17 @@ class BusinessController {
       location as string,
     );
     successResponse(res, { business: slots });
+  });
+
+  //approveBusiness
+  approveBusiness = asyncHandler(async (req: Request, res: Response) => {
+    const businessId = req.params.id;
+    const user = await authClient.validateUser(req.user!.id);
+    console.log("User info from Auth Service:", user);
+
+    await businessService.approveBusiness(businessId);
+
+    successResponse(res, null, "Business approved successfully");
   });
 }
 export default new BusinessController();

@@ -88,5 +88,14 @@ class BusinessInternalController {
       data: business,
     });
   });
+
+  markEmailVerified = asyncHandler(async (req: Request, res: Response) => {
+    const { userId, email } = req.body;
+    console.log("Received request to mark email as verified for email:", email);
+    await businessService.markEmailVerified(userId, email);
+    res.status(200).json({
+      success: true,
+    });
+  });
 }
 export default new BusinessInternalController();

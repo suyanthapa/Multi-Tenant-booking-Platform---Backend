@@ -13,7 +13,13 @@ const app: Application = express();
 
 // Middlewares
 app.use(helmet()); // Security headers
-app.use(cors()); // Enable CORS
+// Only allow requests from the API Gateway (internal service communication)
+app.use(
+  cors({
+    origin: process.env.API_GATEWAY_URL || "http://localhost:8000",
+    credentials: true,
+  }),
+); // Restrict CORS to gateway only
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(cookieParser()); // Parse cookies

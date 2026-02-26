@@ -45,7 +45,22 @@ export const queryBusinessSchema = z.object({
   }),
 });
 
+//Pednign Business Schema
+export const getPendingBusinessesSchema = z.object({
+  query: z.object({
+    page: z.coerce.number().min(1).default(1),
+    limit: z.coerce.number().min(1).max(100).default(10),
+    type: z
+      .enum(["HOTEL", "CLINIC", "SALON", "CO_WORKING", "OTHER"])
+      .optional(),
+    search: z.string().optional(),
+  }),
+});
+
 // Type exports
 export type CreateBusinessInput = z.infer<typeof createBusinessSchema>["body"];
 export type UpdateBusinessInput = z.infer<typeof updateBusinessSchema>["body"];
 export type QueryBusinessInput = z.infer<typeof queryBusinessSchema>["query"];
+export type GetPendingBusinessesInput = z.infer<
+  typeof getPendingBusinessesSchema
+>["query"];

@@ -28,4 +28,10 @@ internalRoutes.post("/search", businessController.getBusinesses);
 
 internalRoutes.post("/", BusinessInternalController.createBusiness);
 
+internalRoutes.post(
+  "/email-verify",
+  internalAuthMiddleware, // Only other microservices CAN call this
+  BusinessInternalController.markEmailVerified,
+);
+
 export default internalRoutes;

@@ -155,5 +155,19 @@ class BusinessRepository {
 
     return businesses.map((business) => toBusinessDTO(business));
   }
+
+  async approveBusiness(id: string): Promise<void> {
+    await this.prisma.business.update({
+      where: { id },
+      data: { status: "ACTIVE" },
+    });
+  }
+
+  async markEmailVerified(userId: string, email: string): Promise<void> {
+    await this.prisma.business.update({
+      where: { ownerId: userId, email },
+      data: { isVerified: true },
+    });
+  }
 }
 export default new BusinessRepository();

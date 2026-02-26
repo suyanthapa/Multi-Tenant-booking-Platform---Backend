@@ -7,6 +7,7 @@ import {
 } from "../utils/errors";
 import { CreateBusinessInput, UpdateBusinessInput } from "../utils/validators";
 import { BusinessResponseDTO } from "../dto/business/response.dto";
+import { PaginatedMeta } from "../types/common.types";
 
 class BusinessService {
   async createBusiness(data: CreateBusinessInput): Promise<Business> {
@@ -39,11 +40,8 @@ class BusinessService {
     search?: string;
     userRole: string;
   }): Promise<{
-    businesses: Business[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
+    data: Business[];
+    meta: PaginatedMeta;
   }> {
     const page = params.page || 1;
     const limit = params.limit || 10;
@@ -86,11 +84,8 @@ class BusinessService {
     ]);
 
     return {
-      businesses,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
+      data: businesses,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 
@@ -189,6 +184,18 @@ class BusinessService {
       location,
     );
     return businessRepository.getAvailableSlots(startDate, endDate, location);
+  }
+
+  async approveBusiness(businessId: string): Promise<void> {
+    const business = await this.getBusinessById(businessId);
+    if (!business) {
+      throw new NotFoundError("Business not found");
+    }
+    await businessRepository.approveBusiness(businessId);
+  }
+
+  async markEmailVerified(userId: string, email: string): Promise<void> {
+    await businessRepository.markEmailVerified(userId, email);
   }
 }
 export default new BusinessService();

@@ -1,15 +1,18 @@
 import { Response } from "express";
+import { PaginatedMeta } from "../types/common.types";
 
 export const successResponse = <T>(
   res: Response,
   data: T,
   message: string = "Success",
   statusCode: number = 200,
+  meta?: any,
 ) => {
   return res.status(statusCode).json({
     success: true,
     message,
     data,
+    meta,
   });
 };
 
@@ -29,5 +32,19 @@ export const errorResponse = (
       ...(errors && { errors }),
       ...(process.env.NODE_ENV === "development" && stack && { stack }),
     },
+  });
+};
+
+export const paginatedResponse = <T>(
+  res: Response,
+  data: T,
+  meta: PaginatedMeta,
+  message: string = "Success",
+) => {
+  return res.status(200).json({
+    success: true,
+    message,
+    data,
+    meta,
   });
 };
