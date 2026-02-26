@@ -1,0 +1,16 @@
+meta {
+  name: Approve Business
+  type: http
+  seq: 11
+}
+
+patch {
+  url: http://localhost:8000/api/businesses/2702aad1-9037-44cd-9a99-e5f002d75ceb/approve
+  body: json
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
