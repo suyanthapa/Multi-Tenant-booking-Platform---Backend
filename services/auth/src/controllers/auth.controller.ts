@@ -36,7 +36,7 @@ class AuthController {
   //register a business
   registerBusiness = asyncHandler(async (req: Request, res: Response) => {
     const input: RegisterBusinessInput = req.body;
-    console.log("Received business registration request with input:", input);
+
     const result = await authService.registerBusiness(input);
 
     return successResponse(
@@ -98,7 +98,7 @@ class AuthController {
       httpOnly: config.cookie.httpOnly,
       secure: config.cookie.secure,
       sameSite: config.cookie.sameSite,
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 20 * 60 * 1000, // 20 minutes
     });
 
     res.cookie("refreshToken", result.refreshToken, {

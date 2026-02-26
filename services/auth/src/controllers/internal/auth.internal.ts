@@ -4,15 +4,9 @@ import authService from "../../services/auth.service";
 
 class AuthInternalController {
   validateUser = asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const business = await authService.validateUser(id);
+    const { userId } = req.params;
+    await authService.validateUser(userId);
 
-    if (!business) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
     res.status(200).json({
       success: true,
     });

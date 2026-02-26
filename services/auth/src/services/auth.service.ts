@@ -7,8 +7,11 @@ import {
   JWTPayload,
 } from "../utils/jwt";
 import {
+  AccountPendingError,
+  AccountSuspendedError,
   AuthenticationError,
   ConflictError,
+  EmailNotVerifiedError,
   InternalServerError,
   NotFoundError,
   TokenExpiredError,
@@ -145,7 +148,7 @@ class AuthService {
    * Verify email with OTP
    */
   async verifyEmail(input: VerifyEmailInput): Promise<{ message: string }> {
-    const { email, otp } = input;
+    const { email, otp, purpose } = input;
 
     // Get user by email
     const user = await this.userRepository.findByEmail(email);
@@ -155,14 +158,13 @@ class AuthService {
     }
 
     // Verify OTP and get userId
-    const userId = await otpService.findValidOTPs(
-      user.id,
-      otp,
-      OTPPurpose.EMAIL_VERIFICATION,
-    );
+    const userId = await otpService.findValidOTPs(user.id, otp, purpose);
 
     // Update user
     await this.userRepository.markEmailAsVerified(userId);
+
+    // Mark Business Email Verified
+    await businessClient.markBusinessEmailVerified(user.id, email);
 
     // Send welcome email
     await emailService.sendWelcomeEmail(user.email, user.username);
@@ -290,7 +292,7 @@ class AuthService {
     if (!user.isEmailVerified) {
       const otp = await otpService.generateEmailVerificationOTP(user.id);
       await emailService.sendVerificationEmail(email, otp);
-      throw new AuthenticationError(
+      throw new EmailNotVerifiedError(
         "Email not verified. A new verification code has been sent to your email.",
       );
     }
@@ -300,6 +302,18 @@ class AuthService {
       throw new AuthenticationError(`Account is ${user.status.toLowerCase()}`);
     }
     const business = await businessClient.validateBusinessByOwner(user.id);
+
+    if (business.status === "PENDING") {
+      throw new AccountPendingError(
+        "Your business account is pending admin approval.",
+      );
+    }
+
+    if (business.status === "SUSPENDED") {
+      throw new AccountSuspendedError(
+        "Your business account has been suspended. Please contact support.",
+      );
+    }
 
     // Generate tokens
     const payload: JWTPayload = {
@@ -570,16 +584,13 @@ class AuthService {
   }
 
   //validate user
-  async validateUser(userId: string): Promise<{ success: boolean }> {
+  async validateUser(userId: string): Promise<UserResponse> {
     const user = await this.userRepository.findById(userId);
 
-    if (!user || user.status !== UserStatus.ACTIVE) {
+    if (!user) {
       throw new NotFoundError("User not found");
     }
-
-    return {
-      success: true,
-    };
+    return sanitizeUser(user);
   }
 }
 

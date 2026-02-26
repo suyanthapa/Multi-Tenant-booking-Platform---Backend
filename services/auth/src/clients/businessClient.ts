@@ -2,12 +2,6 @@ import axios, { AxiosInstance } from "axios";
 import { InternalServerError } from "../utils/errors";
 import { BusinessType } from "../dtos/auth.dto";
 
-interface BusinessInfo {
-  businessId: string;
-  vendorId: string;
-  businessName: string;
-  status: string;
-}
 interface BusinessAddress {
   street: string;
   city: string;
@@ -87,6 +81,24 @@ class BusinessClient {
       console.log("Business Service Rejected with:", error.response?.data);
       console.error(`[Business  Client Error]: ${error.message}`);
       throw new InternalServerError("Unable to create business at this time.");
+    }
+  }
+
+  async markBusinessEmailVerified(
+    userId: string,
+    email: string,
+  ): Promise<void> {
+    try {
+      await this.client.post(`/email-verify`, { userId, email });
+    } catch (error: any) {
+      console.log(
+        "Business Service Rejected email verification update with:",
+        error.response?.data,
+      );
+      console.error(`[Business Client Error]: ${error.message}`);
+      throw new InternalServerError(
+        "Unable to update business email verification status at this time.",
+      );
     }
   }
 }

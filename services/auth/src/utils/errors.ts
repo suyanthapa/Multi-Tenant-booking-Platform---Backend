@@ -11,7 +11,7 @@ export class AppError extends Error {
     message: string,
     statusCode: number,
     isOperational = true,
-    code?: string
+    code?: string,
   ) {
     super(message);
     this.statusCode = statusCode;
@@ -42,7 +42,7 @@ export class AuthenticationError extends AppError {
 
 export class AuthorizationError extends AppError {
   constructor(
-    message: string = "You do not have permission to perform this action"
+    message: string = "You do not have permission to perform this action",
   ) {
     super(message, 403, true, "AUTHORIZATION_ERROR");
     Object.setPrototypeOf(this, AuthorizationError.prototype);
@@ -95,5 +95,28 @@ export class InvalidTokenError extends AppError {
   constructor(message: string = "Invalid token") {
     super(message, 401, true, "INVALID_TOKEN");
     Object.setPrototypeOf(this, InvalidTokenError.prototype);
+  }
+}
+
+export class EmailNotVerifiedError extends AppError {
+  constructor(message: string = "Email not verified") {
+    super(message, 401, true, "EMAIL_NOT_VERIFIED"); // unique code
+    Object.setPrototypeOf(this, EmailNotVerifiedError.prototype);
+  }
+}
+
+export class AccountPendingError extends AppError {
+  constructor(
+    message: string = "Your business account is pending admin approval.",
+  ) {
+    super(message, 403, true, "ACCOUNT_PENDING");
+    Object.setPrototypeOf(this, AccountPendingError.prototype);
+  }
+}
+
+export class AccountSuspendedError extends AppError {
+  constructor(message: string = "Your account has been suspended.") {
+    super(message, 403, true, "ACCOUNT_SUSPENDED");
+    Object.setPrototypeOf(this, AccountSuspendedError.prototype);
   }
 }

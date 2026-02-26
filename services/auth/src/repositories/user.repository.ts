@@ -30,7 +30,7 @@ export class UserRepository implements IRepository<User> {
    */
   async findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({
-      where: { id },
+      where: { id, status: UserStatus.ACTIVE },
     });
   }
 

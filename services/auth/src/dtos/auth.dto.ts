@@ -81,7 +81,7 @@ export const verifyEmailSchema = z.object({
   body: z.object({
     email: z.string().email("Invalid email address"),
     otp: z.string().min(1, "OTP is required"),
-    purpose: z.enum(["EMAIL_VERIFICATION", "PASSWORD_RESET"]).optional(),
+    purpose: z.enum(["EMAIL_VERIFICATION", "PASSWORD_RESET"]),
   }),
 });
 
