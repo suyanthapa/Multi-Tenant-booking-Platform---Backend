@@ -1,5 +1,5 @@
 import { UserRole } from "@prisma/client";
-import { UserStatus } from "../generated/prisma/client";
+import { UserStatus } from "@prisma/client";
 
 export interface GetUsersQuery {
   page?: number;

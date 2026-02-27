@@ -7,7 +7,7 @@ class AuthClient {
   constructor() {
     this.client = axios.create({
       baseURL: `${process.env.AUTH_SERVICE_URL}/api/internal`, // Internal route for business service
-      timeout: 3000, // 3 seconds - Professional services don't wait forever
+      timeout: 3000, // 3 seconds
       headers: { "x-internal-key": process.env.INTERNAL_SERVICE_SECRET }, // Secret header for service-to-service auth
     });
   }
