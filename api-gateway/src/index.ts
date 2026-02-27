@@ -18,9 +18,7 @@ dotenv.config();
 const app = express();
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000", // Next.js frontend
-    ],
+    origin: process.env.ALLOWED_ORIGIN?.split(",") || "*",
     credentials: true,
   }),
 );
