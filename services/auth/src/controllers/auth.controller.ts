@@ -96,8 +96,8 @@ class AuthController {
     // Set tokens in HTTP-only cookies
     res.cookie("accessToken", result.accessToken, {
       httpOnly: config.cookie.httpOnly,
-      secure: config.cookie.secure,
-      sameSite: config.cookie.sameSite,
+      secure: true,
+      sameSite: "none",
       maxAge: 20 * 60 * 1000, // 20 minutes
     });
 
