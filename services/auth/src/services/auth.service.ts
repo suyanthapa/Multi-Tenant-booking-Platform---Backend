@@ -37,7 +37,7 @@ import {
   VerifyOtpInput,
 } from "../types/auth.types";
 import { EditUserDto, GetAllUsersInput } from "../types/user.types";
-import { OTPPurpose } from "../generated/prisma/enums";
+import { OTPPurpose } from "@prisma/client";
 import config from "../config";
 
 class AuthService {
@@ -303,13 +303,13 @@ class AuthService {
     }
     const business = await businessClient.validateBusinessByOwner(user.id);
 
-    if (business.status === "PENDING") {
+    if (business && business.status === "PENDING") {
       throw new AccountPendingError(
         "Your business account is pending admin approval.",
       );
     }
 
-    if (business.status === "SUSPENDED") {
+    if (business && business.status === "SUSPENDED") {
       throw new AccountSuspendedError(
         "Your business account has been suspended. Please contact support.",
       );

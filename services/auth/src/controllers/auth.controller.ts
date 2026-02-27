@@ -3,7 +3,7 @@ import authService from "../services/auth.service";
 import { asyncHandler } from "../utils/asyncHandler";
 import config from "../config";
 
-import { UserRole, UserStatus } from "../generated/prisma/enums";
+import { UserRole, UserStatus } from "@prisma/client";
 import {
   ForgotPasswordInput,
   LoginInput,
