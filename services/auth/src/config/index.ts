@@ -78,10 +78,15 @@ const config: Config = {
   },
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite:
-      (process.env.COOKIE_SAME_SITE as "strict" | "lax" | "none") || "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    // Ensure this is TRUE in production
+    secure:
+      process.env.NODE_ENV === "production" ||
+      process.env.COOKIE_SECURE === "true",
+    sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+      | "strict"
+      | "lax"
+      | "none",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   },
 };
 
