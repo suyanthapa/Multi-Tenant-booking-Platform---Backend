@@ -16,10 +16,25 @@ import { SERVICES } from "./config/service";
 import { createServiceProxy } from "./utils/proxy";
 dotenv.config();
 const app = express();
+
+const allowedOrigins = process.env.ALLOWED_ORIGIN
+  ? process.env.ALLOWED_ORIGIN.split(",")
+  : ["http://localhost:3000"];
+
 app.use(
   cors({
-    origin: process.env.ALLOWED_ORIGIN?.split(",") || "*",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps/Postman)
+      // or if the origin is in our allowed list
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS: Origin not allowed by Gateway"));
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   }),
 );
 
