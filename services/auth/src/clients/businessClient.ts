@@ -46,7 +46,7 @@ class BusinessClient {
   constructor() {
     this.client = axios.create({
       baseURL: `${process.env.BUSINESS_SERVICE_URL}/api/internal/businesses`, // Internal route for business service,
-      timeout: 6000, // 6 seconds
+      timeout: 60000, // 60 seconds
       headers: { "x-internal-key": process.env.INTERNAL_SERVICE_SECRET }, // Secret header for service-to-service auth
     });
   }
@@ -64,7 +64,7 @@ class BusinessClient {
       }
       // If it's a timeout or 500, log it and throw an error so the user knows it's a system issue
 
-      console.error(`[BookingClient Error]: ${error.message}`);
+      console.error(`[BusinessClient Error]: ${error.message}`);
       throw new InternalServerError(
         "Unable to verify business identity at this time.",
       );

@@ -23,7 +23,7 @@ class ResourceClient {
   constructor() {
     this.client = axios.create({
       baseURL: `${process.env.RESOURCE_SERVICE_URL}/api/internal/resources`, // Internal route for business service
-      timeout: 3000, // 3 seconds - Professional services don't wait forever
+      timeout: 60000, // 60 seconds
       headers: { "x-internal-key": process.env.INTERNAL_SERVICE_SECRET }, // Secret header for service-to-service auth
     });
   }

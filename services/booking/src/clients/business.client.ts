@@ -14,7 +14,7 @@ class BusinessClient {
   constructor() {
     this.client = axios.create({
       baseURL: `${process.env.BUSINESS_SERVICE_URL}/api/internal/businesses`, // Internal route for business service
-      timeout: 3000, // 3 seconds
+      timeout: 60000, // 60 seconds
       headers: { "x-internal-key": process.env.INTERNAL_SERVICE_SECRET }, // Secret header for service-to-service auth
     });
   }

@@ -7,7 +7,7 @@ class BusinessClient {
   constructor() {
     this.client = axios.create({
       baseURL: `${process.env.BUSINESS_SERVICE_URL}/api/internal/businesses`, // Internal route for business service
-      timeout: 3000, // 3 seconds - Professional services don't wait forever
+      timeout: 60000, // 60 seconds
       headers: { "x-internal-key": process.env.INTERNAL_SERVICE_SECRET }, // Secret header for service-to-service auth
     });
   }
@@ -17,7 +17,7 @@ class BusinessClient {
       console.log("Validating business ID:", businessId);
       console.log(
         "Using BUSINESS_SERVICE_URL:",
-        process.env.BUSINESS_SERVICE_URL
+        process.env.BUSINESS_SERVICE_URL,
       );
       const response = await this.client.get(`/${businessId}/exists`);
       return response.data.exists;
@@ -27,7 +27,7 @@ class BusinessClient {
       // If it's a timeout or 500, log it and throw an error so the user knows it's a system issue
       console.error(`[BookingClient Error]: ${error.message}`);
       throw new InternalServerError(
-        "Unable to verify business identity at this time."
+        "Unable to verify business identity at this time.",
       );
     }
   }
