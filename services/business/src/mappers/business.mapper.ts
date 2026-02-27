@@ -1,14 +1,6 @@
 import { Business } from "@prisma/client";
 import { BusinessResponseDTO } from "../dto/business/response.dto";
 
-interface BusinessAddress {
-  street: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-}
-
 export function toBusinessDTO(business: Business): BusinessResponseDTO {
   const address = business.address as any;
   return {
