@@ -156,8 +156,8 @@ class BusinessRepository {
     return businesses.map((business) => toBusinessDTO(business));
   }
 
-  async approveBusiness(id: string): Promise<void> {
-    await this.prisma.business.update({
+  async approveBusiness(id: string): Promise<Business> {
+    return this.prisma.business.update({
       where: { id },
       data: { status: "ACTIVE" },
     });

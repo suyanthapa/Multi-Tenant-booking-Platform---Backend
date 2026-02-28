@@ -6,6 +6,7 @@ import { BusinessType } from "@prisma/client";
 import { InvalidInputError } from "../utils/errors";
 import { paginatedResponse, successResponse } from "../utils/response";
 import authClient from "../clients/auth.client";
+import emailService from "../services/email.service";
 
 class BusinessController {
   // Create business
@@ -175,8 +176,10 @@ class BusinessController {
     const user = await authClient.validateUser(req.user!.id);
     console.log("User info from Auth Service:", user);
 
-    await businessService.approveBusiness(id);
-    
+    const business = await businessService.approveBusiness(id);
+
+    await emailService.sendBusinessApprovalEmail(business.email, business.name);
+
     successResponse(res, null, "Business approved successfully");
   });
 }

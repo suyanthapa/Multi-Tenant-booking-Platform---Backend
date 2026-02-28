@@ -97,6 +97,10 @@ class EmailService {
       // Don't throw error for welcome email failure
     }
   }
+
+
+
+ 
 }
 
 export default new EmailService();
