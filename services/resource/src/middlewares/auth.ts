@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+
 import { AuthenticationError, AuthorizationError } from "../utils/errors";
-import config from "../config";
 
 // JWT Payload interface
 export interface JWTPayload {
@@ -19,21 +18,6 @@ declare global {
     }
   }
 }
-
-/**
- * Verify access token
- */
-export const verifyAccessToken = (token: string): JWTPayload => {
-  try {
-    const decoded = jwt.verify(token, config.jwt.accessSecret);
-    return decoded as JWTPayload;
-  } catch (error: any) {
-    if (error.name === "TokenExpiredError") {
-      throw new AuthenticationError("Token has expired");
-    }
-    throw new AuthenticationError("Invalid token");
-  }
-};
 
 /**
  * Professional Microservice Authenticate (Header-Based)

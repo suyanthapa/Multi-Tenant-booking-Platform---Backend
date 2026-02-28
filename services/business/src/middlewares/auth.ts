@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+
 import { AuthenticationError, AuthorizationError } from "../utils/errors";
-import config from "../config";
 
 // JWT Payload interface
 export interface JWTPayload {
@@ -20,28 +19,13 @@ declare global {
 }
 
 /**
- * Verify access token
- */
-export const verifyAccessToken = (token: string): JWTPayload => {
-  try {
-    const decoded = jwt.verify(token, config.jwt.accessSecret);
-    return decoded as JWTPayload;
-  } catch (error: any) {
-    if (error.name === "TokenExpiredError") {
-      throw new AuthenticationError("Token has expired");
-    }
-    throw new AuthenticationError("Invalid token");
-  }
-};
-
-/**
- * Professional Microservice Authenticate (Header-Based)
+ *
  * Used in: Business Service, Resource Service, Booking Service
  */
 export const authenticate = (
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     // 1. Read headers injected by the Gateway
@@ -55,7 +39,7 @@ export const authenticate = (
     // 2. If Gateway didn't send these, someone bypassed the Gateway!
     if (!id || !role) {
       throw new AuthenticationError(
-        "Internal Security Breach: No Identity Headers"
+        "Internal Security Breach: No Identity Headers",
       );
     }
 
@@ -88,7 +72,7 @@ export const authorize = (...allowedRoles: string[]) => {
 
       if (!hasAccess) {
         throw new AuthorizationError(
-          `Access denied. Required roles: ${allowedRoles.join(", ")}`
+          `Access denied. Required roles: ${allowedRoles.join(", ")}`,
         );
       }
 
