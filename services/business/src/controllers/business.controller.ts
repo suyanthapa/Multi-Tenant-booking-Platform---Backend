@@ -171,12 +171,12 @@ class BusinessController {
 
   //approveBusiness
   approveBusiness = asyncHandler(async (req: Request, res: Response) => {
-    const businessId = req.params.id;
+    const id = req.params.id;
     const user = await authClient.validateUser(req.user!.id);
     console.log("User info from Auth Service:", user);
 
-    await businessService.approveBusiness(businessId);
-
+    await businessService.approveBusiness(id);
+    
     successResponse(res, null, "Business approved successfully");
   });
 }

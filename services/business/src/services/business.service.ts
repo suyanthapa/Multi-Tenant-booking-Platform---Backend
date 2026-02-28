@@ -186,12 +186,12 @@ class BusinessService {
     return businessRepository.getAvailableSlots(startDate, endDate, location);
   }
 
-  async approveBusiness(businessId: string): Promise<void> {
-    const business = await this.getBusinessById(businessId);
+  async approveBusiness(id: string): Promise<void> {
+    const business = await this.getBusinessById(id);
     if (!business) {
       throw new NotFoundError("Business not found");
     }
-    await businessRepository.approveBusiness(businessId);
+    await businessRepository.approveBusiness(id);
   }
 
   async markEmailVerified(userId: string, email: string): Promise<void> {
