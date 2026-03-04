@@ -9,6 +9,7 @@ import logger from "./utils/logger";
 import routes from "./routes";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler";
 import { requestLogger } from "./middlewares/requestLogger";
+import { requestIdMiddleware } from "./middlewares/requestId";
 
 class App {
   public app: Application;
@@ -38,6 +39,9 @@ class App {
 
     // Cookie parsing
     this.app.use(cookieParser());
+
+    // Request ID middleware
+    this.app.use(requestIdMiddleware);
 
     // Custom request logger
     this.app.use(requestLogger);
