@@ -1,7 +1,6 @@
 import express, { Application, Request, Response } from "express";
 import helmet from "helmet";
 import cors from "cors";
-import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import config from "./config";
@@ -9,6 +8,7 @@ import Database from "./config/database";
 import logger from "./utils/logger";
 import routes from "./routes";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler";
+import { requestLogger } from "./middlewares/requestLogger";
 
 class App {
   public app: Application;
@@ -39,18 +39,8 @@ class App {
     // Cookie parsing
     this.app.use(cookieParser());
 
-    // Request logging
-    if (config.nodeEnv === "development") {
-      this.app.use(morgan("dev"));
-    } else {
-      this.app.use(
-        morgan("combined", {
-          stream: {
-            write: (message: string) => logger.info(message.trim()),
-          },
-        }),
-      );
-    }
+    // Custom request logger
+    this.app.use(requestLogger);
 
     // Rate limiting
     // const limiter = rateLimit({
