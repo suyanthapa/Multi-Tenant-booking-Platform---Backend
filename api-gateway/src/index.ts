@@ -48,7 +48,7 @@ app.use((_req, res, next) => {
 app.use(cookieParser());
 
 // Apply general rate limiter to all routes
-app.use(generalLimiter);
+// app.use(generalLimiter);  --- for now disabled as it is too restrictive for testing, will enable later
 
 // Auth routes with specific rate limiters
 app.use("/api/auth", createServiceProxy(SERVICES.AUTH));
