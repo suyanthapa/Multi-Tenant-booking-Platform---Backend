@@ -24,8 +24,14 @@ model Business {
 
     status     BusinessStatus @default(PENDING)
     isVerified Boolean        @default(false) @map("is_verified")
-    createdAt  DateTime       @default(now()) @map("created_at")
-    updatedAt  DateTime       @updatedAt @map("updated_at")
+
+    rejectionReason RejectionReason? @map("rejection_reason")
+
+    rejectedAt  DateTime? @map("rejected_at")
+    resubmitted Boolean   @default(false)
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
 
     @@index([type])
     @@index([status])
@@ -46,4 +52,14 @@ enum BusinessStatus {
     INACTIVE // Temporarily hidden by the owner
     SUSPENDED // Blocked by Admin
     DELETED // Soft-deleted
+    REJECTED // Admin rejected the business during review
+}
+
+enum RejectionReason {
+    INVALID_DOCUMENTS
+    INCOMPLETE_PROFILE
+    DUPLICATE_ACCOUNT
+    PROHIBITED_CONTENT
+    UNRESPONSIVE
+    OTHER
 }
