@@ -4,9 +4,10 @@ import { authenticate, authorize } from "../middlewares/auth";
 import { validate } from "../middlewares/validator";
 import {
   createBusinessSchema,
-  updateBusinessSchema,
   queryBusinessSchema,
-} from "../utils/validators";
+  rejectBusinessSchema,
+  updateBusinessSchema,
+} from "../dtos/business.dto";
 
 const businessRoutes = Router();
 
@@ -43,6 +44,15 @@ businessRoutes.patch(
   authenticate,
   authorize("ADMIN"),
   businessController.approveBusiness,
+);
+
+// Reject  business (Admin only)
+businessRoutes.patch(
+  "/:id/reject",
+  authenticate,
+  authorize("ADMIN"),
+  validate(rejectBusinessSchema),
+  businessController.rejectBusiness,
 );
 // Get businesses by type (Public)
 businessRoutes.get("/type/:type", businessController.getBusinessesByType);
