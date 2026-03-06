@@ -1,12 +1,15 @@
 import { Request, Response } from "express";
 import businessService from "../services/business.service";
 import { asyncHandler } from "../utils/asyncHandler";
-import { CreateBusinessInput, UpdateBusinessInput } from "../utils/validators";
 import { BusinessType } from "@prisma/client";
 import { InvalidInputError } from "../utils/errors";
 import { paginatedResponse, successResponse } from "../utils/response";
 import authClient from "../clients/auth.client";
 import emailService from "../services/email.service";
+import {
+  CreateBusinessInput,
+  UpdateBusinessInput,
+} from "../types/business.types";
 
 class BusinessController {
   // Create business
@@ -154,11 +157,11 @@ class BusinessController {
   checkAvailableSlots = asyncHandler(async (req: Request, res: Response) => {
     const { location, startDate, endDate } = req.body;
 
-    // 1. Convert strings to actual Date objects
+    //  Convert strings to actual Date objects
     const start = new Date(startDate as string);
     const end = new Date(endDate as string);
 
-    // 2. Validate using the timestamp value
+    //  Validate using the timestamp value
     if (start.getTime() >= end.getTime()) {
       throw new InvalidInputError("Start time must be before end time");
     }
@@ -191,9 +194,18 @@ class BusinessController {
 
     const { rejectionReasons, adminNote } = req.body;
 
-    await businessService.rejectBusiness(id, rejectionReasons, adminNote);
+    const business = await businessService.rejectBusiness(
+      id,
+      rejectionReasons,
+      adminNote,
+    );
 
-    // await emailService.sendBusinessApprovalEmail(business.email, business.name);
+    await emailService.sendBusinessRejectionEmail(
+      business.email,
+      business.name,
+      rejectionReasons,
+      adminNote,
+    );
 
     successResponse(res, null, "Business rejected successfully");
   });

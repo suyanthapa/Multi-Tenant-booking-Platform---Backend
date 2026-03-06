@@ -81,6 +81,58 @@ class EmailService {
     `,
     });
   }
+
+  async sendBusinessRejectionEmail(
+    email: string,
+    businessName: string,
+    rejectionReasons: string[],
+    adminNote?: string,
+  ): Promise<void> {
+    await this.transporter.sendMail({
+      from: config.email.from,
+      to: email,
+      subject: "Your Business Application Has Been Rejected",
+      html: `
+<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+  
+  <!-- Header -->
+  <div style="background-color: #ef4444; padding: 30px; text-align: center;">
+      <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Slotex Platform</h1>
+  </div>
+
+  <!-- Body -->
+  <div style="padding: 40px 30px;">
+      <h2 style="color: #1e293b; margin-top: 0;">Hello, ${businessName}</h2>
+      <p style="font-size: 16px;">We regret to inform you that your business application has been <strong>rejected</strong> by our administration team.</p>
+      
+      <h3 style="font-size: 18px; color: #1e293b; margin-top: 20px;">Reasons for Rejection:</h3>
+      <ul style="padding-left: 20px; font-size: 15px; color: #475569;">
+        ${rejectionReasons.map((reason) => `<li>${reason}</li>`).join("")}
+      </ul>
+
+      ${adminNote ? `<p style="font-size: 15px; color: #475569;"><strong>Admin Note:</strong> ${adminNote}</p>` : ""}
+
+      <p style="font-size: 16px; margin-top: 20px;">You may review the above points and reapply once the necessary corrections are made.</p>
+
+      <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+      <h3 style="font-size: 18px; color: #1e293b;">Next Steps:</h3>
+      <ul style="padding-left: 20px; font-size: 15px; color: #475569;">
+          <li style="margin-bottom: 10px;">Review the reasons listed above carefully.</li>
+          <li style="margin-bottom: 10px;">Make necessary corrections to your business profile.</li>
+          <li style="margin-bottom: 10px;">Contact support if you have questions or need clarification.</li>
+      </ul>
+  </div>
+
+  <!-- Footer -->
+  <div style="background-color: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #94a3b8;">
+      <p style="margin: 0;">&copy; 2026 Slotex Platform. All rights reserved.</p>
+      <p style="margin: 5px 0;">This is an automated message. Please do not reply to this email.</p>
+  </div>
+</div>
+    `,
+    });
+  }
 }
 
 export default new EmailService();
