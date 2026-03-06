@@ -182,5 +182,20 @@ class BusinessController {
 
     successResponse(res, null, "Business approved successfully");
   });
+
+  // rejectBusiness
+  rejectBusiness = asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id;
+    const user = await authClient.validateUser(req.user!.id);
+    console.log("User info from Auth Service:", user);
+
+    const { rejectionReasons, adminNote } = req.body;
+
+    await businessService.rejectBusiness(id, rejectionReasons, adminNote);
+
+    // await emailService.sendBusinessApprovalEmail(business.email, business.name);
+
+    successResponse(res, null, "Business rejected successfully");
+  });
 }
 export default new BusinessController();
