@@ -1,4 +1,4 @@
-import { Business, BusinessType } from "@prisma/client";
+import { Business, BusinessType, RejectionReason } from "@prisma/client";
 import businessRepository from "../repositories/business.repository";
 import {
   NotFoundError,
@@ -192,6 +192,18 @@ class BusinessService {
       throw new NotFoundError("Business not found");
     }
     return businessRepository.approveBusiness(id);
+  }
+
+  async rejectBusiness(
+    id: string,
+    rejectionReasons: RejectionReason[],
+    adminNote: string,
+  ): Promise<Business> {
+    const business = await this.getBusinessById(id);
+    if (!business) {
+      throw new NotFoundError("Business not found");
+    }
+    return businessRepository.rejectBusiness(id, rejectionReasons, adminNote);
   }
 
   async markEmailVerified(userId: string, email: string): Promise<void> {
