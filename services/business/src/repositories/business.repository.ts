@@ -1,4 +1,10 @@
-import { PrismaClient, Business, BusinessType, Prisma } from "@prisma/client";
+import {
+  PrismaClient,
+  Business,
+  BusinessType,
+  Prisma,
+  RejectionReason,
+} from "@prisma/client";
 import Database from "../config/database";
 import { toBusinessDTO } from "../mappers/business.mapper";
 import { NotFoundError } from "../utils/errors";
@@ -160,6 +166,24 @@ class BusinessRepository {
     return this.prisma.business.update({
       where: { id },
       data: { status: "ACTIVE" },
+    });
+  }
+
+  async rejectBusiness(
+    id: string,
+    rejectionReasons: RejectionReason[],
+    adminNote: string,
+  ): Promise<Business> {
+    console.log("Rejecting business with ID:", id, "Admin notes:", adminNote);
+    return this.prisma.business.update({
+      where: { id },
+      data: {
+        adminNotes: adminNote, // Store as semicolon-separated string
+        rejectionReasons: rejectionReasons, // Store as JSON array
+        status: "REJECTED",
+        rejectedAt: new Date(),
+        resubmitted: false,
+      },
     });
   }
 
