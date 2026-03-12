@@ -1,0 +1,26 @@
+meta {
+  name: Reject Business
+  type: http
+  seq: 12
+}
+
+patch {
+  url: http://localhost:8000/api/businesses/046eb665-58ce-4034-a954-1ca0efd9f132/reject
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "rejectionReasons": [
+     
+      "UNRESPONSIVE"
+    ],
+    "adminNote": "Please upload valid registration certificate and complete your profile."
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -5,9 +5,13 @@ import {
   AuthorizationError,
   ConflictError,
 } from "../utils/errors";
-import { CreateBusinessInput, UpdateBusinessInput } from "../utils/validators";
+
 import { BusinessResponseDTO } from "../dto/business/response.dto";
 import { PaginatedMeta } from "../types/common.types";
+import {
+  CreateBusinessInput,
+  UpdateBusinessInput,
+} from "../types/business.types";
 
 class BusinessService {
   async createBusiness(data: CreateBusinessInput): Promise<Business> {
@@ -183,7 +187,13 @@ class BusinessService {
       "Service received request for available slots with location:",
       location,
     );
-    return businessRepository.getAvailableSlots(startDate, endDate, location);
+    const result = await businessRepository.getAvailableSlots(
+      startDate,
+      endDate,
+      location,
+    );
+    console.log("Available slots returned by repository:", result);
+    return result;
   }
 
   async approveBusiness(id: string): Promise<Business> {

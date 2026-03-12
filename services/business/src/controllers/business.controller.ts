@@ -137,11 +137,11 @@ class BusinessController {
   getBusinesses = asyncHandler(async (req: Request, res: Response) => {
     const { location, startDate, endDate } = req.body;
 
-    // 1. Convert strings to actual Date objects
+    // Convert strings to actual Date objects
     const start = new Date(startDate as string);
     const end = new Date(endDate as string);
 
-    // 2. Validate using the timestamp value
+    // Validate using the timestamp value
     if (start.getTime() >= end.getTime()) {
       throw new InvalidInputError("Start time must be before end time");
     }
@@ -165,12 +165,18 @@ class BusinessController {
     if (start.getTime() >= end.getTime()) {
       throw new InvalidInputError("Start time must be before end time");
     }
+
     const slots = await businessService.getAvailableSlots(
       startDate as string,
       endDate as string,
       location as string,
     );
-    successResponse(res, { business: slots });
+
+    const message = slots.length
+      ? "Businesses fetched successfully"
+      : "No businesses found in this location";
+    console.log("Message:", message, "Slots:", slots);
+    successResponse(res, { business: slots }, message);
   });
 
   //approveBusiness

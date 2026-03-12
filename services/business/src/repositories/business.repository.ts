@@ -154,11 +154,7 @@ class BusinessRepository {
         ],
       },
     });
-
-    if (businesses.length === 0) {
-      throw new NotFoundError("No businesses found in this location");
-    }
-
+    console.log("Businesses found:", businesses.length);
     return businesses.map((business) => toBusinessDTO(business));
   }
 

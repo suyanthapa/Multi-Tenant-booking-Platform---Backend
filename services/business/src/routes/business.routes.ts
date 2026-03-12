@@ -36,7 +36,7 @@ businessRoutes.get(
   businessController.getBusinessesByOwner,
 );
 // Get active resource categories for a business (Public)
-businessRoutes.post("/search", businessController.getBusinesses);
+businessRoutes.post("/search", businessController.checkAvailableSlots);
 
 // Approve  business (Admin only)
 businessRoutes.patch(
