@@ -17,22 +17,24 @@ class CategoryController {
     });
   });
 
-  // Get all categories
+  // Get all categories fro ADMIN
   getAllCategories = asyncHandler(async (req: Request, res: Response) => {
     const query = req.query as any;
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 10;
 
     const search = query.search;
-    let businessId: string | undefined;
-    if (req.user?.role === "VENDOR") {
-      businessId = req.user.businessId;
-      if (!businessId) {
-        throw new NotFoundError("Vendor must have a businessId assigned");
-      }
-    } else if (req.user?.role === "CUSTOMER") {
-      businessId = query.businessId;
-    }
+    // let businessId: string | undefined;
+    // if (req.user?.role === "VENDOR") {
+    //   businessId = req.user.businessId;
+    //   if (!businessId) {
+    //     throw new NotFoundError("Vendor must have a businessId assigned");
+    //   }
+    // } else if (req.user?.role === "CUSTOMER") {
+    //   businessId = query.businessId;
+    // }
+
+    const businessId = query.businessId;
 
     const result = await resourceService.getAllResourceCategories({
       page,
@@ -40,6 +42,22 @@ class CategoryController {
       businessId,
       search,
     });
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  });
+
+  // Get all categories fro ADMIN
+  myCategories = asyncHandler(async (req: Request, res: Response) => {
+    const businessId = req.user?.businessId;
+
+    if (!businessId) {
+      throw new NotFoundError("Business ID is required to fetch categories");
+    }
+
+    const result = await resourceService.getMyCategories(businessId);
 
     res.status(200).json({
       success: true,

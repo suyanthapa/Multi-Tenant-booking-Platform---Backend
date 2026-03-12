@@ -1,17 +1,13 @@
 meta {
-  name: Get All Categories
+  name: Get My Catgegories
   type: http
-  seq: 1
+  seq: 3
 }
 
 get {
-  url: http://localhost:8000/api/resources/admin/categories?businessId=046eb665-58ce-4034-a954-1ca0efd9f1
+  url: http://localhost:8000/api/resources/vendor/categories
   body: none
   auth: inherit
-}
-
-params:query {
-  businessId: 046eb665-58ce-4034-a954-1ca0efd9f1
 }
 
 body:json {

@@ -67,6 +67,10 @@ class ResourceRepository {
     },
   );
 
+  countResources = dbHandler(async (businessId?: string): Promise<number> => {
+    return this.prisma.resource.count({ where: { businessId } });
+  });
+
   update = dbHandler(
     async (id: string, data: Prisma.ResourceUpdateInput): Promise<Resource> => {
       return this.prisma.resource.update({
@@ -163,6 +167,7 @@ class ResourceRepository {
     });
   });
 
+  // for admin
   findAllCategories = dbHandler(
     async (params: {
       skip?: number;
@@ -177,6 +182,23 @@ class ResourceRepository {
         where,
         orderBy,
       });
+    },
+  );
+
+  // for business
+  findMyCategories = dbHandler(
+    async (businessId: string): Promise<ResourceCategory[]> => {
+      const categories = await this.prisma.resourceCategory.findMany({
+        where: { businessId },
+        orderBy: { createdAt: "desc" },
+        include: {
+          _count: {
+            select: { resources: true },
+          },
+        },
+      });
+
+      return categories;
     },
   );
 

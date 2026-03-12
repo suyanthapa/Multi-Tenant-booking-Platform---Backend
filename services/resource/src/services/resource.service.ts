@@ -146,7 +146,7 @@ class ResourceService {
     return resourceRepository.createCategory(name, businessId);
   }
 
-  //get all categories
+  //get all business categories-- admin side -needed pagination
   async getAllResourceCategories(params: {
     page?: number;
     limit?: number;
@@ -194,6 +194,15 @@ class ResourceService {
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+
+  //get all my categories-- vendor side
+  async getMyCategories(businessId: string): Promise<any> {
+    const categories = await Promise.all([
+      resourceRepository.findMyCategories(businessId),
+    ]);
+
+    return categories;
   }
 
   //get category by ID

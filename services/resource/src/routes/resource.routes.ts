@@ -15,8 +15,23 @@ import {
 const router = Router();
 
 // Category Routes
-//get all categories
-router.get("/categories", authenticate, categoryController.getAllCategories);
+//get all Business categories -- pAGINATION
+// for ADMIN
+router.get(
+  "/admin/categories",
+  authenticate,
+  authorize("ADMIN"),
+  categoryController.getAllCategories,
+);
+
+//get all  categories
+// for Vendor
+router.get(
+  "/vendor/categories",
+  authenticate,
+  authorize("VENDOR"),
+  categoryController.myCategories,
+);
 
 //create category
 router.post(
