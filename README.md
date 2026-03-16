@@ -193,6 +193,21 @@ Notes:
 - Current compose expects env files under each service folder.
 - Verify that gateway runtime port and compose port mapping are aligned for your local setup.
 
+## CI/CD
+
+Continuous Integration is implemented using GitHub Actions.
+
+Pipeline steps:
+
+1. Install dependencies
+2. Generate Prisma client
+3. Run database migrations
+4. Build services
+
+Workflows are located in:
+
+.github/workflows/
+
 ## Build and Quality Commands
 
 Each package has its own scripts in package.json:
