@@ -1,7 +1,9 @@
+version: "3.9"
 
-services: 
+services:
   postgres:
     image: postgres:15
+    container_name: postgres
     environment:
       POSTGRES_PASSWORD: password
     ports:
@@ -20,18 +22,20 @@ services:
   auth-service:
     build: ./services/auth
     env_file:
-        - ./services/auth/.env
+      - ./services/auth/.env
     ports:
-    - "3001:3001"
-    
-    
+      - "3001:3001"
+    depends_on:
+      - postgres
+
   booking-service:
     build: ./services/booking
     env_file:
       - ./services/booking/.env
     ports:
       - "3002:3002"
-    
+    depends_on:
+      - postgres
 
   business-service:
     build: ./services/business
@@ -39,13 +43,14 @@ services:
       - ./services/business/.env
     ports:
       - "3003:3003"
-   
+    depends_on:
+      - postgres
+
   resource-service:
     build: ./services/resource
     env_file:
       - ./services/resource/.env
     ports:
       - "3004:3004"
-   
-  
-  
+    depends_on:
+      - postgres
