@@ -7,7 +7,6 @@ import {
 } from "@prisma/client";
 import Database from "../config/database";
 import { toBusinessDTO } from "../mappers/business.mapper";
-import { NotFoundError } from "../utils/errors";
 import { BusinessResponseDTO } from "../dto/business/response.dto";
 
 class BusinessRepository {

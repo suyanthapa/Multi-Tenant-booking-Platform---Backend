@@ -1,21 +1,5 @@
+import { BusinessType, RejectionReason } from "@prisma/client";
 import { z } from "zod";
-
-export enum BusinessType {
-  HOTEL = "HOTEL",
-  CLINIC = "CLINIC",
-  SALON = "SALON",
-  CO_WORKING = "CO_WORKING",
-  OTHER = "OTHER",
-}
-
-export enum RejectionReason {
-  INVALID_DOCUMENTS = "INVALID_DOCUMENTS",
-  INCOMPLETE_PROFILE = "INCOMPLETE_PROFILE",
-  DUPLICATE_ACCOUNT = "DUPLICATE_ACCOUNT",
-  PROHIBITED_CONTENT = "PROHIBITED_CONTENT",
-  UNRESPONSIVE = "UNRESPONSIVE",
-  OTHER = "OTHER",
-}
 
 // Create Business Schema
 export const createBusinessSchema = z.object({
