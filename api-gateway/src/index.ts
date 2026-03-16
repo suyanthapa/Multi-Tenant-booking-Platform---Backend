@@ -75,4 +75,4 @@ app.get("/health", (_, res) =>
 // Gateway safety net
 app.use(errorHandler);
 app.use(notFound);
-app.listen(3000, () => console.log("🚪 API Gateway running on port 3000"));
+app.listen(8000, () => console.log("🚪 API Gateway running on port 8000"));

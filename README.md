@@ -98,7 +98,7 @@ Optional but recommended:
 
 Current service defaults in code and compose are:
 
-- API Gateway: 8000 in code, 3000 mapped in docker-compose.yaml
+- API Gateway: 8000 in code, 38000 mapped in docker-compose.yaml
 - Auth Service: 3001
 - Booking Service: 3002
 - Business Service: 3003

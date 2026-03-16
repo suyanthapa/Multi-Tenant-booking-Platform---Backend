@@ -12,7 +12,7 @@ services:
   api-gateway:
     build: ./api-gateway
     ports:
-      - "3000:3000"
+      - "8000:8000"
     env_file:
       - ./api-gateway/.env
   

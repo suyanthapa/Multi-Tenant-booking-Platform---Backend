@@ -21,7 +21,7 @@ This API Gateway serves as the single entry point for all client requests in a m
 ```
 Client Request
      ↓
-API Gateway (Port 3000)
+API Gateway (Port 8000)
      ↓
   ┌─────────┬──────────┬───────────┬──────────┐
   ↓         ↓          ↓           ↓          ↓
@@ -199,7 +199,7 @@ COPY package*.json ./
 RUN npm ci --only=production
 COPY . .
 RUN npm run build
-EXPOSE 3000
+EXPOSE 8000
 CMD ["npm", "start"]
 ```
 

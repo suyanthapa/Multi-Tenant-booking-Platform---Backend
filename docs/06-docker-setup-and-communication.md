@@ -33,7 +33,7 @@ The compose file currently defines:
 
 ### Port mapping
 
-- api-gateway: `3000:3000`
+- api-gateway: `8000:8000`
 - auth-service: `3001:3001`
 - booking-service: `3002:3002`
 - business-service: `3003:3003`
