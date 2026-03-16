@@ -244,6 +244,7 @@ Architecture and design docs are in docs/.
 - [docs/03-business-workflow.md](docs/03-business-workflow.md)
 - [docs/04-er-diagram.md](docs/04-er-diagram.md)
 - [docs/05-datatbase-design.md](docs/05-datatbase-design.md)
+- [docs/06-docker-setup-and-communication.md](docs/06-docker-setup-and-communication.md)
 - [docs/CHALLENGES.md](docs/CHALLENGES.md)
 - [docs/GATEWAY_CHALLENGES.md](docs/GATEWAY_CHALLENGES.md)
 - [docs/LEARNINGS.md](docs/LEARNINGS.md)

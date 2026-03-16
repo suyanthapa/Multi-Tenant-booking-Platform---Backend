@@ -7,10 +7,7 @@ import cookieParser from "cookie-parser";
 import { errorHandler } from "./middlewares/error.middleware";
 import { notFound } from "./middlewares/notFound.middleware";
 import { authenticate } from "./middlewares/auth.middleware";
-import {
-  generalLimiter,
-  bookingLimiter,
-} from "./middlewares/rateLimit.middleware";
+import { bookingLimiter } from "./middlewares/rateLimit.middleware";
 import dotenv from "dotenv";
 import { SERVICES } from "./config/service";
 import { createServiceProxy } from "./utils/proxy";
@@ -78,4 +75,4 @@ app.get("/health", (_, res) =>
 // Gateway safety net
 app.use(errorHandler);
 app.use(notFound);
-app.listen(8000, () => console.log("🚪 API Gateway running on port 8000"));
+app.listen(3000, () => console.log("🚪 API Gateway running on port 3000"));
