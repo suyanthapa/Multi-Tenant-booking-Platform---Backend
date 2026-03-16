@@ -1,0 +1,87 @@
+name: Microservices CI/CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  auth-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/auth
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+      - run: npx prisma generate
+      - run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.AUTH_DB_URL }}
+
+      - run: npm run build
+
+  booking-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/booking
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+      - run: npx prisma generate
+      - run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.BOOKING_DB_URL }}
+
+      - run: npm run build
+
+  business-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/business
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+      - run: npx prisma generate
+      - run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.BUSINESS_DB_URL }}
+
+      - run: npm run build
+
+  resource-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/resource
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+      - run: npx prisma generate
+      - run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.RESOURCE_DB_URL }}
+
+      - run: npm run build
