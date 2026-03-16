@@ -1,340 +1,154 @@
 # Booking Service
 
-A microservice for managing bookings in a multi-tenant system.
+Booking lifecycle service for the multi-tenant backend.
 
-## Features
+## Overview
 
-- ✅ Create, read, update, and delete bookings
-- ✅ Time slot availability checking
-- ✅ Booking status management (Pending, Confirmed, In Progress, Completed, Cancelled, No Show)
-- ✅ Payment status tracking
-- ✅ User and vendor booking queries
-- ✅ Pagination support
-- ✅ JWT authentication
-- ✅ Role-based authorization
-- ✅ Request validation with Zod
-- ✅ Error handling
-- ✅ Logging with Winston
-- ✅ Rate limiting
-- ✅ CORS support
-- ✅ Helmet security headers
+The Booking Service is responsible for creating, retrieving, updating, cancelling, and deleting bookings. It also supports role-aware booking access (user/vendor/admin) and filtered booking queries.
 
-## Tech Stack
+Default local URL: http://localhost:3001
 
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Language**: TypeScript
-- **Database**: PostgreSQL
-- **ORM**: Prisma
-- **Authentication**: JWT
-- **Validation**: Zod
-- **Logging**: Winston
+## Responsibilities
 
-## Prerequisites
+- create bookings
+- list bookings with filters and pagination
+- fetch booking by ID
+- update booking details
+- cancel booking
+- list user bookings
+- list vendor bookings
+- delete booking (admin)
 
-- Node.js (v18 or higher)
-- PostgreSQL database
-- npm or yarn
+## Route Map
 
-## Installation
+Routes are mounted under `/api/bookings`.
 
-1. Install dependencies:
+- Health check: `GET /health`
+- Root API prefix: `/api`
+
+### Endpoints
+
+- `POST /api/bookings`
+- `GET /api/bookings`
+- `GET /api/bookings/:id`
+- `PATCH /api/bookings/:id`
+- `POST /api/bookings/:id/cancel`
+- `GET /api/bookings/user/:userId`
+- `GET /api/bookings/vendor/:vendorId`
+- `DELETE /api/bookings/:id`
+
+## Auth and Access Control
+
+- Most endpoints require authentication middleware.
+- Vendor booking route requires role `VENDOR` or `ADMIN`.
+- Delete route requires role `ADMIN`.
+- JWT secret must match the auth issuer (`JWT_ACCESS_SECRET`).
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and update values.
+
+```env
+PORT=3002
+NODE_ENV=development
+
+DATABASE_URL=postgresql://username:password@localhost:5432/booking_db
+
+JWT_ACCESS_SECRET=your-access-secret-key-change-in-production
+
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3002
+
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX=100
+
+COOKIE_SAME_SITE=strict
+COOKIE_MAX_AGE=604800000
+```
+
+## Local Setup
+
+1. Install dependencies
 
 ```bash
 npm install
 ```
 
-2. Create a `.env` file in the root directory:
+2. Create env file
 
-```env
-# Server
-PORT=4001
-NODE_ENV=development
-
-# Database
-DATABASE_URL="postgresql://username:password@localhost:5432/booking_db"
-
-# JWT
-JWT_ACCESS_SECRET=your-access-secret-key-change-in-production
-
-# CORS
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
-
-# Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX=100
-
-# Cookie
-COOKIE_SAME_SITE=strict
-COOKIE_MAX_AGE=604800000
+```powershell
+Copy-Item .env.example .env
 ```
 
-3. Generate Prisma Client:
+3. Generate Prisma client
 
 ```bash
 npm run prisma:generate
 ```
 
-4. Run database migrations:
+4. Run migrations
 
 ```bash
 npm run prisma:migrate
 ```
 
-## Scripts
-
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run prisma:generate` - Generate Prisma Client
-- `npm run prisma:migrate` - Run database migrations
-- `npm run prisma:studio` - Open Prisma Studio
-- `npm run lint` - Run ESLint
-- `npm run format` - Format code with Prettier
-- `npm test` - Run tests
-
-## API Endpoints
-
-### Health Check
-
-- `GET /health` - Check service health
-
-### Bookings
-
-#### Create Booking
-
-- **POST** `/api/bookings`
-- **Auth**: Required
-- **Body**:
-
-```json
-{
-  "userId": "uuid",
-  "vendorId": "uuid",
-  "serviceId": "uuid",
-  "bookingDate": "2026-01-15T00:00:00Z",
-  "startTime": "2026-01-15T10:00:00Z",
-  "endTime": "2026-01-15T11:00:00Z",
-  "notes": "Optional notes"
-}
-```
-
-#### Get All Bookings
-
-- **GET** `/api/bookings?page=1&limit=10&status=PENDING&userId=uuid`
-- **Auth**: Required
-- **Query Params**:
-  - `page` (optional): Page number (default: 1)
-  - `limit` (optional): Items per page (default: 10, max: 100)
-  - `status` (optional): Filter by status
-  - `userId` (optional): Filter by user ID
-  - `vendorId` (optional): Filter by vendor ID
-  - `serviceId` (optional): Filter by service ID
-  - `startDate` (optional): Filter by start date
-  - `endDate` (optional): Filter by end date
-
-#### Get Booking by ID
-
-- **GET** `/api/bookings/:id`
-- **Auth**: Required
-
-#### Update Booking
-
-- **PATCH** `/api/bookings/:id`
-- **Auth**: Required
-- **Body**:
-
-```json
-{
-  "bookingDate": "2026-01-16T00:00:00Z",
-  "startTime": "2026-01-16T10:00:00Z",
-  "endTime": "2026-01-16T11:00:00Z",
-  "status": "CONFIRMED",
-  "notes": "Updated notes"
-}
-```
-
-#### Cancel Booking
-
-- **POST** `/api/bookings/:id/cancel`
-- **Auth**: Required
-- **Body**:
-
-```json
-{
-  "cancelReason": "Customer request"
-}
-```
-
-#### Update Payment Status
-
-- **PATCH** `/api/bookings/:id/payment-status`
-- **Auth**: Required (Admin, Vendor)
-- **Body**:
-
-```json
-{
-  "paymentStatus": "PAID"
-}
-```
-
-#### Get User Bookings
-
-- **GET** `/api/bookings/user/:userId?page=1&limit=10`
-- **Auth**: Required
-
-#### Get Vendor Bookings
-
-- **GET** `/api/bookings/vendor/:vendorId?page=1&limit=10`
-- **Auth**: Required (Admin, Vendor)
-
-#### Delete Booking
-
-- **DELETE** `/api/bookings/:id`
-- **Auth**: Required (Admin)
-
-## Database Schema
-
-### Booking Model
-
-```prisma
-model Booking {
-  id            String        @id @default(uuid())
-  userId        String
-  vendorId      String
-  serviceId     String
-  bookingDate   DateTime
-  startTime     DateTime
-  endTime       DateTime
-  status        BookingStatus @default(PENDING)
-  totalAmount   Decimal
-  paymentStatus PaymentStatus @default(PENDING)
-  notes         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  cancelledAt   DateTime?
-  cancelReason  String?
-}
-
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-  NO_SHOW
-}
-
-enum PaymentStatus {
-  PENDING
-  PAID
-  REFUNDED
-  FAILED
-}
-```
-
-## Project Structure
-
-```
-booking/
-├── prisma/
-│   ├── schema.prisma
-│   └── migrations/
-├── src/
-│   ├── config/
-│   │   ├── index.ts
-│   │   └── database.ts
-│   ├── controllers/
-│   │   └── booking.controller.ts
-│   ├── middlewares/
-│   │   ├── auth.ts
-│   │   ├── errorHandler.ts
-│   │   └── validator.ts
-│   ├── repositories/
-│   │   ├── index.ts
-│   │   └── booking.repository.ts
-│   ├── routes/
-│   │   ├── index.ts
-│   │   └── booking.routes.ts
-│   ├── services/
-│   │   ├── index.ts
-│   │   └── booking.service.ts
-│   ├── utils/
-│   │   ├── asyncHandler.ts
-│   │   ├── errors.ts
-│   │   ├── logger.ts
-│   │   └── validators.ts
-│   ├── interfaces/
-│   │   └── booking.interface.ts
-│   └── index.ts
-├── logs/
-├── package.json
-├── tsconfig.json
-├── prisma.config.ts
-└── README.md
-```
-
-## Error Handling
-
-The service includes comprehensive error handling:
-
-- **ValidationError** (400): Invalid request data
-- **AuthenticationError** (401): Missing or invalid authentication
-- **AuthorizationError** (403): Insufficient permissions
-- **NotFoundError** (404): Resource not found
-- **ConflictError** (409): Resource already exists
-- **BookingConflictError** (409): Time slot not available
-- **InvalidBookingError** (400): Invalid booking details
-- **InternalServerError** (500): Server error
-- **DatabaseError** (500): Database operation failed
-
-## Authentication
-
-The service uses JWT tokens for authentication. Include the token in:
-
-1. **Cookie** (for web):
-
-   - Cookie name: `accessToken`
-
-2. **Authorization Header** (for API/mobile):
-   - Format: `Bearer <token>`
-
-## Authorization
-
-Role-based access control:
-
-- **CUSTOMER**: Can create and manage their own bookings
-- **VENDOR**: Can view and manage bookings for their services
-- **ADMIN**: Full access to all bookings
-
-## Logging
-
-Logs are stored in the `logs/` directory:
-
-- `error.log`: Error-level logs
-- `combined.log`: All logs
-
-In development, logs are also printed to the console.
-
-## Development
-
-Start the development server:
+5. Start development server
 
 ```bash
 npm run dev
 ```
 
-The server will run on `http://localhost:4001` (or your configured PORT).
-
-## Production
-
-Build and start:
+6. Verify health
 
 ```bash
-npm run build
-npm start
+curl http://localhost:3002/health
 ```
 
-## License
+## Scripts
 
-ISC
+- `npm run dev` - run with hot reload
+- `npm run build` - compile TypeScript
+- `npm start` - run compiled build
+- `npm run prisma:generate` - generate Prisma client
+- `npm run prisma:migrate` - run Prisma migrate dev
+- `npm run prisma:studio` - open Prisma Studio
+- `npm run lint` - run ESLint on src
+- `npm run format` - run Prettier on src
+- `npm test` - run tests
+
+## Project Structure
+
+```text
+services/booking/
+├── prisma/
+│   ├── schema.prisma
+│   └── migrations/
+├── src/
+│   ├── config/
+│   ├── controllers/
+│   ├── middlewares/
+│   ├── repositories/
+│   ├── routes/
+│   ├── services/
+│   ├── utils/
+│   └── index.ts
+├── logs/
+├── .env.example
+├── package.json
+├── prisma.config.ts
+├── tsconfig.json
+└── README.md
+```
+
+## Common Issues
+
+- Invalid token or 401 responses:
+  - confirm `JWT_ACCESS_SECRET` is the same value used by auth/gateway.
+- Database connection issues:
+  - verify `DATABASE_URL` and database availability.
+- Prisma runtime errors after schema changes:
+  - run `npm run prisma:generate` and `npm run prisma:migrate`.
+
+## Notes
+
+- Service logs are written with Winston and HTTP requests are logged with Morgan.
+- CORS, rate limiting, helmet, and cookie parsing are enabled in app middleware.

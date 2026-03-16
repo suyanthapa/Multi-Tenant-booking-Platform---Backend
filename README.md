@@ -256,6 +256,25 @@ Detailed per-service behavior and routes are documented in:
 - [services/auth/README.md](services/auth/README.md)
 - [services/booking/README.md](services/booking/README.md)
 
+## Deployment
+
+Databases are hosted on Neon.
+
+Each service can be deployed independently using container-based deployments.
+
+## Engineering Articles
+
+- [The Hidden Performance Cost of Uncoordinated Prisma Clients](https://medium.com/@suyanthapa07/the-hidden-performance-cost-of-uncoordinated-prisma-clients-84f67d2f496b)  
+  Explains how improper Prisma client usage can cause connection issues and how a Singleton pattern improves performance.
+
+- [Decoupling Data: Building Scalable Node.js Backends with the Repository Pattern](https://medium.com/@suyanthapa07/decoupling-data-building-scalable-node-js-backends-with-the-repository-pattern-7df8218dbde9)  
+  Demonstrates using the repository pattern to separate data access logic from business logic in Node.js applications.
+
+## Future Improvements
+
+- Event-driven architecture using message queues
+- Distributed caching using Redis
+
 ## License
 
-Educational project.
+Suyan Thapa
