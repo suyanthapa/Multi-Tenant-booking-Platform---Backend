@@ -38,6 +38,9 @@ interface Config {
     sameSite: "strict" | "lax" | "none";
     maxAge: number;
   };
+  resend: {
+    RESEND_API_KEY: string;
+  };
 }
 
 const requireEnv = (key: string): string => {
@@ -67,6 +70,9 @@ const config: Config = {
     user: requireEnv("EMAIL_USER"),
     password: requireEnv("EMAIL_PASSWORD"),
     from: process.env.EMAIL_FROM || "noreply@booking.com",
+  },
+  resend: {
+    RESEND_API_KEY: requireEnv("RESEND_API_KEY"),
   },
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000", 10), // 15 minutes

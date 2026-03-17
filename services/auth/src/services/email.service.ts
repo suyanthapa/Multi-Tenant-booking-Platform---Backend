@@ -1,29 +1,19 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import config from "../config";
 import logger from "../utils/logger";
 import { InternalServerError } from "../utils/errors";
 
-class EmailService {
-  private transporter: nodemailer.Transporter;
+const resend = new Resend(config.resend.RESEND_API_KEY);
 
-  constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: config.email.host,
-      port: config.email.port,
-      secure: config.email.secure,
-      auth: {
-        user: config.email.user,
-        pass: config.email.password,
-      },
-    });
-  }
+class EmailService {
+  constructor() {}
 
   /**
    * Send email verification OTP
    */
   async sendVerificationEmail(email: string, otp: string): Promise<void> {
     try {
-      await this.transporter.sendMail({
+      await resend.emails.send({
         from: config.email.from,
         to: email,
         subject: "Verify Your Email Address",
@@ -51,7 +41,7 @@ class EmailService {
    */
   async sendPasswordResetEmail(email: string, otp: string): Promise<void> {
     try {
-      await this.transporter.sendMail({
+      await resend.emails.send({
         from: config.email.from,
         to: email,
         subject: "Password Reset Request",
@@ -79,7 +69,7 @@ class EmailService {
    */
   async sendWelcomeEmail(email: string, username: string): Promise<void> {
     try {
-      await this.transporter.sendMail({
+      await resend.emails.send({
         from: config.email.from,
         to: email,
         subject: "Welcome to Our Platform!",
@@ -97,10 +87,6 @@ class EmailService {
       // Don't throw error for welcome email failure
     }
   }
-
-
-
- 
 }
 
 export default new EmailService();

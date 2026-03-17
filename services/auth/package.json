@@ -53,6 +53,7 @@
     "nodemailer": "^7.0.12",
     "pg": "^8.16.3",
     "prisma": "^7.2.0",
+    "resend": "^6.9.4",
     "uuid": "^13.0.0",
     "winston": "^3.18.0",
     "winston-daily-rotate-file": "^5.0.0",
