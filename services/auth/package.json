@@ -13,6 +13,7 @@
     "test": "jest --coverage",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\""
+    
   },
   "keywords": [
     "auth",
@@ -22,6 +23,10 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "prisma": {
+      "seed": "ts-node prisma/seed.ts"
+
+  },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.10",
