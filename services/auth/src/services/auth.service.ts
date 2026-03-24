@@ -13,6 +13,7 @@ import {
   ConflictError,
   EmailNotVerifiedError,
   InternalServerError,
+  InvalidTokenError,
   NotFoundError,
   TokenExpiredError,
   ValidationError,
@@ -193,14 +194,7 @@ class AuthService {
       OTPPurpose.EMAIL_VERIFICATION,
     );
     if (!verifiedUserId) {
-      throw new NotFoundError("Invalid verification code");
-    }
-
-    // Verify email matches the OTP owner
-    if (user.email !== email) {
-      throw new AuthenticationError(
-        "Email does not match the verification token",
-      );
+      throw new ValidationError("Invalid verification code");
     }
 
     // Update user
@@ -248,11 +242,12 @@ class AuthService {
     }
 
     // Check if user is not deleted or suspended
-    if (
-      user.status === UserStatus.DELETED ||
-      user.status === UserStatus.SUSPENDED
-    ) {
-      throw new AuthenticationError("Account is not active");
+    if (user.status === UserStatus.DELETED) {
+      throw new NotFoundError("Account is not found");
+    }
+
+    if (user.status === UserStatus.SUSPENDED) {
+      throw new AccountSuspendedError();
     }
 
     // Generate and send new OTP
@@ -331,7 +326,7 @@ class AuthService {
     await this.refreshTokenRepository.create({
       user: { connect: { id: user.id } },
       token: refreshToken,
-      expiresAt: new Date(Date.now() + 30 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
 
     // Update last login
@@ -369,7 +364,7 @@ class AuthService {
     );
 
     if (!tokenRecord) {
-      throw new TokenExpiredError(
+      throw new InvalidTokenError(
         "Refresh token is invalid or has been revoked",
       );
     }
@@ -377,13 +372,17 @@ class AuthService {
     // Get user
     const user = await this.userRepository.findById(payload.id);
 
+    if (!user || user.status !== UserStatus.ACTIVE) {
+      throw new NotFoundError("User not found or inactive");
+    }
+
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new AccountSuspendedError("Account is inactive");
+    }
+
     const business = await businessClient.validateBusinessByOwner(
       user?.id || "",
     );
-
-    if (!user || user.status !== UserStatus.ACTIVE) {
-      throw new AuthenticationError("User not found or inactive");
-    }
 
     // Generate new tokens
     const newPayload: JWTPayload = {
