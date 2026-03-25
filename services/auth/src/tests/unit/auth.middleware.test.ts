@@ -78,9 +78,17 @@ describe("authenticate middleware", () => {
 
     authenticate(req, res, next);
 
+    // Ensure verifyAccessToken (JWT verification) was NOT called
+    // Because there is no token, middleware should skip JWT verification
     expect(mockedVerifyAccessToken).not.toHaveBeenCalled();
+
+    // Ensure next() was called exactly once
+    // Middleware should forward the error to Express error handler
     expect(next).toHaveBeenCalledTimes(1);
 
+    //  Capture the error object passed to next()
+    // Jest stores mock calls in next.mock.calls array
+    // next.mock.calls[0][0] = first call, first argument = the error
     const forwardedError = (next as jest.Mock).mock.calls[0][0];
     expect(forwardedError).toBeInstanceOf(AuthenticationError);
     expect(forwardedError.message).toBe("No token provided");
