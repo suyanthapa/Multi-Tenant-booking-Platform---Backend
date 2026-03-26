@@ -15,7 +15,6 @@ import {
   InternalServerError,
   InvalidTokenError,
   NotFoundError,
-  TokenExpiredError,
   ValidationError,
 } from "../utils/errors";
 
