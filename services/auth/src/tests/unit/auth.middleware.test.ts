@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { authenticate, authorize, hasRole } from "../../middlewares/auth";
 import { verifyAccessToken } from "../../utils/jwt";
 import { AuthenticationError, AuthorizationError } from "../../utils/errors";
@@ -27,7 +27,7 @@ const createRequest = (overrides: Partial<Request> = {}): Request => {
 // Group related tests for the authenticate middleware. Each test case checks a different aspect of the middleware's behavior, such as accepting tokens from cookies or headers, handling missing tokens, and forwarding errors from the token verification process.
 describe("authenticate middleware", () => {
   let res: Response; //fake res
-  let next: NextFunction; //fake next function
+  let next: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks(); // reset previus test data
@@ -128,7 +128,7 @@ describe("authenticate middleware", () => {
 //Authorize Middleware
 describe("authorize middleware", () => {
   let res: Response;
-  let next: NextFunction;
+  let next: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -140,17 +140,33 @@ describe("authorize middleware", () => {
   it("accepts user with allowed role", () => {
     //Fake request with user role
     const req = createRequest({
-      user: { role: "ADMIN", id: "test-id", email: "test@example.com" },
+      user: { role: UserRole.ADMIN, id: "test-id", email: "test@example.com" },
     });
 
     //Run middleware
-    const middleware = authorize("ADMIN");
+    const middleware = authorize(UserRole.ADMIN);
     middleware(req, res, next);
 
     expect(next).toHaveBeenCalledWith(); //Assert
   });
 
-  //Test2: Access Denied
+  //Test 2: Multiple Allowed Roles
+  it("allows user when multiple roles are permitted", () => {
+    const req = createRequest({
+      user: {
+        role: UserRole.VENDOR, // VENDOR trying to access
+        id: "test-id",
+        email: "test@example.com",
+      },
+    });
+
+    const middleware = authorize(UserRole.ADMIN, UserRole.VENDOR); // both allowed
+    middleware(req, res, next);
+
+    expect(next).toHaveBeenCalledWith();
+  });
+
+  //Test 3: Access Denied
   it("rejects user with disallowed urole", () => {
     const req = createRequest({
       user: {
@@ -159,7 +175,7 @@ describe("authorize middleware", () => {
         email: "test@example.com",
       },
     });
-    const middleware = authorize("ADMIN");
+    const middleware = authorize(UserRole.ADMIN);
     middleware(req, res, next);
     const forwadedError = (next as jest.Mock).mock.calls[0][0];
 
@@ -167,10 +183,10 @@ describe("authorize middleware", () => {
     expect(forwadedError.message).toBe("Insufficient permissions");
   });
 
-  //Test3: No user
+  //Test 4: No user
   it("rejects when  no user is authenticated", () => {
     const req = createRequest(); // no user property
-    const middleware = authorize("ADMIN");
+    const middleware = authorize(UserRole.ADMIN);
     middleware(req, res, next);
     const forwadedError = (next as jest.Mock).mock.calls[0][0];
     expect(forwadedError).toBeInstanceOf(AuthorizationError);
@@ -181,7 +197,7 @@ describe("authorize middleware", () => {
 //has Role Middleware
 describe("hasRole middleware", () => {
   let res: Response;
-  let next: NextFunction;
+  let next: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
