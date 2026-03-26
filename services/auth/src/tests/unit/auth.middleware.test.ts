@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { authenticate } from "../../middlewares/auth";
+import { authenticate, authorize } from "../../middlewares/auth";
 import { verifyAccessToken } from "../../utils/jwt";
-import { AuthenticationError } from "../../utils/errors";
+import { AuthenticationError, AuthorizationError } from "../../utils/errors";
+import { UserRole } from "../../generated/prisma";
 
 //mocking the jwt utility to control its behavior in tests
 jest.mock("../../utils/jwt", () => ({
@@ -121,5 +122,58 @@ describe("authenticate middleware", () => {
     authenticate(req, res, next);
 
     expect(next).toHaveBeenCalledWith(verifyError);
+  });
+});
+
+//Authorize Middleware
+describe("authorize middleware", () => {
+  let res: Response;
+  let next: NextFunction;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    res = {} as Response;
+    next = jest.fn();
+  });
+
+  //Test 1: Access Granted
+  it("accepts user with allowed role", () => {
+    //Fake request with user role
+    const req = createRequest({
+      user: { role: "ADMIN", id: "test-id", email: "test@example.com" },
+    });
+
+    //Run middleware
+    const middleware = authorize("ADMIN");
+    middleware(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(); //Assert
+  });
+
+  //Test2: Access Denied
+  it("rejects user with disallowed urole", () => {
+    const req = createRequest({
+      user: {
+        role: UserRole.CUSTOMER,
+        id: "test-id",
+        email: "test@example.com",
+      },
+    });
+    const middleware = authorize("ADMIN");
+    middleware(req, res, next);
+    const forwadedError = (next as jest.Mock).mock.calls[0][0];
+
+    expect(forwadedError).toBeInstanceOf(AuthorizationError);
+    expect(forwadedError.message).toBe("Insufficient permissions");
+  });
+
+  //Test3: No user
+  it("rejects when  no user is authenticated", () => {
+    const req = createRequest(); // no user property
+    const middleware = authorize("ADMIN");
+    middleware(req, res, next);
+    const forwadedError = (next as jest.Mock).mock.calls[0][0];
+    expect(forwadedError).toBeInstanceOf(AuthorizationError);
+    expect(forwadedError.message).toBe("Authentication required");
   });
 });
