@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { authenticate, authorize } from "../../middlewares/auth";
+import { authenticate, authorize, hasRole } from "../../middlewares/auth";
 import { verifyAccessToken } from "../../utils/jwt";
 import { AuthenticationError, AuthorizationError } from "../../utils/errors";
 import { UserRole } from "../../generated/prisma";
@@ -174,6 +174,50 @@ describe("authorize middleware", () => {
     middleware(req, res, next);
     const forwadedError = (next as jest.Mock).mock.calls[0][0];
     expect(forwadedError).toBeInstanceOf(AuthorizationError);
+    expect(forwadedError.message).toBe("Authentication required");
+  });
+});
+
+//has Role Middleware
+describe("hasRole middleware", () => {
+  let res: Response;
+  let next: NextFunction;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    res = {} as Response;
+    next = jest.fn();
+  });
+
+  // Test 1: User has role
+  it("allows user with specified role", () => {
+    const req = createRequest({
+      user: { role: "VENDOR", id: "test-id", email: "test@example.com" },
+    });
+    const middleware = hasRole("VENDOR");
+    middleware(req, res, next);
+    expect(next).toHaveBeenCalledWith();
+  });
+
+  // Test 2: User does not have role
+  it("rejects user without specified role", () => {
+    const req = createRequest({
+      user: { role: "CUSTOMER", id: "test-id", email: "test@example.com" },
+    });
+    const middleware = hasRole("ADMIN");
+    middleware(req, res, next);
+    const forwadedError = (next as jest.Mock).mock.calls[0][0];
+    expect(forwadedError).toBeInstanceOf(AuthorizationError);
+    expect(forwadedError.message).toBe("Access denied. Required role: ADMIN");
+  });
+
+  // Test 3: No user
+  it("rejects when no user is authenticated", () => {
+    const req = createRequest(); // no user property
+    const middleware = hasRole("ADMIN");
+    middleware(req, res, next);
+    const forwadedError = (next as jest.Mock).mock.calls[0][0];
+    expect(forwadedError).toBeInstanceOf(AuthenticationError);
     expect(forwadedError.message).toBe("Authentication required");
   });
 });
