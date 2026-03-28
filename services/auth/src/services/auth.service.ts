@@ -136,7 +136,6 @@ class AuthService {
       throw new InternalServerError("Failed to create business");
     }
 
-    console.log("Business created:", business);
     // Generate and send OTP
     const otp = await otpService.generateEmailVerificationOTP(user.id);
     await emailService.sendVerificationEmail(input.email, otp);
@@ -317,8 +316,6 @@ class AuthService {
       ...(business && { businessId: business.businessId }),
     };
 
-    console.log("Business Info:", business);
-    console.log("JWT Payload:", payload);
     const { accessToken, refreshToken } = generateTokenPair(payload);
 
     // Store refresh token
@@ -470,7 +467,7 @@ class AuthService {
 
     // Get user to compare with old password
     const user = await this.userRepository.findByEmail(email);
-    console.log("User found for password reset:", user);
+
     if (!user) {
       throw new NotFoundError("User not found");
     }
@@ -479,7 +476,7 @@ class AuthService {
       newPassword,
       user.passwordHash,
     );
-    console.log("Is new password same as old?", isSamePassword);
+
     if (isSamePassword) {
       throw new ConflictError(
         "New password cannot be the same as the old password",
@@ -488,10 +485,10 @@ class AuthService {
 
     // Hash new password
     const passwordHash = await hashPassword(newPassword);
-    console.log("Password hash generated for reset:", passwordHash);
+
     // Update password
     await this.userRepository.updatePassword(decoded.userId, passwordHash);
-    console.log("Password updated for user:", decoded.userId);
+
     // Revoke all refresh tokens for security
     await this.prisma.refreshToken.updateMany({
       where: { userId: decoded.userId, revokedAt: null },
