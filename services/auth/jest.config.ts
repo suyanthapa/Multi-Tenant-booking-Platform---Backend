@@ -14,5 +14,4 @@ const config: JestConfigWithTsJest = {
     ],
   },
 };
-
-module.exports = config;
+export default config;
