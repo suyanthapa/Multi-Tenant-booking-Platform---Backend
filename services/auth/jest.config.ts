@@ -5,6 +5,9 @@ const config: JestConfigWithTsJest = {
   testEnvironment: "node",
   roots: ["<rootDir>/src"],
   testMatch: ["**/*.test.ts", "**/*.spec.ts"],
+  setupFiles: ["<rootDir>/src/tests/setup.ts"],
+  silent: true,
+  verbose: true,
   transform: {
     "^.+\\.ts$": [
       "ts-jest",
