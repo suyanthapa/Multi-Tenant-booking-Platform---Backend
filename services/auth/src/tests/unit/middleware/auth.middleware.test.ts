@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { authenticate, authorize, hasRole } from "../../middlewares/auth";
-import { verifyAccessToken } from "../../utils/jwt";
-import { AuthenticationError, AuthorizationError } from "../../utils/errors";
-import { UserRole } from "../../generated/prisma";
+import { UserRole } from "../../../generated/prisma";
+import { AuthenticationError, AuthorizationError } from "../../../utils/errors";
+import { verifyAccessToken } from "../../../utils/jwt";
+import { authenticate, authorize, hasRole } from "../../../middlewares/auth";
 
 //mocking the jwt utility to control its behavior in tests
-jest.mock("../../utils/jwt", () => ({
+jest.mock("../../../utils/jwt", () => ({
   verifyAccessToken: jest.fn(),
 }));
 

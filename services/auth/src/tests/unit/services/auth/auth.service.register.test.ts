@@ -1,18 +1,18 @@
-import { ConflictError } from "../../utils/errors";
 import { UserRole, UserStatus } from "@prisma/client";
-import { hashPassword } from "../../utils/crypto";
-import otpService from "../../services/otp.service";
-import emailService from "../../services/email.service";
-import authService from "../../services/auth.service";
+import authService from "../../../../services/auth.service";
+import emailService from "../../../../services/email.service";
+import otpService from "../../../../services/otp.service";
+import { hashPassword } from "../../../../utils/crypto";
+import { ConflictError } from "../../../../utils/errors";
 
-jest.mock("../../config/database", () => ({
+jest.mock("../../../../config/database", () => ({
   __esModule: true,
   default: {
     getInstance: jest.fn(() => ({})),
   },
 }));
 
-jest.mock("../../repositories", () => {
+jest.mock("../../../../repositories", () => {
   const mockUserRepository = {
     findByEmailOrUsername: jest.fn(),
     findByUsername: jest.fn(),
@@ -32,9 +32,9 @@ jest.mock("../../repositories", () => {
   };
 });
 
-jest.mock("../../utils/crypto");
-jest.mock("../../services/otp.service");
-jest.mock("../../services/email.service");
+jest.mock("../../../../utils/crypto");
+jest.mock("../../../../services/otp.service");
+jest.mock("../../../../services/email.service");
 
 const mockedHashPassword = hashPassword as jest.MockedFunction<
   typeof hashPassword
@@ -42,7 +42,7 @@ const mockedHashPassword = hashPassword as jest.MockedFunction<
 const mockedOtpService = otpService as jest.Mocked<typeof otpService>;
 const mockedEmailService = emailService as jest.Mocked<typeof emailService>;
 const { mockUserRepository } = (
-  jest.requireMock("../../repositories") as {
+  jest.requireMock("../../../../repositories") as {
     __mockedRepositories: {
       mockUserRepository: {
         findByEmailOrUsername: jest.Mock;

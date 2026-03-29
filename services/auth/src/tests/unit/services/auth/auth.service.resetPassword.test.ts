@@ -1,13 +1,13 @@
+import jwt from "jsonwebtoken";
 import {
+  ValidationError,
+  NotFoundError,
   AuthenticationError,
   ConflictError,
-  NotFoundError,
-  ValidationError,
-} from "../../utils/errors";
-import { comparePassword, hashPassword } from "../../utils/crypto";
-import jwt from "jsonwebtoken";
+} from "../../../../utils/errors";
+import { comparePassword, hashPassword } from "../../../../utils/crypto";
 
-jest.mock("../../config/database", () => {
+jest.mock("../../../../config/database", () => {
   const mockPrisma = {
     refreshToken: {
       updateMany: jest.fn(),
@@ -23,7 +23,7 @@ jest.mock("../../config/database", () => {
   };
 });
 
-jest.mock("../../config", () => ({
+jest.mock("../../../../config", () => ({
   __esModule: true,
   default: {
     jwt: {
@@ -36,7 +36,7 @@ jest.mock("../../config", () => ({
   },
 }));
 
-jest.mock("../../repositories", () => {
+jest.mock("../../../../repositories", () => {
   const mockUserRepository = {
     findByEmail: jest.fn(),
     updatePassword: jest.fn(),
@@ -55,9 +55,9 @@ jest.mock("../../repositories", () => {
   };
 });
 
-jest.mock("../../utils/crypto");
+jest.mock("../../../../utils/crypto");
 jest.mock("jsonwebtoken");
-jest.mock("../../services/email.service");
+jest.mock("../../../../services/email.service");
 
 const mockedComparePassword = comparePassword as jest.MockedFunction<
   typeof comparePassword
@@ -67,7 +67,7 @@ const mockedHashPassword = hashPassword as jest.MockedFunction<
 >;
 const mockedJwtVerify = jwt.verify as jest.Mock;
 const { mockUserRepository } = (
-  jest.requireMock("../../repositories") as {
+  jest.requireMock("../../../../repositories") as {
     __mockedRepositories: {
       mockUserRepository: {
         findByEmail: jest.Mock;
@@ -77,12 +77,12 @@ const { mockUserRepository } = (
   }
 ).__mockedRepositories;
 const { updateMany } = (
-  jest.requireMock("../../config/database") as {
+  jest.requireMock("../../../../config/database") as {
     __mockedPrisma: { refreshToken: { updateMany: jest.Mock } };
   }
 ).__mockedPrisma.refreshToken;
 
-const authService = require("../../services/auth.service").default;
+const authService = require("../../../../services/auth.service").default;
 
 const fakeUser = {
   id: "user-123",

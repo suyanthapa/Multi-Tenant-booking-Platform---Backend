@@ -1,19 +1,19 @@
-import { generateTokenPair } from "../../utils/jwt";
+import { generateTokenPair } from "../../../../utils/jwt";
 import {
   AuthenticationError,
   EmailNotVerifiedError,
   AccountPendingError,
   AccountSuspendedError,
-} from "../../utils/errors";
+} from "../../../../utils/errors";
 import { UserStatus, UserRole } from "@prisma/client";
-import { comparePassword } from "../../utils/crypto";
-import otpService from "../../services/otp.service";
-import emailService from "../../services/email.service";
-import businessClient from "../../clients/businessClient";
-import authService from "../../services/auth.service";
+import { comparePassword } from "../../../../utils/crypto";
+import otpService from "../../../../services/otp.service";
+import emailService from "../../../../services/email.service";
+import businessClient from "../../../../clients/businessClient";
+import authService from "../../../../services/auth.service";
 
 // Mocks
-jest.mock("../../config/database", () => ({
+jest.mock("../../../../config/database", () => ({
   __esModule: true,
   default: {
     getInstance: jest.fn(() => ({})),
@@ -21,7 +21,7 @@ jest.mock("../../config/database", () => ({
 }));
 
 // module mock
-jest.mock("../../repositories", () => {
+jest.mock("../../../../repositories", () => {
   //mock object
   const mockUserRepository = {
     findByEmail: jest.fn(), // mock function
@@ -48,11 +48,11 @@ jest.mock("../../repositories", () => {
   };
 });
 
-jest.mock("../../utils/crypto");
-jest.mock("../../utils/jwt");
-jest.mock("../../services/otp.service");
-jest.mock("../../services/email.service");
-jest.mock("../../clients/businessClient");
+jest.mock("../../../../utils/crypto");
+jest.mock("../../../../utils/jwt");
+jest.mock("../../../../services/otp.service");
+jest.mock("../../../../services/email.service");
+jest.mock("../../../../clients/businessClient");
 
 const mockedComparePassword = comparePassword as jest.MockedFunction<
   typeof comparePassword
@@ -66,7 +66,7 @@ const mockedBusinessClient = businessClient as jest.Mocked<
   typeof businessClient
 >;
 const { mockUserRepository, mockRefreshTokenRepository } = (
-  jest.requireMock("../../repositories") as {
+  jest.requireMock("../../../../repositories") as {
     __mockedRepositories: {
       mockUserRepository: {
         findByEmail: jest.Mock;

@@ -1,14 +1,16 @@
-import otpService from "../../services/otp.service";
-import emailService from "../../services/email.service";
+import otpService from "../../../../services/otp.service";
 
-jest.mock("../../config/database", () => ({
+import emailService from "../../../../services/email.service";
+("../../../../../../services/email.service");
+
+jest.mock("../../../../config/database", () => ({
   __esModule: true,
   default: {
     getInstance: jest.fn(() => ({})),
   },
 }));
 
-jest.mock("../../config", () => ({
+jest.mock("../../../../config", () => ({
   __esModule: true,
   default: {
     jwt: {
@@ -21,7 +23,7 @@ jest.mock("../../config", () => ({
   },
 }));
 
-jest.mock("../../repositories", () => {
+jest.mock("../../../../repositories", () => {
   const mockUserRepository = {
     findByEmail: jest.fn(),
   };
@@ -39,13 +41,13 @@ jest.mock("../../repositories", () => {
   };
 });
 
-jest.mock("../../services/otp.service");
-jest.mock("../../services/email.service");
+jest.mock("../../../../services/otp.service");
+jest.mock("../../../../services/email.service");
 
 const mockedOtpService = otpService as jest.Mocked<typeof otpService>;
 const mockedEmailService = emailService as jest.Mocked<typeof emailService>;
 const { mockUserRepository } = (
-  jest.requireMock("../../repositories") as {
+  jest.requireMock("../../../../repositories") as {
     __mockedRepositories: {
       mockUserRepository: {
         findByEmail: jest.Mock;
@@ -54,7 +56,7 @@ const { mockUserRepository } = (
   }
 ).__mockedRepositories;
 
-const authService = require("../../services/auth.service").default;
+const authService = require("../../../../services/auth.service").default;
 
 const fakeUser = {
   id: "user-123",

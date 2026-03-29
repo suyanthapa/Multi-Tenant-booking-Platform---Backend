@@ -1,16 +1,17 @@
-import { generateTokenPair, verifyRefreshToken } from "../../utils/jwt";
-import { InvalidTokenError, NotFoundError } from "../../utils/errors";
 import { UserRole, UserStatus } from "@prisma/client";
-import businessClient from "../../clients/businessClient";
+import businessClient from "../../../../clients/businessClient";
+import { InvalidTokenError, NotFoundError } from "../../../../utils/errors";
+import { generateTokenPair, verifyRefreshToken } from "../../../../utils/jwt";
+("../../../../../../clients/businessClient");
 
-jest.mock("../../config/database", () => ({
+jest.mock("../../../../config/database", () => ({
   __esModule: true,
   default: {
     getInstance: jest.fn(() => ({})),
   },
 }));
 
-jest.mock("../../config", () => ({
+jest.mock("../../../../config", () => ({
   __esModule: true,
   default: {
     jwt: {
@@ -23,7 +24,7 @@ jest.mock("../../config", () => ({
   },
 }));
 
-jest.mock("../../repositories", () => {
+jest.mock("../../../../repositories", () => {
   const mockUserRepository = {
     findById: jest.fn(),
     rotateToken: jest.fn(),
@@ -47,9 +48,9 @@ jest.mock("../../repositories", () => {
   };
 });
 
-jest.mock("../../utils/jwt");
-jest.mock("../../clients/businessClient");
-jest.mock("../../services/email.service");
+jest.mock("../../../../utils/jwt");
+jest.mock("../../../../clients/businessClient");
+jest.mock("../../../../services/email.service");
 
 const mockedVerifyRefreshToken = verifyRefreshToken as jest.MockedFunction<
   typeof verifyRefreshToken
@@ -61,7 +62,7 @@ const mockedBusinessClient = businessClient as jest.Mocked<
   typeof businessClient
 >;
 const { mockUserRepository, mockRefreshTokenRepository } = (
-  jest.requireMock("../../repositories") as {
+  jest.requireMock("../../../../repositories") as {
     __mockedRepositories: {
       mockUserRepository: {
         findById: jest.Mock;
@@ -74,7 +75,7 @@ const { mockUserRepository, mockRefreshTokenRepository } = (
   }
 ).__mockedRepositories;
 
-const authService = require("../../services/auth.service").default;
+const authService = require("../../../../services/auth.service").default;
 
 const fakePayload = {
   id: "user-123",

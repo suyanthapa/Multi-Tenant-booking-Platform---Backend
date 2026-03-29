@@ -1,18 +1,18 @@
-import { NotFoundError } from "../../utils/errors";
 import { OTPPurpose, UserRole, UserStatus } from "@prisma/client";
-import otpService from "../../services/otp.service";
-import emailService from "../../services/email.service";
-import businessClient from "../../clients/businessClient";
-import authService from "../../services/auth.service";
+import authService from "../../../../services/auth.service";
+import businessClient from "../../../../clients/businessClient";
+import emailService from "../../../../services/email.service";
+import otpService from "../../../../services/otp.service";
+import { NotFoundError } from "../../../../utils/errors";
 
-jest.mock("../../config/database", () => ({
+jest.mock("../../../../config/database", () => ({
   __esModule: true,
   default: {
     getInstance: jest.fn(() => ({})),
   },
 }));
 
-jest.mock("../../repositories", () => {
+jest.mock("../../../../repositories", () => {
   const mockUserRepository = {
     findByEmail: jest.fn(),
     markEmailAsVerified: jest.fn(),
@@ -31,9 +31,9 @@ jest.mock("../../repositories", () => {
   };
 });
 
-jest.mock("../../services/otp.service");
-jest.mock("../../services/email.service");
-jest.mock("../../clients/businessClient");
+jest.mock("../../../../services/otp.service");
+jest.mock("../../../../services/email.service");
+jest.mock("../../../../clients/businessClient");
 
 const mockedOtpService = otpService as jest.Mocked<typeof otpService>;
 const mockedEmailService = emailService as jest.Mocked<typeof emailService>;
@@ -41,7 +41,7 @@ const mockedBusinessClient = businessClient as jest.Mocked<
   typeof businessClient
 >;
 const { mockUserRepository } = (
-  jest.requireMock("../../repositories") as {
+  jest.requireMock("../../../../repositories") as {
     __mockedRepositories: {
       mockUserRepository: {
         findByEmail: jest.Mock;

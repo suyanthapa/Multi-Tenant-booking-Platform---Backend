@@ -1,17 +1,17 @@
-import { NotFoundError, ValidationError } from "../../utils/errors";
 import { OTPPurpose, UserRole, UserStatus } from "@prisma/client";
-import otpService from "../../services/otp.service";
 import jwt from "jsonwebtoken";
-import { sanitizeUser } from "../../utils/sanitizer";
+import { sanitizeUser } from "../../../../utils/sanitizer";
+import otpService from "../../../../services/otp.service";
+import { NotFoundError, ValidationError } from "../../../../utils/errors";
 
-jest.mock("../../config/database", () => ({
+jest.mock("../../../../config/database", () => ({
   __esModule: true,
   default: {
     getInstance: jest.fn(() => ({})),
   },
 }));
 
-jest.mock("../../config", () => ({
+jest.mock("../../../../config", () => ({
   __esModule: true,
   default: {
     jwt: {
@@ -24,7 +24,7 @@ jest.mock("../../config", () => ({
   },
 }));
 
-jest.mock("../../repositories", () => {
+jest.mock("../../../../repositories", () => {
   const mockUserRepository = {
     findByEmail: jest.fn(),
     markEmailAsVerified: jest.fn(),
@@ -43,14 +43,14 @@ jest.mock("../../repositories", () => {
   };
 });
 
-jest.mock("../../services/otp.service");
-jest.mock("../../services/email.service");
+jest.mock("../../../../services/otp.service");
+jest.mock("../../../../services/email.service");
 jest.mock("jsonwebtoken");
-jest.mock("../../utils/sanitizer", () => ({
+jest.mock("../../../../utils/sanitizer", () => ({
   sanitizeUser: jest.fn(),
 }));
 
-const authService = require("../../services/auth.service").default;
+const authService = require("../../../../services/auth.service").default;
 
 const mockedOtpService = otpService as jest.Mocked<typeof otpService>;
 const mockedJwtSign = jwt.sign as jest.Mock;
@@ -58,7 +58,7 @@ const mockedSanitizeUser = sanitizeUser as jest.MockedFunction<
   typeof sanitizeUser
 >;
 const { mockUserRepository } = (
-  jest.requireMock("../../repositories") as {
+  jest.requireMock("../../../../repositories") as {
     __mockedRepositories: {
       mockUserRepository: {
         findByEmail: jest.Mock;
