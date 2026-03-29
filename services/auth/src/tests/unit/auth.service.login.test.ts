@@ -125,6 +125,10 @@ describe("AuthService.login", () => {
     });
   });
 
+  it("check env", () => {
+    console.log(process.env.NODE_ENV); // ← what does this print?
+  });
+
   it("stores refresh token after successful login", async () => {
     await authService.login({
       email: "test@example.com",
