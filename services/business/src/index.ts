@@ -16,7 +16,7 @@ app.use(helmet()); // Security headers
 // Only allow requests from the API Gateway (internal service communication)
 app.use(
   cors({
-    origin: process.env.API_GATEWAY_URL || "http://localhost:8000",
+    origin: process.env.ALLOWED_ORIGINS?.split(",") || "*",
     credentials: true,
   }),
 ); // Restrict CORS to gateway only
