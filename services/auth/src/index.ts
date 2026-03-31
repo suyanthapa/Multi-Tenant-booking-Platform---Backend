@@ -57,14 +57,17 @@ class App {
     // this.app.use("/api/", limiter);
 
     // Strict rate limiting for auth endpoints
-    const authLimiter = rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 10, // 10 requests per window
-      message: "Too many authentication attempts, please try again later.",
-    });
-    this.app.use("/api/auth/login", authLimiter);
-    this.app.use("/api/auth/register", authLimiter);
-    this.app.use("/api/auth/forgot-password", authLimiter);
+
+    // ----------Commenting out for now, can be re-enabled later if needed. Just make sure to adjust the window and max values as per your requirements.----------
+
+    // const authLimiter = rateLimit({
+    //   windowMs: 1 * 60 * 1000, // 1 minute
+    //   max: 10, // 10 requests per window
+    //   message: "Too many authentication attempts, please try again later.",
+    // });
+    // this.app.use("/api/auth/login", authLimiter);
+    // this.app.use("/api/auth/register", authLimiter);
+    // this.app.use("/api/auth/forgot-password", authLimiter);
   }
 
   private initializeRoutes(): void {
