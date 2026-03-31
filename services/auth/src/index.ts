@@ -1,7 +1,7 @@
 import express, { Application, Request, Response } from "express";
 import helmet from "helmet";
 import cors from "cors";
-import rateLimit from "express-rate-limit";
+// import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import config from "./config";
 import Database from "./config/database";
