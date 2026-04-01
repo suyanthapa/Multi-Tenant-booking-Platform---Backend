@@ -15,7 +15,10 @@ services:
       - "8000:8000"
     env_file:
       - ./api-gateway/.env
-  
+    volumes:
+    - ./api-gateway:/app
+    - /app/node_modules
+    command: npm run dev
     depends_on:
       - auth-service
       - booking-service
@@ -28,6 +31,11 @@ services:
       - ./services/auth/.env
     ports:
       - "3001:3001"
+    volumes:
+       - ./services/auth/src:/app/src         
+       - ./services/auth/logs:/app/logs        
+       - /app/node_modules 
+    command: npm run dev
     depends_on:
       - postgres
 
@@ -37,6 +45,10 @@ services:
       - ./services/booking/.env
     ports:
       - "3002:3002"
+    volumes:
+      - ./services/booking:/app
+      - /app/node_modules
+    command: npm run dev
     depends_on:
       - postgres
 
@@ -46,6 +58,10 @@ services:
       - ./services/business/.env
     ports:
       - "3003:3003"
+    volumes:
+      - ./services/business:/app
+      - /app/node_modules
+    command: npm run dev
     depends_on:
       - postgres
 
@@ -55,5 +71,9 @@ services:
       - ./services/resource/.env
     ports:
       - "3004:3004"
+    volumes:
+      - ./services/resource:/app
+      - /app/node_modules
+    command: npm run dev
     depends_on:
       - postgres
