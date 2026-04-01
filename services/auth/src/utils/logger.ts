@@ -20,6 +20,7 @@ const logger = winston.createLogger({
       datePattern: "YYYY-MM-DD",
       maxSize: "20m",
       maxFiles: "14d",
+      auditFile: "logs/audit.log",
     }),
 
     // Error-only file
