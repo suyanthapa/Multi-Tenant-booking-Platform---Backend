@@ -10,6 +10,8 @@ import routes from "./routes";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler";
 import { requestLogger } from "./middlewares/requestLogger";
 import { requestIdMiddleware } from "./middlewares/requestId";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger";
 
 class App {
   public app: Application;
@@ -71,6 +73,33 @@ class App {
   }
 
   private initializeRoutes(): void {
+    // Swagger Docs
+    // in app.ts
+    this.app.use(
+      "/api/docs",
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerSpec, {
+        customSiteTitle: "Auth Service API",
+        customCss: `
+          .swagger-ui .topbar { background-color: #1a1a2e; }
+          .swagger-ui .topbar-wrapper img { display: none; }
+          .swagger-ui .topbar-wrapper::after {
+            content: "Auth Service API";
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+          }
+          .swagger-ui .info .title { color: #6c63ff; }
+        `,
+        swaggerOptions: {
+          persistAuthorization: true, // ← remembers your token
+          displayRequestDuration: true, // ← shows response time
+          filter: true, // ← adds search bar
+          tryItOutEnabled: true, // ← auto enables try it out
+        },
+      }),
+    );
+
     // Health check
     this.app.get("/health", async (_req: Request, res: Response) => {
       const dbHealthy = await Database.healthCheck();
