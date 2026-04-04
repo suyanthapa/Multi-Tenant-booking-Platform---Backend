@@ -338,7 +338,7 @@ class AuthService {
         role: user.role,
         status: user.status,
       },
-      accessToken,
+      accessToken: accessToken,
       refreshToken,
     };
   }

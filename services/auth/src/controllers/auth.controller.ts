@@ -108,7 +108,14 @@ class AuthController {
       maxAge: config.cookie.maxAge,
     });
 
-    return successResponse(res, { user: result.user }, "Login successful");
+    return successResponse(
+      res,
+      {
+        user: result.user,
+        accessToken: result.accessToken,
+      },
+      "Login successful",
+    );
   });
 
   /**

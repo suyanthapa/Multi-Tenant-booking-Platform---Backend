@@ -100,7 +100,7 @@ export class InvalidTokenError extends AppError {
 
 export class EmailNotVerifiedError extends AppError {
   constructor(message: string = "Email not verified") {
-    super(message, 401, true, "EMAIL_NOT_VERIFIED"); // unique code
+    super(message, 403, true, "EMAIL_NOT_VERIFIED"); // unique code
     Object.setPrototypeOf(this, EmailNotVerifiedError.prototype);
   }
 }
