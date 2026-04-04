@@ -44,6 +44,18 @@ VerifyEmailInput:
       enum: [EMAIL_VERIFICATION, PASSWORD_RESET]
       example: EMAIL_VERIFICATION
 
+VerifyOtpInput:
+  type: object
+  required: [email, otp]
+  properties:
+    email:
+      type: string
+      format: email
+      example: john@example.com
+    otp:
+      type: string
+      example: "123456"
+
 ForgotPasswordInput:
   type: object
   required: [email]

@@ -61,6 +61,65 @@ VerifyEmailResponse:
                 type: string
                 example: Email verified successfully. You can now log in.
 
+VerifyOtpResponse:
+  description: OTP verified successfully
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: OTP verified successfully. Email confirmed.
+          data:
+            type: object
+            properties:
+              resetToken:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+RefreshTokenResponse:
+  description: Token refreshed successfully
+  headers:
+    Set-Cookie:
+      description: HTTP-only access and refresh token cookies are rotated.
+      schema:
+        type: string
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Token refreshed successfully
+          data:
+            nullable: true
+            example: null
+
+LogoutResponse:
+  description: Logout successful
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Logout successful
+          data:
+            nullable: true
+            example: null
+
 LoginResponse:
   description: Login successful
   headers:

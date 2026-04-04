@@ -73,6 +73,81 @@
             schema:
               $ref: "#/components/schemas/ErrorResponse"
 
+/api/auth/verify-otp:
+  post:
+    tags: [Auth]
+    summary: Verify OTP and issue temporary reset token
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/VerifyOtpInput"
+    responses:
+      "200":
+        $ref: "#/components/responses/VerifyOtpResponse"
+      "400":
+        description: Validation error or invalid verification code
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+      "404":
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+
+/api/auth/refresh:
+  post:
+    tags: [Auth]
+    summary: Refresh access token
+    description: Rotates access and refresh tokens using refresh token from cookie.
+    parameters:
+      - in: cookie
+        name: refreshToken
+        required: true
+        schema:
+          type: string
+        description: Refresh token stored in HTTP-only cookie.
+    responses:
+      "200":
+        $ref: "#/components/responses/RefreshTokenResponse"
+      "400":
+        description: Missing refresh token
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              success: false
+              message: Refresh token is required
+              error:
+                code: MISSING_TOKEN
+      "401":
+        description: Invalid or revoked refresh token
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+
+/api/auth/logout:
+  post:
+    tags: [Auth]
+    summary: Logout user
+    description: Revokes refresh token when present and clears auth cookies.
+    parameters:
+      - in: cookie
+        name: refreshToken
+        required: false
+        schema:
+          type: string
+        description: Optional refresh token cookie.
+    responses:
+      "200":
+        $ref: "#/components/responses/LogoutResponse"
+
 /api/auth/login:
   post:
     tags: [Auth]
