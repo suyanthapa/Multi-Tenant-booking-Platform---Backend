@@ -1,0 +1,27 @@
+MessageResponse:
+  description: Operation successful
+  content:
+    application/json:
+      schema:
+        $ref: "#/components/schemas/MessageData"
+
+LoginResponse:
+  description: Login successful
+  headers:
+    Set-Cookie:
+      description: HTTP-only access and refresh token cookies are set.
+      schema:
+        type: string
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Login successful
+          data:
+            $ref: "#/components/schemas/LoginData"

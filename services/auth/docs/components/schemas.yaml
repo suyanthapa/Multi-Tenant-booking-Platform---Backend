@@ -1,0 +1,120 @@
+RegisterInput:
+  type: object
+  required: [username, email, password]
+  properties:
+    username:
+      type: string
+      example: suyan_thapa
+    email:
+      type: string
+      format: email
+      example: suyan@example.com
+    password:
+      type: string
+      format: password
+      minLength: 8
+      example: secret1234
+
+LoginInput:
+  type: object
+  required: [email, password]
+  properties:
+    email:
+      type: string
+      format: email
+      example: john@example.com
+    password:
+      type: string
+      format: password
+      example: secret1234
+
+ForgotPasswordInput:
+  type: object
+  required: [email]
+  properties:
+    email:
+      type: string
+      format: email
+      example: john@example.com
+
+ResetPasswordInput:
+  type: object
+  required: [email, otp, newPassword]
+  properties:
+    email:
+      type: string
+      format: email
+      example: john@example.com
+    otp:
+      type: string
+      example: "123456"
+    newPassword:
+      type: string
+      format: password
+      minLength: 8
+      example: newSecret1234
+
+AuthUser:
+  type: object
+  properties:
+    id:
+      type: string
+      example: clx1234abcd
+    email:
+      type: string
+      format: email
+    username:
+      type: string
+      example: johndoe
+    role:
+      type: string
+      example: OWNER
+    status:
+      type: string
+      example: ACTIVE
+
+LoginData:
+  type: object
+  properties:
+    user:
+      $ref: "#/components/schemas/AuthUser"
+    accessToken:
+      type: string
+      example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+MessageData:
+  type: object
+  properties:
+    message:
+      type: string
+      example: Operation successful
+
+ErrorResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+      example: false
+    message:
+      type: string
+      example: Invalid email or password
+    error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: AUTHENTICATION_ERROR
+
+UserProfile:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    email:
+      type: string
+      format: email
+    createdAt:
+      type: string
+      format: date-time
