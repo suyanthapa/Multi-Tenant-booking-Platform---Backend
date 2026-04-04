@@ -47,6 +47,32 @@
                   error:
                     code: CONFLICT_ERROR
 
+/api/auth/verify-email:
+  post:
+    tags: [Auth]
+    summary: Verify email with OTP
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/VerifyEmailInput"
+    responses:
+      "201":
+        $ref: "#/components/responses/VerifyEmailResponse"
+      "400":
+        description: Validation error or invalid verification code
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+      "404":
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+
 /api/auth/login:
   post:
     tags: [Auth]

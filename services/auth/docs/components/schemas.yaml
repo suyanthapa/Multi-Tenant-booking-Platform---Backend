@@ -28,6 +28,22 @@ LoginInput:
       format: password
       example: secret1234
 
+VerifyEmailInput:
+  type: object
+  required: [email, otp, purpose]
+  properties:
+    email:
+      type: string
+      format: email
+      example: john@example.com
+    otp:
+      type: string
+      example: "123456"
+    purpose:
+      type: string
+      enum: [EMAIL_VERIFICATION, PASSWORD_RESET]
+      example: EMAIL_VERIFICATION
+
 ForgotPasswordInput:
   type: object
   required: [email]
