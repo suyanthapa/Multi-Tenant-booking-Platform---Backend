@@ -5,6 +5,42 @@ MessageResponse:
       schema:
         $ref: "#/components/schemas/MessageData"
 
+RegisterResponse:
+  description: Registration successful
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Registration successful. Please verify your email to activate your account.
+          data:
+            type: object
+            properties:
+              user:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  email:
+                    type: string
+                    format: email
+                  username:
+                    type: string
+                  role:
+                    type: string
+                    example: CUSTOMER
+                  status:
+                    type: string
+                    example: PENDING_VERIFICATION
+              message:
+                type: string
+                example: Registration successful. Please check your email for verification code.
+
 LoginResponse:
   description: Login successful
   headers:
@@ -25,3 +61,53 @@ LoginResponse:
             example: Login successful
           data:
             $ref: "#/components/schemas/LoginData"
+
+ForgotPasswordResponse:
+  description: Request accepted (same response whether email exists or not)
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: If the email exists, a password reset code has been sent.
+          data:
+            nullable: true
+            example: null
+
+ResetPasswordResponse:
+  description: Password reset successful
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Password reset successfully. Please log in with your new password.
+          data:
+            nullable: true
+            example: null
+
+UserProfileResponse:
+  description: Profile fetched successfully
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Success
+          data:
+            $ref: "#/components/schemas/UserProfile"
