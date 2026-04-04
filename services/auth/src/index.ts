@@ -73,10 +73,14 @@ class App {
   }
 
   private initializeRoutes(): void {
-    // Swagger Docs
-    // in app.ts
+    // OpenAPI JSON endpoint
+    this.app.get("/docs.json", (_req: Request, res: Response) => {
+      res.json(swaggerSpec);
+    });
+
+    // Swagger UI
     this.app.use(
-      "/api/docs",
+      "/docs",
       swaggerUi.serve,
       swaggerUi.setup(swaggerSpec, {
         customSiteTitle: "Auth Service API",
@@ -121,7 +125,8 @@ class App {
       res.json({
         message: "Auth Service API",
         version: "1.0.0",
-        docs: "/api/docs",
+        docs: "/docs",
+        openApiJson: "/docs.json",
       });
     });
   }

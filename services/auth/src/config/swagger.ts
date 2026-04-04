@@ -1,76 +1,34 @@
-import swaggerJsdoc from "swagger-jsdoc";
+import path from "path";
+import fs from "fs";
+import yaml from "js-yaml";
 
-const options: swaggerJsdoc.Options = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Auth Service API",
-      version: "1.0.0",
-      description: "Authentication and Authorization Microservice",
-    },
-    servers: [
-      {
-        url: "http://localhost:3000/api",
-        description: "Development server",
-      },
-    ],
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
-        },
-      },
-      schemas: {
-        LoginInput: {
-          type: "object",
-          required: ["email", "password"],
-          properties: {
-            email: { type: "string", example: "user@example.com" },
-            password: { type: "string", example: "password123" },
-          },
-        },
-        RegisterInput: {
-          type: "object",
-          required: ["email", "password", "username"],
-          properties: {
-            email: { type: "string", example: "user@example.com" },
-            password: { type: "string", example: "password123" },
-            username: { type: "string", example: "johndoe" },
-          },
-        },
-        AuthResponse: {
-          type: "object",
-          properties: {
-            user: {
-              type: "object",
-              properties: {
-                id: { type: "string" },
-                email: { type: "string" },
-                username: { type: "string" },
-                role: {
-                  type: "string",
-                  enum: ["CUSTOMER", "VENDOR", "ADMIN"],
-                },
-                status: { type: "string" },
-              },
-            },
-            accessToken: { type: "string" },
-            refreshToken: { type: "string" },
-          },
-        },
-        ErrorResponse: {
-          type: "object",
-          properties: {
-            success: { type: "boolean", example: false },
-            message: { type: "string", example: "Error message" },
-          },
-        },
-      },
-    },
+const docsDir = path.join(__dirname, "../../docs");
+
+function loadYaml(file: string) {
+  return yaml.load(fs.readFileSync(path.join(docsDir, file), "utf8")) as Record<
+    string,
+    unknown
+  >;
+}
+
+export const swaggerSpec = {
+  openapi: "3.0.0",
+  info: {
+    title: "Auth Service API",
+    version: "1.0.0",
+    description: "Authentication and Authorization Microservice",
   },
-  apis: ["./src/routes/*.ts"], // reads JSDoc from route files
+  servers: [{ url: "http://localhost:3001", description: "Local" }],
+  tags: [{ name: "Health" }, { name: "Auth" }],
+  components: {
+    securitySchemes: {
+      bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+    },
+    schemas: loadYaml("components/schemas.yaml"),
+    responses: loadYaml("components/response.yaml"),
+  },
+  paths: {
+    ...loadYaml("paths/health.yaml"),
+    ...loadYaml("paths/auth.yaml"),
+  },
 };
-
-export const swaggerSpec = swaggerJsdoc(options);
