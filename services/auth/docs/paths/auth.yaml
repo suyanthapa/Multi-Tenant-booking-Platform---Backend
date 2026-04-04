@@ -99,6 +99,44 @@
             schema:
               $ref: "#/components/schemas/ErrorResponse"
 
+/api/auth/resend-verification:
+  post:
+    tags: [Auth]
+    summary: Resend email verification OTP
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ResendVerificationOTPInput"
+    responses:
+      "200":
+        $ref: "#/components/responses/ResendVerificationResponse"
+      "400":
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+      "403":
+        description: Account suspended
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+      "404":
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+      "409":
+        description: Email already verified
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+
 /api/auth/refresh:
   post:
     tags: [Auth]

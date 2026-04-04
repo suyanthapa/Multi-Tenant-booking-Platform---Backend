@@ -81,6 +81,23 @@ VerifyOtpResponse:
                 type: string
                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
+ResendVerificationResponse:
+  description: Verification OTP resent successfully
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Verification code has been resent to your email.
+          data:
+            nullable: true
+            example: null
+
 RefreshTokenResponse:
   description: Token refreshed successfully
   headers:

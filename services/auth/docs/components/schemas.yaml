@@ -56,6 +56,15 @@ VerifyOtpInput:
       type: string
       example: "123456"
 
+ResendVerificationOTPInput:
+  type: object
+  required: [email]
+  properties:
+    email:
+      type: string
+      format: email
+      example: john@example.com
+
 ForgotPasswordInput:
   type: object
   required: [email]
