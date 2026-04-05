@@ -1,162 +1,145 @@
 # Auth Service
 
-## Service Overview
+Auth Service is an Express + TypeScript microservice that handles authentication, OTP flows, token lifecycle, and admin user management in the multi-tenant platform.
 
-Auth Service is an Express + TypeScript microservice for authentication and identity management in the multi-tenant platform.
+## Recent Updates
 
-It provides:
+- Added comprehensive unit tests for AuthService methods and auth middleware.
+- Migrated API documentation to modular YAML-based OpenAPI files.
+- Exposed Swagger UI at `/docs` and OpenAPI JSON at `/docs.json`.
+- Added reusable response components for auth and user endpoints.
 
-- user registration (customer and business vendor)
-- email verification and OTP flows
-- login/logout with access and refresh tokens
-- password reset flow
-- admin user management
-- internal user validation endpoint for other services
+## Features
 
-Default local port: `3001`
+- User registration (customer and vendor)
+- Email verification and OTP flows
+- Login/logout with access + refresh token cookies
+- Refresh token rotation
+- Forgot/reset password flow
+- Admin user management (get/edit/delete users)
+- Internal user validation endpoint for inter-service use
 
 ## Tech Stack
 
 - Node.js + TypeScript
 - Express 5
-- Prisma ORM + PostgreSQL (`@prisma/adapter-pg` + `pg`)
+- Prisma ORM + PostgreSQL
 - JWT (`jsonwebtoken`)
 - Validation: Zod
-- Security/middleware: helmet, cors, cookie-parser, express-rate-limit
-- Logging: winston (+ daily rotate), custom request logger
-- Email: nodemailer + resend
-- Dev tools: ts-node-dev, Prisma CLI
+- Security/middleware: helmet, cors, cookie-parser
+- Logging: winston + daily rotate + request logger
+- Email providers: nodemailer + resend
+- Testing: Jest + ts-jest
 
-## Setup Instructions
+## Quick Start
 
-1. Install dependencies:
+1. Install dependencies
 
 ```bash
 npm install
 ```
 
-2. Create env file (from example):
+2. Create environment file
 
 ```bash
 cp .env.example .env
 ```
 
-3. Generate Prisma client:
+3. Generate Prisma client
 
 ```bash
 npm run prisma:generate
 ```
 
-4. Run migrations:
+4. Apply migrations
 
 ```bash
 npm run prisma:migrate
 ```
 
-5. Start service:
+5. Start in development mode
 
 ```bash
 npm run dev
 ```
 
-Health check:
+Service URLs (default local setup):
+
+- API root: `http://localhost:3001/`
+- Health: `http://localhost:3001/health`
+- Swagger UI: `http://localhost:3001/docs`
+- OpenAPI JSON: `http://localhost:3001/docs.json`
+
+## NPM Scripts
+
+- `npm run dev`: Start service with ts-node-dev
+- `npm run build`: Build TypeScript to `dist`
+- `npm run start`: Run compiled build
+- `npm run test`: Run unit tests once
+- `npm run test:watch`: Run tests in watch mode
+- `npm run test:coverage`: Run tests with coverage
+- `npm run prisma:generate`: Generate Prisma client
+- `npm run prisma:migrate`: Create/apply Prisma migration (dev)
+- `npm run prisma:studio`: Open Prisma Studio
+
+## Testing
+
+Unit tests are organized by concern:
+
+- `src/tests/unit/services/auth`: AuthService auth-domain methods
+- `src/tests/unit/services/user`: AuthService user-management methods
+- `src/tests/unit/middleware`: auth middleware tests
+
+Current tested methods include:
+
+- `register`
+- `login`
+- `verifyEmail`
+- `verifyOtp`
+- `resendEmailVerificationOTP`
+- `refreshToken`
+- `forgotPassword`
+- `resetPassword`
+- `getProfile`
+- `getAllUsers`
+- `editUser`
+- `deleteUser`
+- `validateUser`
+
+Run tests:
 
 ```bash
-GET http://localhost:3001/health
+npm test
 ```
 
-## Environment Variables
+## API Documentation (Swagger / OpenAPI)
 
-From `.env.example` and runtime config (`src/config/index.ts`), these variables are used:
+OpenAPI is loaded from modular YAML files:
 
-- `NODE_ENV` (default: `development`)
-- `PORT` (default fallback: `4000`, compose/env commonly uses `3001`)
-- `DATABASE_URL` (required)
-- `JWT_ACCESS_SECRET` (required)
-- `JWT_REFRESH_SECRET` (required)
-- `JWT_RESET_SECRET` (required)
-- `JWT_ACCESS_EXPIRES_IN` (default: `30m`)
-- `JWT_REFRESH_EXPIRES_IN` (default: `7d`)
-- `BCRYPT_SALT_ROUNDS` (default: `10`)
-- `EMAIL_HOST` (default: `smtp.gmail.com`)
-- `EMAIL_PORT` (default: `587`)
-- `EMAIL_SECURE` (default: `false`)
-- `EMAIL_USER` (required)
-- `EMAIL_PASSWORD` (required)
-- `EMAIL_FROM` (default: `noreply@booking.com`)
-- `RESEND_API_KEY` (required)
-- `RATE_LIMIT_WINDOW_MS` (default: `900000`)
-- `RATE_LIMIT_MAX` (default: `100`)
-- `OTP_EXPIRY_MINUTES` (default: `15`)
-- `OTP_LENGTH` (default: `6`)
-- `ALLOWED_ORIGINS` (comma-separated for CORS)
-- `COOKIE_SAME_SITE` (used in env; cookie policy also depends on `NODE_ENV`)
-- `COOKIE_SECURE` (optional override)
-- `INTERNAL_SERVICE_SECRET` (required for internal endpoint auth middleware)
+- `docs/components/schemas.yaml`
+- `docs/components/response.yaml`
+- `docs/paths/health.yaml`
+- `docs/paths/auth.yaml`
+- `docs/paths/user.yaml`
 
-## Database & Prisma Usage
+Swagger config entrypoint:
 
-Schema file: `prisma/schema.prisma`
+- `src/config/swagger.ts`
 
-### Models
+Runtime docs endpoints:
 
-- `User`
-  - fields include: `email`, `username`, `passwordHash`, `role`, `status`, `isEmailVerified`
-  - relation: one-to-many with `OTPToken` and `RefreshToken`
-- `OTPToken`
-  - linked to `User` by `userId`
-  - stores OTP hash, purpose, expiry, and consumed timestamp
-- `RefreshToken`
-  - linked to `User` by `userId`
-  - stores token lifecycle fields (`expiresAt`, `revokedAt`)
-
-### Enums
-
-- `UserRole`: `CUSTOMER`, `VENDOR`, `ADMIN`
-- `UserStatus`: `ACTIVE`, `SUSPENDED`, `PENDING_VERIFICATION`, `DELETED`
-- `OTPPurpose`: `EMAIL_VERIFICATION`, `PASSWORD_RESET`, `TWO_FACTOR_AUTH`
-
-### Prisma commands
-
-```bash
-npm run prisma:generate
-npm run prisma:migrate
-npm run prisma:studio
-```
-
-Prisma config: `prisma.config.ts` (includes datasource URL and seed command).
-
-## Seeding Instructions (Manual Only)
-
-Seed file: `prisma/seed.ts`
-
-What it seeds:
-
-- 10 deterministic users (`auth_user_seed_001` ... `auth_user_seed_010`)
-- 8 email-verified users
-- 2 pending/unverified users
-
-Run manually:
-
-```bash
-npx prisma db seed
-```
-
-Optional seed password override:
-
-```bash
-SEED_PASSWORD=YourPassword123 npx prisma db seed
-```
+- `GET /docs` for Swagger UI
+- `GET /docs.json` for raw OpenAPI JSON
 
 ## API Endpoints
 
 Base path: `/api`
 
-### Health
+Health:
 
 - `GET /health`
 
-### Auth Routes
+Auth routes:
 
 - `POST /api/auth/register`
 - `POST /api/auth/register-business`
@@ -168,65 +151,75 @@ Base path: `/api`
 - `POST /api/auth/logout`
 - `POST /api/auth/forgot-password`
 - `POST /api/auth/reset-password`
-- `GET /api/auth/me` (requires auth)
+- `GET /api/auth/me` (authenticated)
 
-### Admin User Routes
+User routes (admin only):
 
-- `GET /api/auth/users` (ADMIN)
-- `PATCH /api/auth/users/:userId` (ADMIN)
-- `DELETE /api/auth/users/:userId` (ADMIN)
+- `GET /api/auth/users`
+- `PATCH /api/auth/users/:userId`
+- `DELETE /api/auth/users/:userId`
 
-### Internal Routes
+Internal routes:
 
-- `GET /api/internal/:userId/validate` (requires `x-internal-key` header)
+- `GET /api/internal/:userId/validate` (requires `x-internal-key`)
 
-## Project Structure
+## Environment Variables
 
-```text
-services/auth/
-├── prisma/
-│   ├── schema.prisma
-│   └── seed.ts
-├── src/
-│   ├── clients/
-│   ├── config/
-│   ├── controllers/
-│   ├── dtos/
-│   ├── interfaces/
-│   ├── middlewares/
-│   ├── repositories/
-│   ├── routes/
-│   ├── services/
-│   ├── types/
-│   ├── utils/
-│   └── index.ts
-├── Dockerfile
-├── prisma.config.ts
-└── package.json
+Core required variables:
+
+- `DATABASE_URL`
+- `JWT_ACCESS_SECRET`
+- `JWT_REFRESH_SECRET`
+- `JWT_RESET_SECRET`
+- `EMAIL_USER`
+- `EMAIL_PASSWORD`
+- `RESEND_API_KEY`
+- `INTERNAL_SERVICE_SECRET`
+
+Common optional variables (with defaults in config):
+
+- `NODE_ENV` (default `development`)
+- `PORT` (default `4000`)
+- `JWT_ACCESS_EXPIRES_IN` (default `30m`)
+- `JWT_REFRESH_EXPIRES_IN` (default `7d`)
+- `BCRYPT_SALT_ROUNDS` (default `10`)
+- `OTP_EXPIRY_MINUTES` (default `15`)
+- `OTP_LENGTH` (default `6`)
+- `ALLOWED_ORIGINS` (comma-separated)
+- `COOKIE_SECURE` (override)
+
+## Database and Seeding
+
+- Prisma schema: `prisma/schema.prisma`
+- Seed script: `prisma/seed.ts`
+
+Seed database manually:
+
+```bash
+npx prisma db seed
 ```
 
-## Docker Usage
+Optional seed password override:
 
-This service is containerized and wired from the repository root compose file.
+```bash
+SEED_PASSWORD=YourPassword123 npx prisma db seed
+```
 
-### Build and run only auth service
+## Docker
+
+Run auth service only:
 
 ```bash
 docker compose up --build auth-service
 ```
 
-### Run in detached mode
+Detached mode:
 
 ```bash
 docker compose up -d --build auth-service
 ```
 
-Current compose mapping for auth:
+Container mapping (compose):
 
-- container port: `3001`
-- host port: `3001`
-
-Container uses:
-
-- `services/auth/Dockerfile`
-- env file: `services/auth/.env`
+- host port `3001`
+- container port `3001`
