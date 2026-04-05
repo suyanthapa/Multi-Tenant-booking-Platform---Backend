@@ -229,7 +229,7 @@ class AuthController {
       status: status as UserStatus,
     });
 
-    return successResponse(res, result);
+    return successResponse(res, result, "Users fetched successfully", 200);
   });
 
   /**

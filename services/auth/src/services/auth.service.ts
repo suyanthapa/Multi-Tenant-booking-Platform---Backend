@@ -539,7 +539,7 @@ class AuthService {
     });
 
     return {
-      data: result.users,
+      users: result.users,
       meta: {
         total: result.total,
         page: result.page,

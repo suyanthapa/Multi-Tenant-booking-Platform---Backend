@@ -23,7 +23,7 @@ export interface UserResponse {
 }
 
 export interface PaginatedUsers {
-  data: UserResponse[];
+  users: UserResponse[];
   meta: {
     total: number;
     page: number;

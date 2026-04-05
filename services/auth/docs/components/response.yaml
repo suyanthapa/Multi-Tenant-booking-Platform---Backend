@@ -1,3 +1,5 @@
+# Authentication related responses
+
 MessageResponse:
   description: Operation successful
   content:
@@ -207,3 +209,20 @@ UserProfileResponse:
             example: Success
           data:
             $ref: "#/components/schemas/UserProfile"
+
+# User related responses
+GetUsersResponse:
+  description: List of users fetched successfully
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Users fetched successfully
+          data:
+            $ref: "#/components/schemas/PaginatedUsers"

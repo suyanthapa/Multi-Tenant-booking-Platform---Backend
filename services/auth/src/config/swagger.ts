@@ -30,5 +30,6 @@ export const swaggerSpec = {
   paths: {
     ...loadYaml("paths/health.yaml"),
     ...loadYaml("paths/auth.yaml"),
+    ...loadYaml("paths/user.yaml"),
   },
 };

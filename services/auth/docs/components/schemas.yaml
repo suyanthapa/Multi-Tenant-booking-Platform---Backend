@@ -155,3 +155,63 @@ UserProfile:
     createdAt:
       type: string
       format: date-time
+
+PaginatedUsers:
+  type: object
+  properties:
+    users:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            example: clx1234abcd
+          username:
+            type: string
+            example: suyan_thapa
+          firstName:
+            type: string
+            example: Suyan
+          lastName:
+            type: string
+            example: Thapa
+          email:
+            type: string
+            format: email
+            example: suyan@example.com
+          role:
+            type: string
+            example: CUSTOMER
+          status:
+            type: string
+          isEmailVerified:
+            type: boolean
+            example: true
+          createdAt:
+            type: string
+            format: date-time
+            example: "2026-02-26T04:15:20.526Z"
+          updatedAt:
+            type: string
+            format: date-time
+            example: "2026-03-09T08:50:46.392Z"
+          lastLoginAt:
+            type: string
+            format: date-time
+            example: "2026-03-10T10:20:30.123Z"
+    meta:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 1
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        totalPages:
+          type: integer
+          example: 1

@@ -1,0 +1,7 @@
+/api/auth/users/:
+  get:
+    tags: [User]
+    summary: Get all users
+    responses:
+      "200":
+        $ref: "#/components/responses/GetUsersResponse"
