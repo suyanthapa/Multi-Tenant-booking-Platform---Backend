@@ -156,6 +156,61 @@ UserProfile:
       type: string
       format: date-time
 
+EditUserInput:
+  type: object
+  properties:
+    username:
+      type: string
+      minLength: 3
+      maxLength: 30
+      example: john_updated
+    firstName:
+      type: string
+      maxLength: 50
+      example: John
+    lastName:
+      type: string
+      maxLength: 50
+      example: Doe
+
+UserEntity:
+  type: object
+  properties:
+    id:
+      type: string
+    username:
+      type: string
+    firstName:
+      type: string
+      nullable: true
+    lastName:
+      type: string
+      nullable: true
+    email:
+      type: string
+      format: email
+    phone:
+      type: string
+      nullable: true
+    role:
+      type: string
+      enum: [CUSTOMER, VENDOR, ADMIN]
+    status:
+      type: string
+      enum: [ACTIVE, PENDING_VERIFICATION, DELETED, SUSPENDED]
+    isEmailVerified:
+      type: boolean
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+    lastLoginAt:
+      type: string
+      format: date-time
+      nullable: true
+
 PaginatedUsers:
   type: object
   properties:

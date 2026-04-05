@@ -1,7 +1,128 @@
-/api/auth/users/:
+/api/auth/users:
   get:
     tags: [User]
     summary: Get all users
+    security:
+      - bearerAuth: []
     responses:
       "200":
         $ref: "#/components/responses/GetUsersResponse"
+      "401":
+        description: Authentication required - missing or invalid token
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              success: false
+              message: Authentication required
+              error:
+                code: AUTHENTICATION_ERROR
+      "403":
+        description: Forbidden (admin only)
+
+/api/auth/users/{userId}:
+  patch:
+    tags: [User]
+    summary: Edit user (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/EditUserInput"
+    responses:
+      "200":
+        $ref: "#/components/responses/EditUserResponse"
+
+      "401":
+        description: Authentication required - missing or invalid token
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              success: false
+              message: Authentication required
+              error:
+                code: AUTHENTICATION_ERROR
+        "403":
+          description: Insufficient permissions - Admin only
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Insufficient permissions
+                error:
+                  code: AUTHORIZATION_ERROR
+      "404":
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              success: false
+              message: User not found
+              error:
+                code: NOT_FOUND
+
+  delete:
+    tags: [User]
+    summary: Delete user (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        $ref: "#/components/responses/DeleteUserResponse"
+      "401":
+        description: Authentication required - missing or invalid token
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              success: false
+              message: Authentication required
+              error:
+                code: AUTHENTICATION_ERROR
+      "403":
+        description: Insufficient permissions - Admin only
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              success: false
+              message: Insufficient permissions
+              error:
+                code: AUTHORIZATION_ERROR
+      "404":
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              success: false
+              message: User not found
+              error:
+                code: NOT_FOUND

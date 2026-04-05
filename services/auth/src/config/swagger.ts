@@ -19,7 +19,7 @@ export const swaggerSpec = {
     description: "Authentication and Authorization Microservice",
   },
   servers: [{ url: "http://localhost:3001", description: "Local" }],
-  tags: [{ name: "Health" }, { name: "Auth" }],
+  tags: [{ name: "Health" }, { name: "Auth" }, { name: "User" }],
   components: {
     securitySchemes: {
       bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },

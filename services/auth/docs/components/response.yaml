@@ -226,3 +226,36 @@ GetUsersResponse:
             example: Users fetched successfully
           data:
             $ref: "#/components/schemas/PaginatedUsers"
+
+EditUserResponse:
+  description: User updated successfully
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Success
+          data:
+            $ref: "#/components/schemas/UserEntity"
+
+DeleteUserResponse:
+  description: User deleted successfully
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: User deleted successfully
+          data:
+            nullable: true
+            example: null
