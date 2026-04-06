@@ -23,7 +23,7 @@ jobs:
       - run: npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.AUTH_DB_URL }}
-
+      - run: npm test
       - run: npm run build
 
   booking-service:
