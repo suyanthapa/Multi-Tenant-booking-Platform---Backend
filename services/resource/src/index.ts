@@ -1,4 +1,4 @@
-import express, { Application } from "express";
+import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -32,6 +32,15 @@ app.get("/health", async (_req, res) => {
 
 // Routes
 app.use("/api", routes);
+
+// Root
+app.get("/", (_req: Request, res: Response) => {
+  res.json({
+    message: "Resource  Service API",
+    version: "1.0.0",
+    docs: "/api/docs",
+  });
+});
 
 // Error handling
 app.use(notFoundHandler);

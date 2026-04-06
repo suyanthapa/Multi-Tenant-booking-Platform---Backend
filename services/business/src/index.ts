@@ -1,4 +1,4 @@
-import express, { Application } from "express";
+import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -39,6 +39,14 @@ app.use(express.json());
 // Routes
 app.use("/api", routes);
 
+// Root
+app.get("/", (_req: Request, res: Response) => {
+  res.json({
+    message: "Business  Service API",
+    version: "1.0.0",
+    docs: "/api/docs",
+  });
+});
 // Error handling
 app.use(notFoundHandler);
 app.use(errorHandler);
