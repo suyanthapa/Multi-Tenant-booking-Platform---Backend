@@ -23,19 +23,6 @@ jest.mock("../../../../config/database", () => {
   };
 });
 
-jest.mock("../../../../config", () => ({
-  __esModule: true,
-  default: {
-    jwt: {
-      accessExpiresIn: "test-secret",
-      resetSecret: "reset-secret",
-    },
-    resend: {
-      RESEND_API_KEY: "test-key",
-    },
-  },
-}));
-
 jest.mock("../../../../repositories", () => {
   const mockUserRepository = {
     findByEmail: jest.fn(),
@@ -92,7 +79,7 @@ const fakeUser = {
 
 const baseInput = {
   email: "test@example.com",
-  resetToken: "reset-token",
+  resetToken: "fake-reset-token",
   newPassword: "newPass123",
   confirmNewPassword: "newPass123",
 };
@@ -153,7 +140,7 @@ describe("AuthService.resetPassword", () => {
 
     expect(mockedJwtVerify).toHaveBeenCalledWith(
       baseInput.resetToken,
-      "reset-secret",
+      "fake-reset-secret",
     );
     expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
       baseInput.email,

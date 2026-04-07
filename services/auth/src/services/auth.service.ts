@@ -207,7 +207,7 @@ class AuthService {
         userId: user.id,
         purpose: "PASSWORD_RESET",
       },
-      config.jwt.accessExpiresIn,
+      config.jwt.resetSecret,
       { expiresIn: "15m" },
     );
     logger.info(`OTP verified successfully for user: ${user.id}`);

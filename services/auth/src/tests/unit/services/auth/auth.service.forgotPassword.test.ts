@@ -10,19 +10,6 @@ jest.mock("../../../../config/database", () => ({
   },
 }));
 
-jest.mock("../../../../config", () => ({
-  __esModule: true,
-  default: {
-    jwt: {
-      accessExpiresIn: "test-secret",
-      resetSecret: "reset-secret",
-    },
-    resend: {
-      RESEND_API_KEY: "test-key",
-    },
-  },
-}));
-
 jest.mock("../../../../repositories", () => {
   const mockUserRepository = {
     findByEmail: jest.fn(),
@@ -56,7 +43,7 @@ const { mockUserRepository } = (
   }
 ).__mockedRepositories;
 
-const authService = require("../../../../services/auth.service").default;
+import authService from "../../../../services/auth.service";
 
 const fakeUser = {
   id: "user-123",

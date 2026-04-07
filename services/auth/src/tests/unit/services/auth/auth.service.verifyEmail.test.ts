@@ -1,5 +1,5 @@
 import { OTPPurpose, UserRole, UserStatus } from "@prisma/client";
-import authService from "../../../../services/auth.service";
+
 import businessClient from "../../../../clients/businessClient";
 import emailService from "../../../../services/email.service";
 import otpService from "../../../../services/otp.service";
@@ -50,6 +50,8 @@ const { mockUserRepository } = (
     };
   }
 ).__mockedRepositories;
+
+import authService from "../../../../services/auth.service";
 
 const fakeUser = {
   id: "user-123",

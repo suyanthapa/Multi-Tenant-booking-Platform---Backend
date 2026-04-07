@@ -13,19 +13,6 @@ jest.mock("../../../../config/database", () => ({
   },
 }));
 
-jest.mock("../../../../config", () => ({
-  __esModule: true,
-  default: {
-    jwt: {
-      accessExpiresIn: "test-secret",
-      resetSecret: "reset-secret",
-    },
-    resend: {
-      RESEND_API_KEY: "test-key",
-    },
-  },
-}));
-
 jest.mock("../../../../repositories", () => {
   const mockUserRepository = {
     findByEmail: jest.fn(),

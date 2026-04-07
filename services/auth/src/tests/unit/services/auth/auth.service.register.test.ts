@@ -1,5 +1,5 @@
 import { UserRole, UserStatus } from "@prisma/client";
-import authService from "../../../../services/auth.service";
+
 import emailService from "../../../../services/email.service";
 import otpService from "../../../../services/otp.service";
 import { hashPassword } from "../../../../utils/crypto";
@@ -53,6 +53,7 @@ const { mockUserRepository } = (
   }
 ).__mockedRepositories;
 
+const authService = require("../../../../services/auth.service").default;
 const fakeInput = {
   email: "test@example.com",
   username: "testuser",
