@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { UserRole } from "../../../generated/prisma";
+import { UserRole } from "@prisma/client";
 import { AuthenticationError, AuthorizationError } from "../../../utils/errors";
 import { verifyAccessToken } from "../../../utils/jwt";
 import { authenticate, authorize, hasRole } from "../../../middlewares/auth";
