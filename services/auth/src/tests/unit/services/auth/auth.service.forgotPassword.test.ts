@@ -67,7 +67,8 @@ describe("AuthService.forgotPassword", () => {
     });
 
     expect(result).toEqual({
-      message: "If the email exists, a password reset code has been sent.",
+      message:
+        "No user found with that email. Please check your email and try again.",
     });
     expect(mockedOtpService.generatePasswordResetOTP).not.toHaveBeenCalled();
     expect(mockedEmailService.sendPasswordResetEmail).not.toHaveBeenCalled();
