@@ -1,7 +1,7 @@
 import { UserRole, UserStatus } from "@prisma/client";
 import { sanitizeUser } from "../../../../utils/sanitizer";
 import { NotFoundError } from "../../../../utils/errors";
-sanitizeUser;
+
 jest.mock("../../../../config/database", () => ({
   __esModule: true,
   default: {
