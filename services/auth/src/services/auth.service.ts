@@ -425,7 +425,8 @@ class AuthService {
     // Don't reveal if email exists or not
     if (!user) {
       return {
-        message: "If the email exists, a password reset code has been sent.",
+        message:
+          "No user found with that email. Please check your email and try again.",
       };
     }
 
