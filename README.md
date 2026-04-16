@@ -98,7 +98,7 @@ Optional but recommended:
 
 Current service defaults in code and compose are:
 
-- API Gateway: 8000 in code, 38000 mapped in docker-compose.yaml
+- API Gateway: 8000 in code and docker-compose.yaml
 - Auth Service: 3001
 - Booking Service: 3002
 - Business Service: 3003
@@ -248,6 +248,7 @@ Architecture and design docs are in docs/.
 - [docs/CHALLENGES.md](docs/CHALLENGES.md)
 - [docs/GATEWAY_CHALLENGES.md](docs/GATEWAY_CHALLENGES.md)
 - [docs/LEARNINGS.md](docs/LEARNINGS.md)
+- [docs/REFACTOR-AUTH.md](docs/REFACTOR-AUTH.md)
 
 ## Service Readmes
 
@@ -255,7 +256,9 @@ Detailed per-service behavior and routes are documented in:
 
 - [api-gateway/README.md](api-gateway/README.md)
 - [services/auth/README.md](services/auth/README.md)
+- [services/business/README.md](services/business/README.md)
 - [services/booking/README.md](services/booking/README.md)
+- [services/resource/README.md](services/resource/README.md)
 
 ## Deployment
 
