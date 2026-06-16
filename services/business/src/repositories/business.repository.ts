@@ -146,7 +146,12 @@ class BusinessRepository {
           {
             OR: [
               { address: { path: ["city"], equals: location } },
-              { address: { path: ["state"], equals: location } },
+              {
+                address: {
+                  path: ["state"],
+                  equals: location,
+                },
+              },
               { address: { path: ["country"], equals: location } },
             ],
           },

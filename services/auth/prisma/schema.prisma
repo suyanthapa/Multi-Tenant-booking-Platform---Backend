@@ -38,6 +38,7 @@ enum UserStatus {
   SUSPENDED
   PENDING_VERIFICATION
   DELETED
+  REJECTED
 }
 
 model OTPToken {

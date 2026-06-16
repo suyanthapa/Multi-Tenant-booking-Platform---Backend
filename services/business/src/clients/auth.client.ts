@@ -25,6 +25,19 @@ class AuthClient {
       );
     }
   }
+
+  async updateUserStatus(userId: string, status: string): Promise<void> {
+    try {
+      console.log("here it is callled with status:", status);
+      await this.client.patch(`/${userId}/status`, { status });
+    } catch (error: any) {
+      console.log("Auth Service Rejected with:", error.response?.data);
+      console.error(`[AuthClient   Error]: ${error.message}`);
+      throw new InternalServerError(
+        "Unable to update user status at this time.",
+      );
+    }
+  }
 }
 
 export default new AuthClient();

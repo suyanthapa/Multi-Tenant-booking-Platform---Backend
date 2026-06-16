@@ -10,4 +10,10 @@ internalRoutes.get(
   authInternal.validateUser,
 );
 
+internalRoutes.patch(
+  "/:userId/status",
+  internalAuthMiddleware,
+  authInternal.updateUserStatus,
+);
+
 export default internalRoutes;

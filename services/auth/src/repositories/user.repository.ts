@@ -139,10 +139,13 @@ export class UserRepository implements IRepository<User> {
    * Update user status
    */
   async updateStatus(id: string, status: UserStatus): Promise<User> {
-    return this.prisma.user.update({
+    console.log("repo called");
+    const data = await this.prisma.user.update({
       where: { id },
       data: { status },
     });
+    console.log(" The result is:,", data);
+    return data;
   }
 
   /**

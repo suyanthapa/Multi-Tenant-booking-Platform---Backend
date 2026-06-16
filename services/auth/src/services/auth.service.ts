@@ -588,6 +588,16 @@ class AuthService {
     }
     return sanitizeUser(user);
   }
+
+  async updateUserStatus(userId: string, status: UserStatus): Promise<void> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    await this.userRepository.updateStatus(userId, status);
+  }
 }
 
 export default new AuthService();

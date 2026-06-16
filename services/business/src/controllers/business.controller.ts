@@ -206,6 +206,8 @@ class BusinessController {
       adminNote,
     );
 
+    await authClient.updateUserStatus(business.ownerId, "REJECTED");
+
     await emailService.sendBusinessRejectionEmail(
       business.email,
       business.name,

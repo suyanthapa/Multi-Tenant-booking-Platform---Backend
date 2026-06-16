@@ -6,7 +6,13 @@ export const getAllUsersSchema = z.object({
     limit: z.coerce.number().min(0).optional().default(10),
     role: z.enum(["CUSTOMER", "VENDOR", "ADMIN"]).optional(),
     status: z
-      .enum(["ACTIVE", "PENDING_VERIFICATION", "DELETED", "SUSPENDED"])
+      .enum([
+        "ACTIVE",
+        "PENDING_VERIFICATION",
+        "DELETED",
+        "SUSPENDED",
+        "REJECTED",
+      ])
       .optional(),
   }),
 });
