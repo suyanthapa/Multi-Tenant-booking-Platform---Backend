@@ -54,7 +54,7 @@ const startServer = async () => {
 
     // Start listening
     app.listen(config.port, () => {
-      logger.info(`🚀 Resource Service running on port ${config.port}`);
+      logger.info(`Resource Service running on port ${config.port}`);
       logger.info(`Environment: ${config.nodeEnv}`);
     });
   } catch (error) {

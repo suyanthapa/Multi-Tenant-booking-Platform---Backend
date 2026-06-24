@@ -7,7 +7,7 @@ import cookieParser from "cookie-parser";
 import config from "./config";
 import Database from "./config/database";
 import logger from "./utils/logger";
-import routes from "./routes";
+import routes from "./routes/booking.routes";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler";
 
 class App {
@@ -29,7 +29,7 @@ class App {
       cors({
         origin: process.env.ALLOWED_ORIGINS?.split(",") || "*",
         credentials: true,
-      })
+      }),
     );
 
     // Body parsing
@@ -48,7 +48,7 @@ class App {
           stream: {
             write: (message: string) => logger.info(message.trim()),
           },
-        })
+        }),
       );
     }
 

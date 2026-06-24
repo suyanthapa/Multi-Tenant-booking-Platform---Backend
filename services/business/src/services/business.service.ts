@@ -182,6 +182,7 @@ class BusinessService {
     startDate: string,
     endDate: string,
     location?: string,
+    type?: BusinessType,
   ): Promise<BusinessResponseDTO[]> {
     console.log(
       "Service received request for available slots with location:",
@@ -191,6 +192,7 @@ class BusinessService {
       startDate,
       endDate,
       location,
+      type,
     );
     console.log("Available slots returned by repository:", result);
     return result;

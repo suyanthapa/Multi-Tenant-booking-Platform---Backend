@@ -129,10 +129,13 @@ class BusinessRepository {
     startDate: string,
     endDate: string,
     location?: string,
+    type?: BusinessType,
   ): Promise<BusinessResponseDTO[]> {
     console.log(
       "Fetching available slots for location:",
       location,
+      "and type:",
+      type,
       "between",
       startDate,
       "and",
@@ -143,6 +146,8 @@ class BusinessRepository {
       where: {
         AND: [
           { status: "ACTIVE" },
+          { isVerified: true },
+          { type },
           {
             OR: [
               { address: { path: ["city"], equals: location } },

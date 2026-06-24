@@ -155,7 +155,7 @@ class BusinessController {
 
   //Get Available Slots for a business
   checkAvailableSlots = asyncHandler(async (req: Request, res: Response) => {
-    const { location, startDate, endDate } = req.body;
+    const { type, location, startDate, endDate } = req.body;
 
     //  Convert strings to actual Date objects
     const start = new Date(startDate as string);
@@ -170,6 +170,7 @@ class BusinessController {
       startDate as string,
       endDate as string,
       location as string,
+      type as BusinessType,
     );
 
     const message = slots.length
