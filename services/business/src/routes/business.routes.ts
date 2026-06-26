@@ -35,8 +35,11 @@ businessRoutes.get(
   authorize("VENDOR"),
   businessController.getBusinessesByOwner,
 );
-// Get active resource categories for a business (Public)
+// Get active resource categories for a business -- hotel (Public)
 businessRoutes.post("/search", businessController.checkAvailableSlots);
+
+// Get active resource categories for a business -- salon (Public)
+businessRoutes.post("/search/salons", businessController.listSalons);
 
 // Approve  business (Admin only)
 businessRoutes.patch(

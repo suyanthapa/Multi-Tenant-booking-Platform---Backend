@@ -129,13 +129,13 @@ class BusinessRepository {
     startDate: string,
     endDate: string,
     location?: string,
-    type?: BusinessType,
+    category?: BusinessType,
   ): Promise<BusinessResponseDTO[]> {
     console.log(
       "Fetching available slots for location:",
       location,
-      "and type:",
-      type,
+      "and category:",
+      category,
       "between",
       startDate,
       "and",
@@ -147,7 +147,7 @@ class BusinessRepository {
         AND: [
           { status: "ACTIVE" },
           { isVerified: true },
-          { type },
+          { type: category },
           {
             OR: [
               { address: { path: ["city"], equals: location } },
@@ -167,6 +167,42 @@ class BusinessRepository {
     return businesses.map((business) => toBusinessDTO(business));
   }
 
+  // list salons
+  async listSalons(
+    location: string,
+    category: BusinessType,
+  ): Promise<BusinessResponseDTO[]> {
+    console.log(
+      "Fetching available salons for location:",
+      location,
+      "and category:",
+      category,
+    );
+    //get salons
+    const businesses = await this.prisma.business.findMany({
+      where: {
+        AND: [
+          { status: "ACTIVE" },
+          { isVerified: true },
+          { type: category },
+          {
+            OR: [
+              { address: { path: ["city"], equals: location } },
+              {
+                address: {
+                  path: ["state"],
+                  equals: location,
+                },
+              },
+              { address: { path: ["country"], equals: location } },
+            ],
+          },
+        ],
+      },
+    });
+    console.log("Salons found:", businesses.length);
+    return businesses.map((business) => toBusinessDTO(business));
+  }
   async approveBusiness(id: string): Promise<Business> {
     return this.prisma.business.update({
       where: { id },

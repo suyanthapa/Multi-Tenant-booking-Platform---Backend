@@ -50,8 +50,11 @@ app.use(cookieParser());
 // Auth routes with specific rate limiters
 app.use("/api/auth", createServiceProxy(SERVICES.AUTH));
 
-// Business routes (public read)
+// Business routes (public read)  -- hotel search
 app.use("/api/businesses/search", createServiceProxy(SERVICES.BUSINESS));
+
+// list salons route (public read)  -- salon search
+app.use("/api/businesses/search/salons", createServiceProxy(SERVICES.BUSINESS));
 
 // Business routes (public read, auth for write)
 app.use("/api/businesses", authenticate, createServiceProxy(SERVICES.BUSINESS));

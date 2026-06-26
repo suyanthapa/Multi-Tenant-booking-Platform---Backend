@@ -1,0 +1,25 @@
+meta {
+  name: Find AVAILABLE SALONS
+  type: http
+  seq: 13
+}
+
+post {
+  url: http://localhost:8000/api/businesses/search/salons
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "location": "Pokhara",
+   
+    "category": "SALON"
+  
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

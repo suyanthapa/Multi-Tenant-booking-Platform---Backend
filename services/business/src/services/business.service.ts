@@ -182,19 +182,37 @@ class BusinessService {
     startDate: string,
     endDate: string,
     location?: string,
-    type?: BusinessType,
+    category?: BusinessType,
   ): Promise<BusinessResponseDTO[]> {
     console.log(
       "Service received request for available slots with location:",
       location,
+      "and category:",
+      category,
     );
     const result = await businessRepository.getAvailableSlots(
       startDate,
       endDate,
       location,
-      type,
+      category,
     );
     console.log("Available slots returned by repository:", result);
+    return result;
+  }
+
+  //GET THE LIST OF SALON BUSINESS
+  async listSalons(
+    location: string,
+    category: BusinessType,
+  ): Promise<BusinessResponseDTO[]> {
+    console.log(
+      "Service received request for available slots with location:",
+      location,
+      "and category:",
+      category,
+    );
+    const result = await businessRepository.listSalons(location, category);
+
     return result;
   }
 

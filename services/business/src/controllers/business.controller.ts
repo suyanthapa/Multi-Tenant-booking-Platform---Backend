@@ -153,10 +153,15 @@ class BusinessController {
     successResponse(res, { business: slots });
   });
 
-  //Get Available Slots for a business
+  //Get Available Slots for a (HOTEL )business
   checkAvailableSlots = asyncHandler(async (req: Request, res: Response) => {
-    const { type, location, startDate, endDate } = req.body;
-
+    const { category, location, startDate, endDate } = req.body;
+    console.log(
+      "Controller received request for available slots with location:",
+      location,
+      "and category:",
+      category,
+    );
     //  Convert strings to actual Date objects
     const start = new Date(startDate as string);
     const end = new Date(endDate as string);
@@ -170,7 +175,7 @@ class BusinessController {
       startDate as string,
       endDate as string,
       location as string,
-      type as BusinessType,
+      category as BusinessType,
     );
 
     const message = slots.length
@@ -180,6 +185,27 @@ class BusinessController {
     successResponse(res, { business: slots }, message);
   });
 
+  // Get Available SALONS
+
+  listSalons = asyncHandler(async (req: Request, res: Response) => {
+    const { category, location } = req.body;
+    console.log(
+      "Controller received request for available salons with location:",
+      location,
+      "and category:",
+      category,
+    );
+    const slots = await businessService.listSalons(
+      location as string,
+      category as BusinessType,
+    );
+
+    const message = slots.length
+      ? "Salons fetched successfully"
+      : "No salons found in this location";
+
+    successResponse(res, { business: slots }, message);
+  });
   //approveBusiness
   approveBusiness = asyncHandler(async (req: Request, res: Response) => {
     const id = req.params.id;
