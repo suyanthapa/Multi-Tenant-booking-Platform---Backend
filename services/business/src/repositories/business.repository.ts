@@ -126,8 +126,8 @@ class BusinessRepository {
   }
 
   async getAvailableSlots(
-    startDate: string,
-    endDate: string,
+    checkIn: string,
+    checkOut: string,
     location?: string,
     category?: BusinessType,
   ): Promise<BusinessResponseDTO[]> {
@@ -137,9 +137,9 @@ class BusinessRepository {
       "and category:",
       category,
       "between",
-      startDate,
+      checkIn,
       "and",
-      endDate,
+      checkOut,
     );
     //get businesses
     const businesses = await this.prisma.business.findMany({
@@ -178,6 +178,7 @@ class BusinessRepository {
       "and category:",
       category,
     );
+
     //get salons
     const businesses = await this.prisma.business.findMany({
       where: {

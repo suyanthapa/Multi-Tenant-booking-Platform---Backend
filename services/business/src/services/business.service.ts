@@ -179,8 +179,8 @@ class BusinessService {
   }
 
   async getAvailableSlots(
-    startDate: string,
-    endDate: string,
+    checkIn: string,
+    checkOut: string,
     location?: string,
     category?: BusinessType,
   ): Promise<BusinessResponseDTO[]> {
@@ -191,8 +191,8 @@ class BusinessService {
       category,
     );
     const result = await businessRepository.getAvailableSlots(
-      startDate,
-      endDate,
+      checkIn,
+      checkOut,
       location,
       category,
     );

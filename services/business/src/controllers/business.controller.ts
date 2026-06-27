@@ -155,7 +155,7 @@ class BusinessController {
 
   //Get Available Slots for a (HOTEL )business
   checkAvailableSlots = asyncHandler(async (req: Request, res: Response) => {
-    const { category, location, startDate, endDate } = req.body;
+    const { category, location, checkIn, checkOut } = req.body;
     console.log(
       "Controller received request for available slots with location:",
       location,
@@ -163,8 +163,8 @@ class BusinessController {
       category,
     );
     //  Convert strings to actual Date objects
-    const start = new Date(startDate as string);
-    const end = new Date(endDate as string);
+    const start = new Date(checkIn as string);
+    const end = new Date(checkOut as string);
 
     //  Validate using the timestamp value
     if (start.getTime() >= end.getTime()) {
@@ -172,8 +172,8 @@ class BusinessController {
     }
 
     const slots = await businessService.getAvailableSlots(
-      startDate as string,
-      endDate as string,
+      checkIn as string,
+      checkOut as string,
       location as string,
       category as BusinessType,
     );
