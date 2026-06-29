@@ -57,11 +57,43 @@ export const getPendingBusinessesSchema = z.object({
   }),
 });
 
+// Reject Business Schema
 export const rejectBusinessSchema = z.object({
   body: z.object({
     rejectionReasons: z
       .array(z.nativeEnum(RejectionReason))
       .min(1, "At least one rejection reason is required"),
     adminNote: z.string().min(1, "Admin note is required"),
+  }),
+});
+
+// Check Availability Schema -- for hotels
+export const checkAvailabilitySchema = z.object({
+  body: z
+    .object({
+      category: z.nativeEnum(BusinessType, {
+        errorMap: () => ({ message: "Invalid business category" }),
+      }),
+
+      location: z.string().min(1, "Location is required"),
+
+      checkIn: z.coerce.date({
+        errorMap: () => ({ message: "Invalid check-in date" }),
+      }),
+
+      checkOut: z.coerce.date({
+        errorMap: () => ({ message: "Invalid check-out date" }),
+      }),
+    })
+    .refine((data) => data.checkOut > data.checkIn, {
+      message: "Check-out date must be after check-in date",
+      path: ["checkOut"],
+    }),
+});
+
+// approve business schema
+export const approveBusinessSchema = z.object({
+  params: z.object({
+    id: z.string().min(1, "Business ID is required"),
   }),
 });
