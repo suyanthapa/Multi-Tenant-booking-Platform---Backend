@@ -5,7 +5,6 @@ import businessController from "../controllers/business.controller";
 
 const internalRoutes = Router();
 
-// routes/internal.routes.ts
 internalRoutes.get(
   "/:id/exists",
   internalAuthMiddleware, // Only other microservices CAN call this

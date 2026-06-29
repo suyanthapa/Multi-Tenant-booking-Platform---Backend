@@ -1,5 +1,5 @@
-import axios, { AxiosInstance } from "axios";
-import { InternalServerError } from "../utils/errors";
+import axios, { AxiosError, AxiosInstance } from "axios";
+import { handleServiceError } from "../utils/handleServiceError";
 
 class AuthClient {
   private client: AxiosInstance;
@@ -17,12 +17,7 @@ class AuthClient {
       const response = await this.client.get(`/${userId}/validate`);
       return response.data;
     } catch (error: any) {
-      console.log("Auth Service Rejected with:", error.response?.data);
-
-      console.error(`[AuthClient   Error]: ${error.message}`);
-      throw new InternalServerError(
-        "Unable to verify Auth identity at this time.",
-      );
+      handleServiceError(error as AxiosError);
     }
   }
 
@@ -31,11 +26,7 @@ class AuthClient {
       console.log("here it is callled with status:", status);
       await this.client.patch(`/${userId}/status`, { status });
     } catch (error: any) {
-      console.log("Auth Service Rejected with:", error.response?.data);
-      console.error(`[AuthClient   Error]: ${error.message}`);
-      throw new InternalServerError(
-        "Unable to update user status at this time.",
-      );
+      handleServiceError(error as AxiosError);
     }
   }
 }

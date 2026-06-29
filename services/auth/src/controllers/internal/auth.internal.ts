@@ -2,12 +2,15 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../../utils/asyncHandler";
 import authService from "../../services/auth.service";
 import { UserStatus } from "@prisma/client";
+import { NotFoundError } from "../../utils/errors";
 
 class AuthInternalController {
   validateUser = asyncHandler(async (req: Request, res: Response) => {
     const { userId } = req.params;
-    await authService.validateUser(userId);
-
+    const userExists = await authService.validateUser(userId);
+    if (!userExists) {
+      throw new NotFoundError("User not found");
+    }
     res.status(200).json({
       success: true,
     });
