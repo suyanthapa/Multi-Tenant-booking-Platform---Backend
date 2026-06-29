@@ -22,21 +22,44 @@ model Business {
     phone   String?
     email   String
 
-    status     BusinessStatus @default(PENDING)
-    isVerified Boolean        @default(false) @map("is_verified")
+    status            BusinessStatus @default(PENDING)
+    isVerified        Boolean        @default(false) @map("is_verified")
+    isProfileComplete Boolean        @default(false) @map("is_profile_complete")
 
     rejectionReasons RejectionReason[] @map("rejection_reasons")
     adminNotes       String?           @map("admin_notes")
     rejectedAt       DateTime?         @map("rejected_at")
     resubmitted      Boolean           @default(false)
 
-    approvedAt DateTime? @map("approved_at")
-    createdAt  DateTime  @default(now()) @map("created_at")
-    updatedAt  DateTime  @updatedAt @map("updated_at")
+    approvedAt       DateTime?         @map("approved_at")
+    createdAt        DateTime          @default(now()) @map("created_at")
+    updatedAt        DateTime          @updatedAt @map("updated_at")
+    businessSettings BusinessSettings?
 
     @@index([type])
     @@index([status])
     @@map("businesses")
+}
+
+model BusinessSettings {
+    id         String   @id @default(uuid())
+    businessId String   @unique @map("business_id")
+    business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+    // Hotel only
+    checkInTime  String? @map("check_in_time")
+    checkOutTime String? @map("check_out_time")
+
+    // Salon / Clinic only
+    openingHours Json? @map("opening_hours")
+
+    cancellationPolicy      String? @map("cancellation_policy")
+    cancellationWindowHours Int?    @map("cancellation_window_hours")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("business_settings")
 }
 
 enum BusinessType {
