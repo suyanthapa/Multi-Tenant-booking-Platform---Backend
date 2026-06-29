@@ -59,6 +59,13 @@ app.use("/api/businesses/search/salons", createServiceProxy(SERVICES.BUSINESS));
 // Business routes (public read, auth for write)
 app.use("/api/businesses", authenticate, createServiceProxy(SERVICES.BUSINESS));
 
+// Business routes (ADMIN ONLY  )
+app.use(
+  "/api/admin/businesses",
+  authenticate,
+  createServiceProxy(SERVICES.BUSINESS),
+);
+
 // Resource routes (public read, auth for write)
 app.use("/api/resources", authenticate, createServiceProxy(SERVICES.RESOURCE));
 
