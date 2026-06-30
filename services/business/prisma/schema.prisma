@@ -35,6 +35,7 @@ model Business {
     createdAt        DateTime          @default(now()) @map("created_at")
     updatedAt        DateTime          @updatedAt @map("updated_at")
     businessSettings BusinessSettings?
+    businessImages   BusinessImage[]
 
     @@index([type])
     @@index([status])
@@ -60,6 +61,20 @@ model BusinessSettings {
     updatedAt DateTime @updatedAt @map("updated_at")
 
     @@map("business_settings")
+}
+
+model BusinessImage {
+    id         String   @id @default(uuid())
+    businessId String   @map("business_id")
+    business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+    url        String
+    publicId   String?  @map("public_id")
+    isCover    Boolean  @default(false) @map("is_cover")
+    order      Int      @default(0)
+    createdAt  DateTime @default(now()) @map("created_at")
+
+    @@index([businessId])
+    @@map("business_images")
 }
 
 enum BusinessType {
