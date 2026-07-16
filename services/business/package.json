@@ -4,9 +4,10 @@
   "description": "Business Management Microservice",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "dotenv -e .env.local -e .env -- ts-node-dev --poll --respawn --transpile-only src/index.ts",
+    "dev": "ts-node-dev --poll --respawn --transpile-only src/index.ts",
+    "dev:local": "dotenv -e .env.local -e .env -- ts-node-dev --poll --respawn --transpile-only src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "npx prisma migrate deploy && node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
