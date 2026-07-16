@@ -235,5 +235,20 @@ class BusinessRepository {
       data: { isVerified: true },
     });
   }
+
+  async findByIdWithSettings(businessId: string) {
+    return this.prisma.business.findUnique({
+      where: { id: businessId },
+      include: {
+        businessSettings: true,
+        _count: { select: { businessImages: true } },
+      },
+    });
+  }
 }
+// infer the type from the function itself -- it can now use business and businessSettings
+export type BusinessWithSettings = NonNullable<
+  Awaited<ReturnType<BusinessRepository["findByIdWithSettings"]>>
+>;
+
 export default new BusinessRepository();

@@ -16,7 +16,7 @@ businessRoutes.get(
   "/profile",
   authenticate,
   authorize("VENDOR"),
-  businessController.setUpProfile,
+  businessController.getProfile,
 );
 
 // Create business (Vendor only)

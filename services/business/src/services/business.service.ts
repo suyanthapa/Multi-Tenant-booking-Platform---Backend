@@ -1,5 +1,7 @@
 import { Business, BusinessType, RejectionReason } from "@prisma/client";
-import businessRepository from "../repositories/business.repository";
+import businessRepository, {
+  BusinessWithSettings,
+} from "../repositories/business.repository";
 import {
   NotFoundError,
   AuthorizationError,
@@ -238,6 +240,53 @@ class BusinessService {
 
   async markEmailVerified(userId: string, email: string): Promise<void> {
     await businessRepository.markEmailVerified(userId, email);
+  }
+
+  async getBusinessWithSetupStatus(businessId: string) {
+    const business = await businessRepository.findByIdWithSettings(businessId);
+
+    if (!business) throw new NotFoundError("Business not found");
+
+    const setupStatus = this.getSetupStatus(business);
+
+    return { business, setupStatus };
+  }
+
+  getSetupStatus(business: BusinessWithSettings) {
+    let isStep1Complete = false;
+
+    if (business.type === "HOTEL") {
+      isStep1Complete = !!(
+        business.description &&
+        business.businessSettings?.checkInTime &&
+        business.businessSettings?.checkOutTime
+      );
+    } else if (business.type === "SALON" || business.type === "CLINIC") {
+      isStep1Complete = !!(
+        business.description && business.businessSettings?.openingHours
+      );
+    }
+
+    const isStep2Complete = (business._count?.businessImages ?? 0) > 0;
+    const isStep3Complete = business.isProfileComplete;
+
+    const currentStep = !isStep1Complete
+      ? 1
+      : !isStep2Complete
+        ? 2
+        : !isStep3Complete
+          ? 3
+          : 4;
+
+    return {
+      isProfileComplete: business.isProfileComplete,
+      steps: {
+        step1: isStep1Complete,
+        step2: isStep2Complete,
+        step3: isStep3Complete,
+      },
+      currentStep,
+    };
   }
 }
 export default new BusinessService();

@@ -1,11 +1,11 @@
 meta {
   name: Find AVAILABLE HOTELS
   type: http
-  seq: 10
+  seq: 9
 }
 
 post {
-  url: 
+  url: http://localhost:8000/api/businesses/search
   body: json
   auth: inherit
 }
@@ -14,8 +14,8 @@ body:json {
   {
     "location": "Pokhara",
     "category": "HOTEL",
-    "startDate": "2026-02-15T12:00:00.000Z",
-    "endDate": "2026-02-20T12:00:00.000Z"
+    "checkIn": "2026-02-15",
+    "checkOut": "2026-02-20"
   }
 }
 

@@ -7,6 +7,7 @@ export interface JWTPayload {
   id: string;
   email: string;
   role: string;
+  businessId?: string;
 }
 
 // Extend Express Request type to include user
@@ -32,10 +33,12 @@ export const authenticate = (
     const id = req.headers["x-user-id"] as string;
     const email = req.headers["x-user-email"] as string;
     const role = req.headers["x-user-role"] as string;
+    const businessId = req?.headers["x-user-business-id"] as string;
 
     console.log("Auth Middleware - User ID:", id);
     console.log("Auth Middleware - User Email:", email);
     console.log("Auth Middleware - User Role:", role);
+    console.log("Auth Middleware - Business ID:", businessId);
     // 2. If Gateway didn't send these, someone bypassed the Gateway!
     if (!id || !role) {
       throw new AuthenticationError(
@@ -48,6 +51,7 @@ export const authenticate = (
       id,
       email,
       role,
+      businessId,
     };
 
     next();

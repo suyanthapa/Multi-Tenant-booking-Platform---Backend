@@ -156,12 +156,7 @@ class BusinessController {
   //Get Available Slots for a (HOTEL )business
   checkAvailableSlots = asyncHandler(async (req: Request, res: Response) => {
     const { category, location, checkIn, checkOut } = req.body;
-    console.log(
-      "Controller received request for available slots with location:",
-      location,
-      "and category:",
-      category,
-    );
+
     //  Convert strings to actual Date objects
     const start = new Date(checkIn as string);
     const end = new Date(checkOut as string);
@@ -243,6 +238,18 @@ class BusinessController {
     );
 
     successResponse(res, null, "Business rejected successfully");
+  });
+
+  // set up business profile (for vendor) -- STEP 1
+  getProfile = asyncHandler(async (req: Request, res: Response) => {
+    const businessId = req.user!.businessId as string;
+    console.log("Business ID from request:", businessId);
+    const business =
+      await businessService.getBusinessWithSetupStatus(businessId);
+
+    // to do:: how to check first step for different typres of businesses (hotel, salon, clinic)
+
+    successResponse(res, business, "Business profile set up successfully");
   });
 }
 export default new BusinessController();
