@@ -46,7 +46,7 @@ services:
     ports:
       - "3002:3002"
     volumes:
-      - ./services/booking:/app
+      - ./services/booking:/app 
       - booking_node_modules:/app/node_modules
     command: npm run dev
     depends_on:
@@ -59,8 +59,8 @@ services:
     ports:
       - "3003:3003"
     volumes:
-      - ./services/business:/app
-      - business_node_modules:/app/node_modules
+      - ./services/business/src:/app/src #only mount src
+      - ./services/business/prisma:/app/prisma  # mount prisma schema
     command: npm run dev
     depends_on:
       - postgres
