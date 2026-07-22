@@ -14,3 +14,19 @@ export interface BusinessResponseDTO {
   phone?: string;
   description?: string;
 }
+
+// ==========================================
+// Sub-Types & Interfaces
+// ==========================================
+
+export type BusinessType = "HOTEL" | "SALON";
+
+export type BusinessStatus = "ACTIVE" | "INACTIVE" | "PENDING" | "REJECTED";
+
+export interface BusinessAddressDto {
+  city: string;
+  state: string;
+  street: string;
+  country: string;
+  postalCode: string;
+}

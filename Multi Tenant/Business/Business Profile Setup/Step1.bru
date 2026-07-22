@@ -1,0 +1,25 @@
+meta {
+  name: Step1
+  type: http
+  seq: 2
+}
+
+patch {
+  url: http://localhost:8000/api/businesses/setup/basics
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "type": "HOTEL",
+    "description": "Welcome to Hotel Adam, located in the peaceful area of Gharipatan, Pokhara. We offer mountain views and 24/7 hospitality.",
+    "checkInTime": "14:00",
+    "checkOutTime": "11:00"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
