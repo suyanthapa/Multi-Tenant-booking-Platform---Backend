@@ -8,6 +8,8 @@ import {
   queryBusinessSchema,
   updateBusinessSchema,
 } from "../dtos/business.dto";
+import { setupBasicsSchema } from "../dtos/setup.business.dto";
+import setupBusinessController from "../controllers/setup.business.controller";
 
 const businessRoutes = Router();
 
@@ -82,6 +84,15 @@ businessRoutes.patch(
   authenticate,
   authorize("VENDOR", "ADMIN"),
   businessController.toggleBusinessStatus,
+);
+
+// step1 -- SETUP business profile
+businessRoutes.patch(
+  "/setup/basics",
+  authenticate,
+  authorize("VENDOR"),
+  validate(setupBasicsSchema),
+  setupBusinessController.setupBasics,
 );
 
 export default businessRoutes;

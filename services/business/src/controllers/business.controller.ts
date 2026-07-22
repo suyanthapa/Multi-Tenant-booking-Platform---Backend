@@ -247,8 +247,6 @@ class BusinessController {
     const business =
       await businessService.getBusinessWithSetupStatus(businessId);
 
-    // to do:: how to check first step for different typres of businesses (hotel, salon, clinic)
-
     successResponse(res, business, "Business profile set up successfully");
   });
 }

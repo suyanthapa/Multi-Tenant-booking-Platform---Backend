@@ -8,6 +8,7 @@ import {
 import Database from "../config/database";
 import { toBusinessDTO } from "../mappers/business.mapper";
 import { BusinessResponseDTO } from "../dto/business/response.dto";
+import { SetupBasicsInput } from "../types/setup.business.types";
 
 class BusinessRepository {
   private prisma: PrismaClient;
@@ -64,6 +65,32 @@ class BusinessRepository {
     return this.prisma.business.update({
       where: { id },
       data,
+    });
+  }
+
+  async updateSetupBasics(
+    businessId: string,
+    data: SetupBasicsInput,
+  ): Promise<void> {
+    const { type, description, ...settingsData } = data;
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.business.update({
+        where: { id: businessId },
+        data: {
+          type,
+          description,
+        },
+      });
+
+      await tx.businessSettings.upsert({
+        where: { businessId },
+        update: settingsData,
+        create: {
+          businessId,
+          ...settingsData,
+        },
+      });
     });
   }
 

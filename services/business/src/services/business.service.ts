@@ -14,6 +14,7 @@ import {
   CreateBusinessInput,
   UpdateBusinessInput,
 } from "../types/business.types";
+import { SetupBasicsInput } from "../types/setup.business.types";
 
 class BusinessService {
   async createBusiness(data: CreateBusinessInput): Promise<Business> {
@@ -254,7 +255,7 @@ class BusinessService {
 
   getSetupStatus(business: BusinessWithSettings) {
     let isStep1Complete = false;
-
+    console.log("Business issss:", business);
     if (business.type === "HOTEL") {
       isStep1Complete = !!(
         business.description &&
@@ -287,6 +288,15 @@ class BusinessService {
       },
       currentStep,
     };
+  }
+
+  async setupBasics(businessId: string, data: SetupBasicsInput): Promise<void> {
+    const business = await this.getBusinessById(businessId);
+    if (!business) {
+      throw new NotFoundError("Business not found");
+    }
+
+    await businessRepository.updateSetupBasics(businessId, data);
   }
 }
 export default new BusinessService();
