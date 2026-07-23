@@ -120,12 +120,13 @@ class ResourceController {
   // Delete resource
   deleteResource = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-
-    await resourceService.deleteResource(id);
+    const businessId = req.user?.businessId as string;
+    await resourceService.deleteResource(id, businessId);
 
     res.status(200).json({
       success: true,
       message: "Resource deleted successfully",
+      data: null,
     });
   });
 

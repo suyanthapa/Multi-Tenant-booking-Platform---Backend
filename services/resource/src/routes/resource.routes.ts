@@ -58,7 +58,7 @@ router.patch(
 router.delete(
   "/categories/:id",
   authenticate,
-  authorize("VENDOR", "ADMIN"),
+  authorize("VENDOR"),
   categoryController.deleteCategory,
 );
 
@@ -129,7 +129,7 @@ router.patch(
 router.delete(
   "/:id",
   authenticate,
-  authorize("VENDOR", "ADMIN"),
+  authorize("VENDOR"),
   resourceController.deleteResource,
 );
 

@@ -61,6 +61,7 @@ class CategoryController {
 
     res.status(200).json({
       success: true,
+      message: "My categories fetched successfully",
       data: result,
     });
   });
@@ -94,8 +95,8 @@ class CategoryController {
   // Delete category
   deleteCategory = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-
-    await resourceService.deleteCategory(id);
+    const businessId = req.user?.businessId as string;
+    await resourceService.deleteCategory(id, businessId);
 
     res.status(200).json({
       success: true,

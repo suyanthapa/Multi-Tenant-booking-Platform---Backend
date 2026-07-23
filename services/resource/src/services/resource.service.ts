@@ -1,6 +1,6 @@
 import { Resource, ResourceCategory, ResourceType } from "@prisma/client";
 import resourceRepository from "../repositories/resource.repository";
-import { NotFoundError } from "../utils/errors";
+import { ForbiddenError, NotFoundError } from "../utils/errors";
 import {
   UpdateResourceInput,
   BulkCreateResourceInput,
@@ -123,9 +123,17 @@ class ResourceService {
     return resourceRepository.update(id, data);
   }
 
-  async deleteResource(id: string): Promise<void> {
+  async deleteResource(id: string, businessId: string): Promise<void> {
     // First verify resource exists
-    await this.getResourceById(id);
+    const resource = await this.getResourceById(id);
+    if (!resource) {
+      throw new NotFoundError("Resource not found");
+    }
+    if (resource.businessId !== businessId) {
+      throw new ForbiddenError(
+        "You are not authorized to delete this resource",
+      );
+    }
 
     await resourceRepository.delete(id);
   }
@@ -198,9 +206,7 @@ class ResourceService {
 
   //get all my categories-- vendor side
   async getMyCategories(businessId: string): Promise<any> {
-    const categories = await Promise.all([
-      resourceRepository.findMyCategories(businessId),
-    ]);
+    const categories = await resourceRepository.findMyCategories(businessId);
 
     return categories;
   }
@@ -226,9 +232,17 @@ class ResourceService {
   }
 
   //delete category
-  async deleteCategory(id: string): Promise<void> {
+  async deleteCategory(id: string, businessId: string): Promise<void> {
     // First verify category exists
-    await this.getCategoryById(id);
+    const category = await this.getCategoryById(id);
+    if (!category) {
+      throw new NotFoundError("Category not found");
+    }
+    if (category.businessId !== businessId) {
+      throw new ForbiddenError(
+        "You are not authorized to delete this category",
+      );
+    }
 
     await resourceRepository.deleteCategory(id);
   }

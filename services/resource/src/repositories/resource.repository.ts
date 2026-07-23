@@ -192,8 +192,11 @@ class ResourceRepository {
         where: { businessId },
         orderBy: { createdAt: "desc" },
         include: {
-          _count: {
-            select: { resources: true },
+          resources: {
+            where: {
+              status: { not: "DELETED" }, // Filter out soft-deleted resources
+            },
+            orderBy: { name: "asc" },
           },
         },
       });
