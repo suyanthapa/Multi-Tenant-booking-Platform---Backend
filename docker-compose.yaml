@@ -72,8 +72,8 @@ services:
     ports:
       - "3004:3004"
     volumes:
-      - ./services/resource:/app
-      - resource_node_modules:/app/node_modules
+      - ./services/resource/src:/app/src #only mount src
+      - ./services/resource/prisma:/app/prisma  # mount prisma schema
     command: npm run dev
     depends_on:
       - postgres
