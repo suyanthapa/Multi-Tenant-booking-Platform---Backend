@@ -4,6 +4,12 @@ A microservices backend for a multi-tenant booking domain, built with Node.js, T
 
 This root README is the main onboarding guide for running the full backend locally and understanding how the repository is organized.
 
+## Live Site
+
+[slotexapp.me](https://slotexapp.me)
+
+> **Note:** The platform is still under active development. Some flows and pages may be incomplete, unstyled, or subject to change. Please treat this as a work-in-progress preview rather than a finished product.
+
 ## What This Repository Contains
 
 - API Gateway for request routing and auth-aware proxying
