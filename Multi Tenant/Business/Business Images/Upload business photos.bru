@@ -1,0 +1,21 @@
+meta {
+  name: Upload business photos
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8000/api/businesses/images
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  images: @file(C:\Users\user\Downloads\dashboard.jpg)
+  images: @file(C:\Users\user\Downloads\47bf8816-d790-4d20-9f01-d1e46167f576.jpeg)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Set as cover Image 
+  type: http
+  seq: 3
+}
+
+patch {
+  url: http://localhost:8000/api/resources/categories/abb3b8cc-a61a-4827-8fa9-88d3b8f12ff0/images/1813a4d4-7bbc-4580-98ae-500d33fc3384/cover
+  body: none
+  auth: inherit
+}
+
+body:json {
+  {
+    "userId": "uuid",
+    "vendorId": "uuid",
+    "serviceId": "uuid",
+    "bookingDate": "2026-01-15T00:00:00Z",
+    "startTime": "2026-01-15T10:00:00Z",
+    "endTime": "2026-01-15T11:00:00Z",
+    "notes": "Optional notes"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

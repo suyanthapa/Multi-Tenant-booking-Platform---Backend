@@ -1,0 +1,29 @@
+meta {
+  name: Upload Category Images
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8000/api/resources/categories/abb3b8cc-a61a-4827-8fa9-88d3b8f12ff0/images
+  body: multipartForm
+  auth: inherit
+}
+
+body:json {
+  {
+   
+   "name":"DELUXE Room"
+    
+  }
+}
+
+body:multipart-form {
+  images: @file(C:\Users\user\Downloads\github-profile.jpg)
+  images: @file(C:\Users\user\Downloads\b56de0edc0352f52c57f4e078e8c5080.jpg)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

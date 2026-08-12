@@ -1,12 +1,12 @@
 meta {
-  name: Step1
+  name: profile setup status
   type: http
   seq: 2
 }
 
-patch {
-  url: http://localhost:8000/api/businesses/setup/basics
-  body: json
+get {
+  url: http://localhost:8000/api/businesses/profile
+  body: none
   auth: inherit
 }
 
