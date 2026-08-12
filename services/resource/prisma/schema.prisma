@@ -40,8 +40,25 @@ model ResourceCategory {
     updatedAt  DateTime @updatedAt @map("updated_at")
 
     resources Resource[]
+    images    CategoryImage[]
 
     @@unique([businessId, name]) // ex: A vendor can't have two "Deluxe" categories
+}
+
+model CategoryImage {
+    id         String           @id @default(uuid())
+    categoryId String           @map("category_id")
+    category   ResourceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+    url      String
+    publicId String? @map("public_id")
+    isCover  Boolean @default(false) @map("is_cover")
+    order    Int     @default(0)
+
+    createdAt DateTime @default(now()) @map("created_at")
+
+    @@index([categoryId])
+    @@map("category_images")
 }
 
 enum ResourceType {
