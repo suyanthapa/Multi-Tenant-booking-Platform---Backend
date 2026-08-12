@@ -1,15 +1,21 @@
+# syntax=docker/dockerfile:1.4
 FROM node:20
 
 WORKDIR /app
 
+# 1. Dependencies — cached unless package*.json changes
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
-COPY . .
+# 2. Prisma client — cached unless schema changes
+COPY prisma ./prisma
+RUN npx prisma generate
 
-RUN npm run prisma:generate
-RUN npm run build
+# 3. Config files that rarely change
+COPY tsconfig.json ./
+
+# 4. Source — changes most often, so it's last (busts cache least often overall)
+COPY src ./src
 
 EXPOSE 3001
-
 CMD ["npm", "run", "dev"]

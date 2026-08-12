@@ -1,4 +1,4 @@
-version: "3.9"
+
 
 services:
   postgres:
@@ -16,7 +16,7 @@ services:
     env_file:
       - ./api-gateway/.env
     volumes:
-      - ./api-gateway:/app
+      - ./api-gateway/src:/app/src
       - gateway_node_modules:/app/node_modules
     command: npm run dev
     depends_on:
@@ -34,7 +34,8 @@ services:
     volumes:
     - ./services/auth/src:/app/src
     - ./services/auth/logs:/app/logs
-    - auth_node_modules:/app/node_modules
+    - ./services/auth/docs:/app/docs
+
     command: npm run dev
     depends_on:
       - postgres
@@ -46,8 +47,9 @@ services:
     ports:
       - "3002:3002"
     volumes:
-      - ./services/booking:/app 
-      - booking_node_modules:/app/node_modules
+      - ./services/booking/src:/app/src #only mount src
+      - ./services/booking/prisma:/app/prisma  # mount prisma schema
+
     command: npm run dev
     depends_on:
       - postgres
@@ -61,6 +63,7 @@ services:
     volumes:
       - ./services/business/src:/app/src #only mount src
       - ./services/business/prisma:/app/prisma  # mount prisma schema
+   
     command: npm run dev
     depends_on:
       - postgres
@@ -74,6 +77,7 @@ services:
     volumes:
       - ./services/resource/src:/app/src #only mount src
       - ./services/resource/prisma:/app/prisma  # mount prisma schema
+      
     command: npm run dev
     depends_on:
       - postgres
