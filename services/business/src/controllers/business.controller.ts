@@ -249,5 +249,13 @@ class BusinessController {
 
     successResponse(res, business, "Business profile set up successfully");
   });
+
+  // Mark step complete (for vendor)
+  markStepComplete = asyncHandler(async (req: Request, res: Response) => {
+    const businessId = req.user!.businessId as string;
+    const step = req.body.step;
+    const business = await businessService.markStepComplete(businessId, step);
+    successResponse(res, business, "Step marked as complete successfully");
+  });
 }
 export default new BusinessController();

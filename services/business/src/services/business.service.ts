@@ -14,7 +14,10 @@ import {
   CreateBusinessInput,
   UpdateBusinessInput,
 } from "../types/business.types";
-import { SetupBasicsInput } from "../types/setup.business.types";
+import {
+  CompletedSteps,
+  SetupBasicsInput,
+} from "../types/setup.business.types";
 
 class BusinessService {
   async createBusiness(data: CreateBusinessInput): Promise<Business> {
@@ -254,38 +257,26 @@ class BusinessService {
   }
 
   getSetupStatus(business: BusinessWithSettings) {
-    let isStep1Complete = false;
-    console.log("Business issss:", business);
-    if (business.type === "HOTEL") {
-      isStep1Complete = !!(
-        business.description &&
-        business.businessSettings?.checkInTime &&
-        business.businessSettings?.checkOutTime
-      );
-    } else if (business.type === "SALON" || business.type === "CLINIC") {
-      isStep1Complete = !!(
-        business.description && business.businessSettings?.openingHours
-      );
-    }
+    const completed: CompletedSteps =
+      (business.completedSteps as CompletedSteps) ?? {
+        basicInfo: false,
+        categories: false,
+        images: false,
+      };
 
-    const isStep2Complete = (business._count?.businessImages ?? 0) > 0;
-    const isStep3Complete = business.isProfileComplete;
-
-    const currentStep = !isStep1Complete
+    const currentStep = !completed.basicInfo
       ? 1
-      : !isStep2Complete
+      : !completed.categories
         ? 2
-        : !isStep3Complete
+        : !completed.images
           ? 3
           : 4;
 
     return {
       isProfileComplete: business.isProfileComplete,
-      steps: {
-        step1: isStep1Complete,
-        step2: isStep2Complete,
-        step3: isStep3Complete,
-      },
+
+      steps: completed,
+
       currentStep,
     };
   }
@@ -297,6 +288,36 @@ class BusinessService {
     }
 
     await businessRepository.updateSetupBasics(businessId, data);
+  }
+
+  async markStepComplete(
+    businessId: string,
+    step: keyof CompletedSteps,
+  ): Promise<void> {
+    const business = await businessRepository.findById(businessId);
+
+    if (!business) {
+      throw new NotFoundError("Business not found");
+    }
+
+    const completedSteps = (business.completedSteps as CompletedSteps) ?? {
+      basicInfo: false,
+      contact: false,
+      images: false,
+    };
+
+    completedSteps[step] = true;
+
+    const isProfileComplete =
+      completedSteps.basicInfo &&
+      completedSteps.categories &&
+      completedSteps.images;
+
+    await businessRepository.markStepComplete(
+      businessId,
+      completedSteps,
+      isProfileComplete,
+    );
   }
 }
 export default new BusinessService();

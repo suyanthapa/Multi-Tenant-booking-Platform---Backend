@@ -21,6 +21,13 @@ businessRoutes.get(
   businessController.getProfile,
 );
 
+// Mark step complete (Vendor only)
+businessRoutes.patch(
+  "/setup/step-complete",
+  authenticate,
+  authorize("VENDOR"),
+  businessController.markStepComplete,
+);
 // Create business (Vendor only)
 businessRoutes.post(
   "/",

@@ -8,7 +8,10 @@ import {
 import Database from "../config/database";
 import { toBusinessDTO } from "../mappers/business.mapper";
 import { BusinessResponseDTO } from "../dto/business/response.dto";
-import { SetupBasicsInput } from "../types/setup.business.types";
+import {
+  CompletedSteps,
+  SetupBasicsInput,
+} from "../types/setup.business.types";
 
 class BusinessRepository {
   private prisma: PrismaClient;
@@ -269,6 +272,20 @@ class BusinessRepository {
       include: {
         businessSettings: true,
         _count: { select: { businessImages: true } },
+      },
+    });
+  }
+
+  async markStepComplete(
+    businessId: string,
+    completedSteps: CompletedSteps,
+    isProfileComplete: boolean,
+  ): Promise<void> {
+    await this.prisma.business.update({
+      where: { id: businessId },
+      data: {
+        completedSteps,
+        isProfileComplete,
       },
     });
   }

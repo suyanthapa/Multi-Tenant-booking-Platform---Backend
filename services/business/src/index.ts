@@ -1,4 +1,5 @@
 import express, { Application, Request, Response } from "express";
+import "./config/cloudinary";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
