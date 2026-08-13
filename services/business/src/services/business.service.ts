@@ -8,7 +8,10 @@ import {
   ConflictError,
 } from "../utils/errors";
 
-import { BusinessResponseDTO } from "../dto/business/response.dto";
+import {
+  BusinessResponse,
+  BusinessSearchResponse,
+} from "../dto/business/response.dto";
 import { PaginatedMeta } from "../types/common.types";
 import {
   CreateBusinessInput,
@@ -18,8 +21,26 @@ import {
   CompletedSteps,
   SetupBasicsInput,
 } from "../types/setup.business.types";
+import resourceClient from "../clients/resource.client";
 
 class BusinessService {
+  private async attachBusinessPrices(
+    businesses: BusinessResponse[],
+  ): Promise<BusinessResponse[]> {
+    if (!businesses.length) {
+      return businesses;
+    }
+
+    const businessIds = [...new Set(businesses.map((business) => business.id))];
+    const lowestPrices =
+      await resourceClient.getBatchBusinessLowestPrices(businessIds);
+
+    return businesses.map((business) => ({
+      ...business,
+      price: lowestPrices[business.id] ?? null,
+    }));
+  }
+
   async createBusiness(data: CreateBusinessInput): Promise<Business> {
     console.log("Creating business with data:", data);
     // Check if vendor already has a business
@@ -189,7 +210,7 @@ class BusinessService {
     checkOut: string,
     location?: string,
     category?: BusinessType,
-  ): Promise<BusinessResponseDTO[]> {
+  ): Promise<BusinessSearchResponse[]> {
     console.log(
       "Service received request for available slots with location:",
       location,
@@ -202,15 +223,23 @@ class BusinessService {
       location,
       category,
     );
-    console.log("Available slots returned by repository:", result);
-    return result;
-  }
 
+    const lowestPrices = await resourceClient.getBatchBusinessLowestPrices(
+      result.map((business) => business.id),
+    );
+
+    console.log("Available slots returned by repository:", result);
+
+    return result.map((business) => ({
+      ...business,
+      price: lowestPrices[business.id] ?? null,
+    }));
+  }
   //GET THE LIST OF SALON BUSINESS
   async listSalons(
     location: string,
     category: BusinessType,
-  ): Promise<BusinessResponseDTO[]> {
+  ): Promise<BusinessResponse[]> {
     console.log(
       "Service received request for available slots with location:",
       location,
@@ -219,7 +248,7 @@ class BusinessService {
     );
     const result = await businessRepository.listSalons(location, category);
 
-    return result;
+    return this.attachBusinessPrices(result);
   }
 
   async approveBusiness(id: string): Promise<Business> {

@@ -1,23 +1,25 @@
-interface BusinessAddress {
-  street: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-}
-export interface BusinessResponseDTO {
+export interface BusinessResponse {
   id: string;
   name: string;
-  address: BusinessAddress;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
   type: string;
   email: string;
-  phone?: string;
-  description?: string;
+  phone: string;
+  description: string;
+  coverImageUrl: string;
 }
 
-// ==========================================
+export interface BusinessSearchResponse extends BusinessResponse {
+  price: number | null;
+}
+
 // Sub-Types & Interfaces
-// ==========================================
 
 export type BusinessType = "HOTEL" | "SALON";
 

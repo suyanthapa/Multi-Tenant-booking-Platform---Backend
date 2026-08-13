@@ -30,7 +30,7 @@ class ResourceClient {
         businessIds, // Send the whole array
       });
       console.log("Active Categories fetched:", response.data);
-      return response.data; // Expected: { "id1": [...], "id2": [...] }
+      return response.data.availableCategoriesInfo; // Expected: { "id1": [...], "id2": [...] }
     } catch (error: any) {
       //  logging can be added here
       console.log("Resource Service Rejected with:", error.response?.data);
@@ -38,6 +38,28 @@ class ResourceClient {
       console.error(`[ResourceClient   Error]: ${error.message}`);
       throw new InternalServerError(
         "Unable to verify business identity at this time.",
+      );
+    }
+  }
+
+  async getBatchBusinessLowestPrices(
+    businessIds: string[],
+  ): Promise<Record<string, number | null>> {
+    try {
+      console.log(
+        "Requesting lowest resource prices for business IDs:",
+        businessIds,
+      );
+      const response = await this.client.post(`/batch-business-lowest-prices`, {
+        businessIds,
+      });
+      console.log("Lowest prices fetched:", response.data);
+      return response.data.availableBusinessPricesInfo;
+    } catch (error: any) {
+      console.log("Resource Service Rejected with:", error.response?.data);
+      console.error(`[ResourceClient Error]: ${error.message}`);
+      throw new InternalServerError(
+        "Unable to verify business pricing at this time.",
       );
     }
   }
