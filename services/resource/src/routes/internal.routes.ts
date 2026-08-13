@@ -23,4 +23,10 @@ internalRoutes.post(
   ResourceInternalController.getBatchBusinessCategories,
 );
 
+internalRoutes.post(
+  "/batch-business-lowest-prices",
+  internalAuthMiddleware,
+  ResourceInternalController.getBatchBusinessLowestPrices,
+);
+
 export default internalRoutes;

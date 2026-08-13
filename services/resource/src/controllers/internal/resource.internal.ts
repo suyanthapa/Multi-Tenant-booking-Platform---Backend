@@ -56,6 +56,24 @@ class ResourceInternalController {
       });
     },
   );
+
+  getBatchBusinessLowestPrices = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const { businessIds } = req.body;
+      console.log(
+        "Received batch lowest price request for business IDs:",
+        businessIds,
+      );
+
+      const lowestPricesMap =
+        await resourceRepository.getBatchBusinessLowestPrices(businessIds);
+
+      res.status(200).json({
+        success: true,
+        availableBusinessPricesInfo: lowestPricesMap,
+      });
+    },
+  );
 }
 
 export default new ResourceInternalController();

@@ -276,5 +276,37 @@ class ResourceRepository {
       return categories;
     },
   );
+
+  getBatchBusinessLowestPrices = dbHandler(
+    async (businessIds: string[]): Promise<Record<string, number | null>> => {
+      const resources = await this.prisma.resource.findMany({
+        where: {
+          businessId: { in: businessIds },
+          status: "ACTIVE",
+        },
+        select: {
+          businessId: true,
+          price: true,
+        },
+      });
+
+      const lowestPrices: Record<string, number | null> = {};
+
+      for (const businessId of businessIds) {
+        lowestPrices[businessId] = null;
+      }
+
+      for (const resource of resources) {
+        const price = resource.price.toNumber();
+        const currentLowest = lowestPrices[resource.businessId];
+
+        if (currentLowest === null || price < currentLowest) {
+          lowestPrices[resource.businessId] = price;
+        }
+      }
+
+      return lowestPrices;
+    },
+  );
 }
 export default new ResourceRepository();
