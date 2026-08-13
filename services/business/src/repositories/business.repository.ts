@@ -6,8 +6,8 @@ import {
   RejectionReason,
 } from "@prisma/client";
 import Database from "../config/database";
-import { toBusinessDTO } from "../mappers/business.mapper";
-import { BusinessResponseDTO } from "../dto/business/response.dto";
+// import { toBusinessDTO } from "../mappers/business.mapper";
+import { BusinessResponse } from "../dto/business/response.dto";
 import {
   CompletedSteps,
   SetupBasicsInput,
@@ -160,7 +160,7 @@ class BusinessRepository {
     checkOut: string,
     location?: string,
     category?: BusinessType,
-  ): Promise<BusinessResponseDTO[]> {
+  ): Promise<BusinessResponse[]> {
     console.log(
       "Fetching available slots for location:",
       location,
@@ -171,7 +171,7 @@ class BusinessRepository {
       "and",
       checkOut,
     );
-    //get businesses
+    //get businesses (include images so we can return cover image)
     const businesses = await this.prisma.business.findMany({
       where: {
         AND: [
@@ -192,16 +192,33 @@ class BusinessRepository {
           },
         ],
       },
+      include: {
+        businessImages: {
+          where: { isCover: true },
+          take: 1,
+        },
+      },
     });
+
     console.log("Businesses found:", businesses.length);
-    return businesses.map((business) => toBusinessDTO(business));
+
+    return businesses.map((business) => ({
+      id: business.id,
+      name: business.name,
+      address: business.address as BusinessResponse["address"],
+      type: business.type,
+      email: business.email,
+      phone: business.phone || "",
+      description: business.description ?? "",
+      coverImageUrl: business.businessImages[0]?.url ?? "",
+    }));
   }
 
   // list salons
   async listSalons(
     location: string,
     category: BusinessType,
-  ): Promise<BusinessResponseDTO[]> {
+  ): Promise<BusinessResponse[]> {
     console.log(
       "Fetching available salons for location:",
       location,
@@ -209,7 +226,7 @@ class BusinessRepository {
       category,
     );
 
-    //get salons
+    //get salons (include images so we can return cover image)
     const businesses = await this.prisma.business.findMany({
       where: {
         AND: [
@@ -230,9 +247,26 @@ class BusinessRepository {
           },
         ],
       },
+      include: {
+        businessImages: {
+          where: { isCover: true },
+          take: 1,
+        },
+      },
     });
-    console.log("Salons found:", businesses.length);
-    return businesses.map((business) => toBusinessDTO(business));
+
+    console.log("Businesses found:", businesses.length);
+
+    return businesses.map((business) => ({
+      id: business.id,
+      name: business.name,
+      address: business.address as BusinessResponse["address"],
+      type: business.type,
+      email: business.email,
+      phone: business.phone || "",
+      description: business.description ?? "",
+      coverImageUrl: business.businessImages[0]?.url ?? "",
+    }));
   }
   async approveBusiness(id: string): Promise<Business> {
     return this.prisma.business.update({
