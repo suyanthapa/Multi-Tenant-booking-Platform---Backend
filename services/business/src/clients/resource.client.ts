@@ -7,6 +7,31 @@ interface ActiveResourceCategoryInfo {
   type: string;
 }
 
+export interface CategoryImage {
+  id: string;
+  url: string;
+  isCover: boolean;
+  order: number;
+}
+
+export interface Resource {
+  id: string;
+  name: string;
+  type: string;
+  description: string | null;
+  price: string;
+  currency: string;
+  status: string;
+  metadata: Record<string, unknown> | null;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  images: CategoryImage[];
+  resources: Resource[];
+}
+
 class ResourceClient {
   private client: AxiosInstance;
 
@@ -61,6 +86,27 @@ class ResourceClient {
       throw new InternalServerError(
         "Unable to verify business pricing at this time.",
       );
+    }
+  }
+
+  async getCategoriesForBusiness(businessId: string): Promise<Category[]> {
+    try {
+      const response = await this.client.get(
+        `/businesses/${businessId}/categories`,
+      );
+      return response.data.data ?? [];
+    } catch (error: any) {
+      console.error("[ResourceClient Error]:", error.message);
+
+      // if resource service is down — return empty, don't fail the whole request
+      if (error.code === "ECONNREFUSED" || error.response?.status >= 500) {
+        console.error(
+          "[ResourceClient] Resource service unavailable — returning empty categories",
+        );
+        return [];
+      }
+
+      throw new InternalServerError("Unable to fetch categories at this time.");
     }
   }
 }

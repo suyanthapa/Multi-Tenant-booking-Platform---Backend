@@ -13,6 +13,8 @@ import setupBusinessController from "../controllers/setup.business.controller";
 
 const businessRoutes = Router();
 
+businessRoutes.get("/:id/details", businessController.getBusinessDetails);
+
 // Step 1-- profile setup
 businessRoutes.get(
   "/profile",

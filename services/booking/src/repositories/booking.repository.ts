@@ -226,6 +226,25 @@ export class BookingRepository {
     console.log("Conflict bookings found in repository:", conflictBookings);
     return conflictBookings;
   }
+
+  async findUnavailableResources(
+    resourceIds: string[],
+    startDate: Date,
+    endDate: Date,
+  ): Promise<string[]> {
+    const bookings = await this.prisma.booking.findMany({
+      where: {
+        resourceId: { in: resourceIds },
+        status: { in: ["CONFIRMED", "IN_PROGRESS"] },
+        startTime: { lt: endDate },
+        endTime: { gt: startDate },
+      },
+      select: { resourceId: true },
+    });
+
+    // return unique list of booked resourceIds
+    return [...new Set(bookings.map((b) => b.resourceId))];
+  }
 }
 
 export default new BookingRepository();

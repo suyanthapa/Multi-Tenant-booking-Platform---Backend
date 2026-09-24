@@ -13,7 +13,7 @@ export const createServiceProxy = (target: string) => {
   const options: Options = {
     target,
     changeOrigin: true,
-    // Professional touch: Pass the full original URL to the microservice
+    // Pass the full original URL to the microservice
     pathRewrite: async (_path, req) =>
       (req as AuthenticatedRequest).originalUrl,
 
@@ -33,6 +33,13 @@ export const createServiceProxy = (target: string) => {
           proxyReq.setHeader("x-user-id", String(req.user.id));
           proxyReq.setHeader("x-user-role", String(req.user.role));
           proxyReq.setHeader("x-user-email", String(req.user.email));
+
+          if (req.user?.businessId) {
+            proxyReq.setHeader(
+              "x-user-business-id",
+              String(req.user.businessId),
+            );
+          }
         } else {
           console.log(" [Gateway] Unauthenticated request");
         }

@@ -155,7 +155,7 @@ class BusinessController {
 
   //Get Available Slots for a (HOTEL )business
   checkAvailableSlots = asyncHandler(async (req: Request, res: Response) => {
-    const { category, location, checkIn, checkOut } = req.body;
+    const { category, location, checkIn, checkOut, page, limit } = req.body;
 
     //  Convert strings to actual Date objects
     const start = new Date(checkIn as string);
@@ -166,18 +166,29 @@ class BusinessController {
       throw new InvalidInputError("Start time must be before end time");
     }
 
-    const slots = await businessService.getAvailableSlots(
+    const result = await businessService.getAvailableSlots(
       checkIn as string,
       checkOut as string,
       location as string,
       category as BusinessType,
+      page,
+      limit,
     );
 
-    const message = slots.length
+    const message = result.businesses.length
       ? "Businesses fetched successfully"
       : "No businesses found in this location";
-    console.log("Message:", message, "Slots:", slots);
-    successResponse(res, { business: slots }, message);
+    paginatedResponse(
+      res,
+      { business: result.businesses },
+      {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+      },
+      message,
+    );
   });
 
   // Get Available SALONS
@@ -256,6 +267,22 @@ class BusinessController {
     const step = req.body.step;
     const business = await businessService.markStepComplete(businessId, step);
     successResponse(res, business, "Step marked as complete successfully");
+  });
+
+  getBusinessDetails = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { startDate, endDate } = req.query as {
+      startDate?: string;
+      endDate?: string;
+    };
+
+    const data = await businessService.getBusinessDetails({
+      businessId: id,
+      startDate,
+      endDate,
+    });
+
+    successResponse(res, data, "Business details fetched successfully");
   });
 }
 export default new BusinessController();

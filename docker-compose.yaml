@@ -17,7 +17,7 @@ services:
       - ./api-gateway/.env
     volumes:
       - ./api-gateway/src:/app/src
-      - gateway_node_modules:/app/node_modules
+     
     command: npm run dev
     depends_on:
       - auth-service

@@ -29,4 +29,10 @@ internalRoutes.post(
   ResourceInternalController.getBatchBusinessLowestPrices,
 );
 
+internalRoutes.get(
+  "/businesses/:businessId/categories",
+  internalAuthMiddleware, // Only other microservices CAN call this
+  ResourceInternalController.getCategoriesForBusiness,
+);
+
 export default internalRoutes;

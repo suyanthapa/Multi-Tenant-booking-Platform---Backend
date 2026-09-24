@@ -308,5 +308,37 @@ class ResourceRepository {
       return lowestPrices;
     },
   );
+
+  async findByBusinessWithDetails(businessId: string) {
+    return this.prisma.resourceCategory.findMany({
+      where: { businessId },
+      include: {
+        images: {
+          select: {
+            id: true,
+            url: true,
+            isCover: true,
+            order: true,
+          },
+          orderBy: { order: "asc" },
+        },
+        resources: {
+          where: { status: "ACTIVE" },
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            description: true,
+            price: true,
+            currency: true,
+            status: true,
+            metadata: true,
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+  }
 }
 export default new ResourceRepository();

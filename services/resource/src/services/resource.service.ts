@@ -246,6 +246,29 @@ class ResourceService {
 
     await resourceRepository.deleteCategory(id);
   }
+
+  // details of all categories with their resources for a given business, including availability info
+
+  async getCategoriesForBusiness(businessId: string) {
+    const categories =
+      await resourceRepository.findByBusinessWithDetails(businessId);
+
+    return categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      images: category.images,
+      resources: category.resources.map((resource) => ({
+        id: resource.id,
+        name: resource.name,
+        type: resource.type,
+        description: resource.description,
+        price: resource.price,
+        currency: resource.currency,
+        status: resource.status,
+        metadata: resource.metadata,
+      })),
+    }));
+  }
 }
 
 export default new ResourceService();

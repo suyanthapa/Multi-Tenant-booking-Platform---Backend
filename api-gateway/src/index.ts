@@ -11,6 +11,7 @@ import { bookingLimiter } from "./middlewares/rateLimit.middleware";
 import dotenv from "dotenv";
 import { SERVICES } from "./config/service";
 import { createServiceProxy } from "./utils/proxy";
+
 dotenv.config();
 const app = express();
 
@@ -52,6 +53,9 @@ app.use("/api/auth", createServiceProxy(SERVICES.AUTH));
 
 // Business routes (public read)  -- hotel search
 app.use("/api/businesses/search", createServiceProxy(SERVICES.BUSINESS));
+
+// Business routes (public read)  -- business details
+app.use("/api/businesses/:id/details", createServiceProxy(SERVICES.BUSINESS));
 
 // list salons route (public read)  -- salon search
 app.use("/api/businesses/search/salons", createServiceProxy(SERVICES.BUSINESS));

@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../../utils/asyncHandler";
 import resourceRepository from "../../repositories/resource.repository";
 import { ActiveResourceInfo } from "../../types/interfaces";
+import { successResponse } from "../../utils/response";
+import resourceService from "../../services/resource.service";
 
 class ResourceInternalController {
   checkExists = asyncHandler(async (req: Request, res: Response) => {
@@ -72,6 +74,16 @@ class ResourceInternalController {
         success: true,
         availableBusinessPricesInfo: lowestPricesMap,
       });
+    },
+  );
+
+  getCategoriesForBusiness = asyncHandler(
+    async (req: Request, res: Response) => {
+      const { businessId } = req.params;
+
+      const data = await resourceService.getCategoriesForBusiness(businessId);
+
+      successResponse(res, data, "Categories fetched");
     },
   );
 }

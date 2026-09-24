@@ -160,7 +160,15 @@ class BusinessRepository {
     checkOut: string,
     location?: string,
     category?: BusinessType,
-  ): Promise<BusinessResponse[]> {
+    page = 1,
+    limit = 10,
+  ): Promise<{
+    businesses: BusinessResponse[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     console.log(
       "Fetching available slots for location:",
       location,
@@ -172,46 +180,60 @@ class BusinessRepository {
       checkOut,
     );
     //get businesses (include images so we can return cover image)
-    const businesses = await this.prisma.business.findMany({
-      where: {
-        AND: [
-          { status: "ACTIVE" },
-          { isVerified: true },
-          { type: category },
-          {
-            OR: [
-              { address: { path: ["city"], equals: location } },
-              {
-                address: {
-                  path: ["state"],
-                  equals: location,
-                },
+    const where: Prisma.BusinessWhereInput = {
+      AND: [
+        { status: "ACTIVE" },
+        { isVerified: true },
+        { type: category },
+        {
+          OR: [
+            { address: { path: ["city"], equals: location } },
+            {
+              address: {
+                path: ["state"],
+                equals: location,
               },
-              { address: { path: ["country"], equals: location } },
-            ],
-          },
-        ],
-      },
-      include: {
-        businessImages: {
-          where: { isCover: true },
-          take: 1,
+            },
+            { address: { path: ["country"], equals: location } },
+          ],
         },
-      },
-    });
+      ],
+    };
+
+    const [businesses, total] = await Promise.all([
+      this.prisma.business.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          businessImages: {
+            where: { isCover: true },
+            take: 1,
+          },
+        },
+      }),
+      this.prisma.business.count({ where }),
+    ]);
 
     console.log("Businesses found:", businesses.length);
 
-    return businesses.map((business) => ({
-      id: business.id,
-      name: business.name,
-      address: business.address as BusinessResponse["address"],
-      type: business.type,
-      email: business.email,
-      phone: business.phone || "",
-      description: business.description ?? "",
-      coverImageUrl: business.businessImages[0]?.url ?? "",
-    }));
+    return {
+      businesses: businesses.map((business) => ({
+        id: business.id,
+        name: business.name,
+        address: business.address as BusinessResponse["address"],
+        type: business.type,
+        email: business.email,
+        phone: business.phone || "",
+        description: business.description ?? "",
+        coverImageUrl: business.businessImages[0]?.url ?? "",
+      })),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   // list salons
@@ -323,7 +345,46 @@ class BusinessRepository {
       },
     });
   }
+
+  async findByIdPublic(id: string) {
+    return this.prisma.business.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        description: true,
+        phone: true,
+        email: true,
+        address: true,
+        status: true,
+        approvedAt: true,
+        createdAt: true,
+        // settings — check-in/out or opening hours
+        businessSettings: {
+          select: {
+            checkInTime: true,
+            checkOutTime: true,
+            openingHours: true,
+            cancellationPolicy: true,
+            cancellationWindowHours: true,
+          },
+        },
+        // property images ordered by display order
+        businessImages: {
+          select: {
+            id: true,
+            url: true,
+            isCover: true,
+            order: true,
+          },
+          orderBy: { order: "asc" },
+        },
+      },
+    });
+  }
 }
+
 // infer the type from the function itself -- it can now use business and businessSettings
 export type BusinessWithSettings = NonNullable<
   Awaited<ReturnType<BusinessRepository["findByIdWithSettings"]>>

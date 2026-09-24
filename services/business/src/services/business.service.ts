@@ -21,7 +21,14 @@ import {
   CompletedSteps,
   SetupBasicsInput,
 } from "../types/setup.business.types";
-import resourceClient from "../clients/resource.client";
+import resourceClient, { Category } from "../clients/resource.client";
+import booklingClient from "../clients/bookling.client";
+
+interface GetBusinessDetailsOptions {
+  businessId: string;
+  startDate?: string;
+  endDate?: string;
+}
 
 class BusinessService {
   private async attachBusinessPrices(
@@ -210,7 +217,15 @@ class BusinessService {
     checkOut: string,
     location?: string,
     category?: BusinessType,
-  ): Promise<BusinessSearchResponse[]> {
+    page = 1,
+    limit = 10,
+  ): Promise<{
+    businesses: BusinessSearchResponse[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     console.log(
       "Service received request for available slots with location:",
       location,
@@ -222,18 +237,23 @@ class BusinessService {
       checkOut,
       location,
       category,
+      page,
+      limit,
     );
 
     const lowestPrices = await resourceClient.getBatchBusinessLowestPrices(
-      result.map((business) => business.id),
+      result.businesses.map((business) => business.id),
     );
 
-    console.log("Available slots returned by repository:", result);
+    console.log("Available slots returned by repository:", result.businesses);
 
-    return result.map((business) => ({
-      ...business,
-      price: lowestPrices[business.id] ?? null,
-    }));
+    return {
+      ...result,
+      businesses: result.businesses.map((business) => ({
+        ...business,
+        price: lowestPrices[business.id] ?? null,
+      })),
+    };
   }
   //GET THE LIST OF SALON BUSINESS
   async listSalons(
@@ -347,6 +367,73 @@ class BusinessService {
       completedSteps,
       isProfileComplete,
     );
+  }
+
+  // get public business details
+  async getPublicDetails(businessId: string) {
+    const business = await businessRepository.findByIdPublic(businessId);
+
+    if (!business) {
+      throw new NotFoundError("Business not found");
+    }
+
+    if (business.status !== "ACTIVE") {
+      throw new NotFoundError("Business not found");
+    }
+
+    return business;
+  }
+
+  async getBusinessDetails({
+    businessId,
+    startDate,
+    endDate,
+  }: GetBusinessDetailsOptions) {
+    //  Step 1: fetch business + resource service in parallel
+    const [business, categories] = await Promise.all([
+      businessRepository.findByIdPublic(businessId),
+      resourceClient.getCategoriesForBusiness(businessId),
+    ]);
+
+    if (!business) throw new NotFoundError("Business not found");
+    if (business.status !== "ACTIVE")
+      throw new NotFoundError("Business not found");
+
+    // Step 2: check availability if dates provided
+    let unavailableIds: string[] = [];
+
+    if (startDate && endDate) {
+      const allResourceIds = categories.flatMap((cat: Category) =>
+        cat.resources.map((r) => r.id),
+      );
+
+      if (allResourceIds.length > 0) {
+        unavailableIds = await booklingClient.getUnavailableResources(
+          allResourceIds,
+          startDate,
+          endDate,
+        );
+      }
+    }
+
+    // Step 3: merge availability into each resource
+    const categoriesWithAvailability = categories.map((cat: Category) => ({
+      ...cat,
+      totalResources: cat.resources.length,
+      availableResources: cat.resources.filter(
+        (r) => !unavailableIds.includes(r.id),
+      ).length,
+      resources: cat.resources.map((resource) => ({
+        ...resource,
+        isAvailable: !unavailableIds.includes(resource.id),
+      })),
+    }));
+
+    // Step 4: return merged data
+    return {
+      ...business,
+      categories: categoriesWithAvailability,
+    };
   }
 }
 export default new BusinessService();

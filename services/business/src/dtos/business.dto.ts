@@ -77,6 +77,10 @@ export const checkAvailabilitySchema = z.object({
 
       location: z.string().min(1, "Location is required"),
 
+      page: z.coerce.number().int().min(1).default(1),
+
+      limit: z.coerce.number().int().min(1).max(50).default(10),
+
       checkIn: z.coerce.date().refine((date) => date.getTime() >= Date.now(), {
         message: "Check-in date cannot be in the past",
       }),

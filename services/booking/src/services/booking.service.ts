@@ -396,6 +396,31 @@ class BookingService {
 
     return bookingRepository.delete(id);
   }
+
+  async getUnavailableResources(
+    resourceIds: string[],
+    startDate: string,
+    endDate: string,
+  ): Promise<string[]> {
+    if (!resourceIds || resourceIds.length === 0) {
+      return [];
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      throw new BookingConflictError(
+        "Invalid date format. Use ISO 8601 e.g. 2026-08-15T00:00:00.000Z",
+      );
+    }
+
+    if (start >= end) {
+      throw new BookingConflictError("startDate must be before endDate");
+    }
+
+    return bookingRepository.findUnavailableResources(resourceIds, start, end);
+  }
 }
 
 export default new BookingService();

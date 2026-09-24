@@ -3,6 +3,7 @@ import { asyncHandler } from "../../utils/asyncHandler";
 import businessRepository from "../../repositories/business.repository";
 import { BusinessType } from "@prisma/client";
 import businessService from "../../services/business.service";
+import { successResponse } from "../../utils/response";
 
 interface BusinessAddress {
   street: string;
@@ -96,6 +97,14 @@ class BusinessInternalController {
     res.status(200).json({
       success: true,
     });
+  });
+
+  // Public business details
+
+  getPublicDetails = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const data = await businessService.getPublicDetails(id);
+    successResponse(res, data, "Business details fetched");
   });
 }
 export default new BusinessInternalController();
