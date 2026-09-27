@@ -18,16 +18,20 @@ export interface Resource {
   id: string;
   name: string;
   type: string;
-  description: string | null;
-  price: string;
-  currency: string;
+  floor: string | null;
   status: string;
-  metadata: Record<string, unknown> | null;
 }
 
 export interface Category {
   id: string;
   name: string;
+  description: string | null;
+  price: string | number;
+  currency: string;
+  maxGuests: number | null;
+  amenities: string[];
+  durationMinutes: number | null;
+  specialization: string | null;
   images: CategoryImage[];
   resources: Resource[];
 }
@@ -107,6 +111,18 @@ class ResourceClient {
       }
 
       throw new InternalServerError("Unable to fetch categories at this time.");
+    }
+  }
+
+  async getDashboardResources(businessId: string): Promise<Category[]> {
+    try {
+      const response = await this.client.get(
+        `/businesses/${businessId}/dashboard-resources`,
+      );
+      return response.data.data ?? [];
+    } catch (error: any) {
+      console.error("[ResourceClient Error]:", error.message);
+      throw new InternalServerError("Unable to fetch dashboard resources.");
     }
   }
 }

@@ -6,9 +6,12 @@ import { NotFoundError } from "../utils/errors";
 class CategoryController {
   // Create category
   createCategory = asyncHandler(async (req: Request, res: Response) => {
-    const { name } = req.body;
+    const data = req.body;
     const businessId = req.user?.businessId as string;
-    const category = await resourceService.createCategory(name, businessId);
+    const category = await resourceService.createCategory({
+      ...data,
+      businessId,
+    });
 
     res.status(201).json({
       success: true,
@@ -81,9 +84,8 @@ class CategoryController {
   // Update category
   updateCategory = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { name } = req.body;
 
-    const category = await resourceService.updateCategory(id, { name });
+    const category = await resourceService.updateCategory(id, req.body);
 
     res.status(200).json({
       success: true,

@@ -72,17 +72,21 @@ class ResourceService {
     if (params.search) {
       where.OR = [
         { name: { contains: params.search, mode: "insensitive" } },
-        { description: { contains: params.search, mode: "insensitive" } },
+        {
+          category: {
+            description: { contains: params.search, mode: "insensitive" },
+          },
+        },
       ];
     }
 
     if (params.minPrice !== undefined || params.maxPrice !== undefined) {
-      where.price = {};
+      where.category = { price: {} };
       if (params.minPrice !== undefined) {
-        where.price.gte = params.minPrice;
+        where.category.price.gte = params.minPrice;
       }
       if (params.maxPrice !== undefined) {
-        where.price.lte = params.maxPrice;
+        where.category.price.lte = params.maxPrice;
       }
     }
 
@@ -150,8 +154,10 @@ class ResourceService {
   }
 
   //create resource category
-  async createCategory(name: string, businessId: string) {
-    return resourceRepository.createCategory(name, businessId);
+  async createCategory(
+    data: import("@prisma/client").Prisma.ResourceCategoryCreateInput,
+  ) {
+    return resourceRepository.createCategory(data);
   }
 
   //get all business categories-- admin side -needed pagination
@@ -223,7 +229,7 @@ class ResourceService {
   //update category
   async updateCategory(
     id: string,
-    data: { name?: string },
+    data: import("@prisma/client").Prisma.ResourceCategoryUpdateInput,
   ): Promise<ResourceCategory> {
     // First verify category exists
     await this.getCategoryById(id);
@@ -256,17 +262,39 @@ class ResourceService {
     return categories.map((category) => ({
       id: category.id,
       name: category.name,
+      description: category.description,
+      price: category.price,
+      currency: category.currency,
+      maxGuests: category.maxGuests,
+      amenities: category.amenities,
+      durationMinutes: category.durationMinutes,
+      specialization: category.specialization,
       images: category.images,
       resources: category.resources.map((resource) => ({
         id: resource.id,
         name: resource.name,
         type: resource.type,
-        description: resource.description,
-        price: resource.price,
-        currency: resource.currency,
+        floor: resource.floor,
         status: resource.status,
-        metadata: resource.metadata,
       })),
+    }));
+  }
+
+  async getDashboardResources(businessId: string) {
+    const categories =
+      await resourceRepository.findByBusinessForDashboard(businessId);
+    return categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      description: category.description,
+      price: category.price,
+      currency: category.currency,
+      maxGuests: category.maxGuests,
+      amenities: category.amenities,
+      durationMinutes: category.durationMinutes,
+      specialization: category.specialization,
+      images: [],
+      resources: category.resources,
     }));
   }
 }

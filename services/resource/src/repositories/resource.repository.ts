@@ -161,11 +161,11 @@ class ResourceRepository {
     },
   );
 
-  createCategory = dbHandler(async (name: string, businessId: string) => {
-    return this.prisma.resourceCategory.create({
-      data: { name, businessId },
-    });
-  });
+  createCategory = dbHandler(
+    async (data: Prisma.ResourceCategoryCreateInput) => {
+      return this.prisma.resourceCategory.create({ data });
+    },
+  );
 
   // for admin
   findAllCategories = dbHandler(
@@ -279,10 +279,10 @@ class ResourceRepository {
 
   getBatchBusinessLowestPrices = dbHandler(
     async (businessIds: string[]): Promise<Record<string, number | null>> => {
-      const resources = await this.prisma.resource.findMany({
+      const categories = await this.prisma.resourceCategory.findMany({
         where: {
           businessId: { in: businessIds },
-          status: "ACTIVE",
+          resources: { some: { status: "ACTIVE" } },
         },
         select: {
           businessId: true,
@@ -296,12 +296,12 @@ class ResourceRepository {
         lowestPrices[businessId] = null;
       }
 
-      for (const resource of resources) {
-        const price = resource.price.toNumber();
-        const currentLowest = lowestPrices[resource.businessId];
+      for (const category of categories) {
+        const price = category.price.toNumber();
+        const currentLowest = lowestPrices[category.businessId];
 
         if (currentLowest === null || price < currentLowest) {
-          lowestPrices[resource.businessId] = price;
+          lowestPrices[category.businessId] = price;
         }
       }
 
@@ -328,16 +328,40 @@ class ResourceRepository {
             id: true,
             name: true,
             type: true,
-            description: true,
-            price: true,
-            currency: true,
+            floor: true,
             status: true,
-            metadata: true,
           },
           orderBy: { createdAt: "asc" },
         },
       },
       orderBy: { createdAt: "asc" },
+    });
+  }
+
+  async findByBusinessForDashboard(businessId: string) {
+    return this.prisma.resourceCategory.findMany({
+      where: { businessId },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        currency: true,
+        maxGuests: true,
+        amenities: true,
+        durationMinutes: true,
+        specialization: true,
+        resources: {
+          where: { status: { not: "DELETED" } },
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            floor: true,
+            status: true,
+          },
+        },
+      },
     });
   }
 }

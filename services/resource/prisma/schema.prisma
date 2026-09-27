@@ -10,23 +10,20 @@ model Resource {
     id         String @id @default(uuid())
     businessId String @map("business_id")
 
-    name        String
-    type        ResourceType
-    description String?
+    name  String
+    type  ResourceType
+    floor String?
 
     categoryId String?           @map("category_id")
     category   ResourceCategory? @relation(fields: [categoryId], references: [id])
 
-    metadata Json? @default("{}") // "Special" fields 
-
-    price    Decimal        @db.Decimal(10, 2)
-    currency String         @default("USD")
-    status   ResourceStatus @default(ACTIVE)
+    status ResourceStatus @default(ACTIVE)
 
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
 
     @@index([businessId])
+    @@index([categoryId])
     @@index([type])
     @@index([status])
     @@map("resources")
@@ -39,10 +36,22 @@ model ResourceCategory {
     createdAt  DateTime @default(now()) @map("created_at")
     updatedAt  DateTime @updatedAt @map("updated_at")
 
+    description String?
+    price       Decimal @db.Decimal(10, 2)
+    currency    String  @default("USD")
+
+    maxGuests Int?     @map("max_guests")
+    amenities String[]
+
+    // Salon / Clinic
+    durationMinutes Int?    @map("duration_minutes")
+    specialization  String?
+
     resources Resource[]
     images    CategoryImage[]
 
     @@unique([businessId, name]) // ex: A vendor can't have two "Deluxe" categories
+    @@map("resource_categories")
 }
 
 model CategoryImage {

@@ -7,10 +7,8 @@ export const createResourceSchema = z.object({
     .object({
       name: z.string().min(1, "Resource name is required"),
       type: z.nativeEnum(ResourceType),
-      description: z.string().optional().nullable(),
-      price: z.number().positive("Price must be positive"),
+      floor: z.string().optional().nullable(),
       categoryId: z.string().uuid("Invalid Category ID format").optional(),
-      metadata: z.record(z.any()).optional(),
     })
     .strict(),
 });
@@ -23,9 +21,7 @@ export const updateResourceSchema = z.object({
   body: z.object({
     name: z.string().min(1).optional(),
     type: z.nativeEnum(ResourceType).optional(),
-    description: z.string().optional().nullable(),
-    price: z.number().positive().optional(),
-    currency: z.string().optional(),
+    floor: z.string().optional().nullable(),
     status: z.nativeEnum(ResourceStatus).optional(),
   }),
 });
@@ -39,9 +35,7 @@ export const bulkCreateResourceSchema = z.object({
         z.object({
           name: z.string().min(1),
           type: z.nativeEnum(ResourceType),
-          description: z.string().optional().nullable(),
-          price: z.number().positive(),
-          currency: z.string().default("USD"),
+          floor: z.string().optional().nullable(),
         }),
       )
       .min(1, "At least one resource is required"),
@@ -78,9 +72,18 @@ export const typeResourceSchema = z.object({
 
 //create respurce category schema
 export const createCategorySchema = z.object({
-  body: z.object({
-    name: z.string().min(1, "Category name is required"),
-  }),
+  body: z
+    .object({
+      name: z.string().min(1, "Category name is required"),
+      description: z.string().optional().nullable(),
+      price: z.number().positive("Price must be positive"),
+      currency: z.string().min(1).default("USD"),
+      maxGuests: z.number().int().positive().optional().nullable(),
+      amenities: z.array(z.string()).default([]),
+      durationMinutes: z.number().int().positive().optional().nullable(),
+      specialization: z.string().optional().nullable(),
+    })
+    .strict(),
 });
 
 //update category schema
@@ -88,9 +91,18 @@ export const updateCategorySchema = z.object({
   params: z.object({
     id: z.string().uuid("Invalid Category ID format"),
   }),
-  body: z.object({
-    name: z.string().min(1, "Category name is required"),
-  }),
+  body: z
+    .object({
+      name: z.string().min(1).optional(),
+      description: z.string().optional().nullable(),
+      price: z.number().positive().optional(),
+      currency: z.string().min(1).optional(),
+      maxGuests: z.number().int().positive().optional().nullable(),
+      amenities: z.array(z.string()).optional(),
+      durationMinutes: z.number().int().positive().optional().nullable(),
+      specialization: z.string().optional().nullable(),
+    })
+    .strict(),
 });
 
 // Type exports

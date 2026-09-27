@@ -17,6 +17,16 @@ class InternalBookingController {
       successResponse(res, unavailable, "Unavailable resources fetched");
     },
   );
+
+  getDashboardBookings = asyncHandler(async (req: Request, res: Response) => {
+    const { businessId, startDate, endDate } = req.body;
+    const bookings = await bookingService.getDashboardBookings(
+      businessId,
+      startDate,
+      endDate,
+    );
+    successResponse(res, bookings, "Dashboard bookings fetched");
+  });
 }
 
 export default new InternalBookingController();

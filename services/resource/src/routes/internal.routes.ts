@@ -35,4 +35,10 @@ internalRoutes.get(
   ResourceInternalController.getCategoriesForBusiness,
 );
 
+internalRoutes.get(
+  "/businesses/:businessId/dashboard-resources",
+  internalAuthMiddleware,
+  ResourceInternalController.getDashboardResources,
+);
+
 export default internalRoutes;

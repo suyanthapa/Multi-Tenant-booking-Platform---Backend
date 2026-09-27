@@ -156,10 +156,13 @@ class ResourceController {
 
   // Create Resource Category
   createResourceCategory = asyncHandler(async (req: Request, res: Response) => {
-    const { name } = req.body;
+    const data = req.body;
     const businessId = req.user?.businessId as string;
 
-    const category = await resourceService.createCategory(name, businessId);
+    const category = await resourceService.createCategory({
+      ...data,
+      businessId,
+    });
 
     res.status(201).json({
       success: true,

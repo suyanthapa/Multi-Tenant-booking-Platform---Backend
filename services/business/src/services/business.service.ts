@@ -30,6 +30,11 @@ interface GetBusinessDetailsOptions {
   endDate?: string;
 }
 
+const formatPrice = (value: string | number, currency: string): string => {
+  const amount = Number(value);
+  return `${currency} ${Number.isFinite(amount) ? amount.toFixed(2) : "0.00"}`;
+};
+
 class BusinessService {
   private async attachBusinessPrices(
     businesses: BusinessResponse[],
@@ -419,6 +424,7 @@ class BusinessService {
     // Step 3: merge availability into each resource
     const categoriesWithAvailability = categories.map((cat: Category) => ({
       ...cat,
+      price: formatPrice(cat.price, cat.currency),
       totalResources: cat.resources.length,
       availableResources: cat.resources.filter(
         (r) => !unavailableIds.includes(r.id),
@@ -429,9 +435,30 @@ class BusinessService {
       })),
     }));
 
-    // Step 4: return merged data
+    const images = business.businessImages ?? [];
+    const coverImage =
+      images.find((image) => image.isCover) ?? images[0] ?? null;
+
+    // Return a stable, frontend-oriented shape while retaining the original
+    // business fields for clients that already consume this endpoint.
     return {
       ...business,
+      coverImage: coverImage?.url ?? null,
+      images: images.map((image) => ({
+        id: image.id,
+        url: image.url,
+        isCover: image.isCover,
+        order: image.order,
+      })),
+      settings: {
+        checkInTime: business.businessSettings?.checkInTime ?? null,
+        checkOutTime: business.businessSettings?.checkOutTime ?? null,
+        openingHours: business.businessSettings?.openingHours ?? {},
+        cancellationPolicy:
+          business.businessSettings?.cancellationPolicy ?? null,
+        cancellationWindowHours:
+          business.businessSettings?.cancellationWindowHours ?? 0,
+      },
       categories: categoriesWithAvailability,
     };
   }

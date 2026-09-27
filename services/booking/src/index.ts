@@ -7,7 +7,7 @@ import cookieParser from "cookie-parser";
 import config from "./config";
 import Database from "./config/database";
 import logger from "./utils/logger";
-import routes from "./routes/booking.routes";
+import routes from "./routes";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler";
 
 class App {

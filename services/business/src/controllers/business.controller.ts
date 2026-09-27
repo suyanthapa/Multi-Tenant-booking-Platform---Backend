@@ -10,8 +10,17 @@ import {
   CreateBusinessInput,
   UpdateBusinessInput,
 } from "../types/business.types";
+import dashboardService from "../services/dashboard.service";
 
 class BusinessController {
+  getDashboard = asyncHandler(async (req: Request, res: Response) => {
+    const dashboard = await dashboardService.getDashboard(
+      req.user!.id,
+      req.user!.businessId,
+    );
+    successResponse(res, dashboard, "Dashboard data fetched successfully");
+  });
+
   // Create business
   createBusiness = asyncHandler(async (req: Request, res: Response) => {
     const data: CreateBusinessInput = req.body;

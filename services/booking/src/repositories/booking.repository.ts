@@ -245,6 +245,22 @@ export class BookingRepository {
     // return unique list of booked resourceIds
     return [...new Set(bookings.map((b) => b.resourceId))];
   }
+
+  async findForDashboard(
+    businessId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Booking[]> {
+    return this.prisma.booking.findMany({
+      where: {
+        businessId,
+        status: { not: BookingStatus.CANCELLED },
+        startTime: { lt: endDate },
+        endTime: { gt: startDate },
+      },
+      orderBy: { startTime: "asc" },
+    });
+  }
 }
 
 export default new BookingRepository();

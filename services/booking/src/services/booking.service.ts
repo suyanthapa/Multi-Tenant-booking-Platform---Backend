@@ -199,6 +199,18 @@ class BookingService {
     };
   }
 
+  async getDashboardBookings(
+    businessId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<Booking[]> {
+    return bookingRepository.findForDashboard(
+      businessId,
+      new Date(startDate),
+      new Date(endDate),
+    );
+  }
+
   /**
    * Update booking
    */

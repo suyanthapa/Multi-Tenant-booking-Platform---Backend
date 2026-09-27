@@ -3,6 +3,19 @@
 import axios, { AxiosInstance } from "axios";
 import { InternalServerError } from "../utils/errors";
 
+export interface DashboardBookingRecord {
+  id: string;
+  userId: string;
+  resourceId: string;
+  resourceName: string;
+  resourceType: string;
+  priceAtBooking: string | number;
+  currency: string;
+  startTime: string;
+  endTime: string;
+  status: string;
+}
+
 class BookingClient {
   private client: AxiosInstance;
 
@@ -42,6 +55,24 @@ class BookingClient {
       throw new InternalServerError(
         "Unable to check availability at this time.",
       );
+    }
+  }
+
+  async getDashboardBookings(
+    businessId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<DashboardBookingRecord[]> {
+    try {
+      const response = await this.client.post("/bookings/dashboard-bookings", {
+        businessId,
+        startDate,
+        endDate,
+      });
+      return response.data.data ?? [];
+    } catch (error: any) {
+      console.error("[BookingClient Error]:", error.message);
+      throw new InternalServerError("Unable to fetch dashboard bookings.");
     }
   }
 }

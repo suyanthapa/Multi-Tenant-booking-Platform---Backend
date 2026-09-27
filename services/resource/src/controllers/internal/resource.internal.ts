@@ -86,6 +86,13 @@ class ResourceInternalController {
       successResponse(res, data, "Categories fetched");
     },
   );
+
+  getDashboardResources = asyncHandler(async (req: Request, res: Response) => {
+    const data = await resourceService.getDashboardResources(
+      req.params.businessId,
+    );
+    successResponse(res, data, "Dashboard resources fetched");
+  });
 }
 
 export default new ResourceInternalController();

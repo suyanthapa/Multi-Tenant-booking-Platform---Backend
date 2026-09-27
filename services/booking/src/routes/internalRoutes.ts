@@ -13,4 +13,10 @@ internalRoutes.post(
   internalBookingController.getUnavailableResources,
 );
 
+internalRoutes.post(
+  "/dashboard-bookings",
+  internalAuthMiddleware,
+  internalBookingController.getDashboardBookings,
+);
+
 export default internalRoutes;
