@@ -5,6 +5,7 @@ import { validate } from "../middlewares/validator";
 import {
   checkAvailabilitySchema,
   createBusinessSchema,
+  getBusinessDetailsSchema,
   queryBusinessSchema,
   updateBusinessSchema,
 } from "../dtos/business.dto";
@@ -20,7 +21,11 @@ businessRoutes.get(
   businessController.getDashboard,
 );
 
-businessRoutes.get("/:id/details", businessController.getBusinessDetails);
+businessRoutes.get(
+  "/:id/details",
+  validate(getBusinessDetailsSchema),
+  businessController.getBusinessDetails,
+);
 
 // Step 1-- profile setup
 businessRoutes.get(

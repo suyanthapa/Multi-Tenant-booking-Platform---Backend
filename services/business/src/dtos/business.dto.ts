@@ -45,6 +45,17 @@ export const queryBusinessSchema = z.object({
   }),
 });
 
+// Get business details schema
+export const getBusinessDetailsSchema = z.object({
+  params: z.object({
+    id: z.string().min(1, "Business ID is required"),
+  }),
+  query: z.object({
+    startDate: z.string().datetime("Invalid start date").optional(),
+    endDate: z.string().datetime("Invalid end date").optional(),
+  }),
+});
+
 //Pending Business Schema
 export const getPendingBusinessesSchema = z.object({
   query: z.object({
@@ -68,6 +79,28 @@ export const rejectBusinessSchema = z.object({
 });
 
 // Check Availability Schema -- for hotels
+const availabilityDateSchema = z
+  .string()
+  .refine((value) => {
+    const dateOnlyMatch = /^(\d{4})[-/](\d{2})[-/](\d{2})$/.exec(value);
+
+    if (!dateOnlyMatch) {
+      return !Number.isNaN(new Date(value).getTime());
+    }
+
+    const [, year, month, day] = dateOnlyMatch;
+    const date = new Date(
+      Date.UTC(Number(year), Number(month) - 1, Number(day)),
+    );
+
+    return (
+      date.getUTCFullYear() === Number(year) &&
+      date.getUTCMonth() === Number(month) - 1 &&
+      date.getUTCDate() === Number(day)
+    );
+  }, "Invalid date")
+  .transform((value) => new Date(value));
+
 export const checkAvailabilitySchema = z.object({
   body: z
     .object({
@@ -81,17 +114,29 @@ export const checkAvailabilitySchema = z.object({
 
       limit: z.coerce.number().int().min(1).max(50).default(10),
 
-      checkIn: z.coerce.date().refine((date) => date.getTime() >= Date.now(), {
-        message: "Check-in date cannot be in the past",
-      }),
+      checkIn: availabilityDateSchema,
 
-      checkOut: z.coerce.date().refine((date) => date.getTime() > Date.now(), {
-        message: "Check-out date cannot be in the past",
-      }),
+      checkOut: availabilityDateSchema,
     })
-    .refine((data) => data.checkOut > data.checkIn, {
-      message: "Check-out date must be after check-in date",
-      path: ["checkOut"],
+    .superRefine((data, ctx) => {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+
+      if (data.checkIn < startOfToday) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Check-in date cannot be in the past",
+          path: ["checkIn"],
+        });
+      }
+
+      if (data.checkOut <= data.checkIn) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Check-out date must be after check-in date",
+          path: ["checkOut"],
+        });
+      }
     }),
 });
 
